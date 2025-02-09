@@ -1,4 +1,4 @@
-"use client";
+// "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Dashboard() {
-  const [message, setMessage] = useState("");
+  const [data, setData] = useState({});
   const router = useRouter();
 
   useEffect(() => {
@@ -23,15 +23,13 @@ export default function Dashboard() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log(response);
-
         if (!response.ok) {
           throw new Error("Token non valido");
         }
 
-        const data = await response.json();
-        console.log(data);
-        setMessage(data.message);
+        const res = await response.json();
+        console.log(res);
+        setData(res);
       } catch (error) {
         console.error("Errore:", error);
         localStorage.removeItem("fw-token");
@@ -44,16 +42,36 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <h1 className="text-2xl font-bold">{message || "Caricamento..."}</h1>
+      {/* <h1 className="text-2xl font-bold">{data || "Caricamento..."}</h1> */}
       <button
         onClick={() => {
           localStorage.removeItem("fw-token");
           router.push("/");
         }}
-        className="bg-red-500 text-white p-2 mt-4"
       >
         Logout
       </button>
+
+      {Object.keys(data).length === 0 ? (
+        <p className="text-gray-500">Nessun dato trovato.</p>
+      ) : (
+        Object.entries(data).map(([key, items]) => (
+          <div key={key} className="mb-6 w-full max-w-md">
+            <h2 className="text-xl font-bold capitalize mb-2">{key}</h2>
+            {Array.isArray(items) && items.length > 0 ? (
+              <ul className="border border-gray-300 rounded-md overflow-hidden">
+                {items.map((item) => (
+                  <li key={item._id} className="p-2 border-b last:border-none">
+                    {new Date(item.date).toLocaleString()} - {item.amount}€
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500">Nessun dato disponibile.</p>
+            )}
+          </div>
+        ))
+      )}
     </div>
   );
 }
