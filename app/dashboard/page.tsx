@@ -19,7 +19,7 @@ import Navbar from "@/components/navbar";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Dashboard() {
-  const [data, setData] = useState({});
+  const [data, setData] = useState<DashboardData>({});
   const router = useRouter();
 
   useEffect(() => {
@@ -53,12 +53,28 @@ export default function Dashboard() {
     fetchData();
   }, [router]);
 
+  interface Transaction {
+    _id: string;
+    user: string;
+    amount: number;
+    category: string;
+    date: string;
+    createdAt: string;
+    updatedAt: string;
+  }
+  
+  type DashboardData = {
+    income?: Transaction[];
+    expense?: Transaction[];
+    [key: string]: Transaction[] | undefined; // Permette altre possibili categorie
+  };
+
   // return <Nav />;
   return (
     <div>
       <Navbar />
       <div className="mx-auto w-[90%] md:w-[80%]">
-        {Object.entries(data).map(([key, transactions]): any => (
+        {Object.entries(data).map(([key, transactions]) => (
           <Table key={key}>
             <TableCaption>
               A list of your recent {key} transactions.
@@ -72,7 +88,7 @@ export default function Dashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(transactions as any).map((item: any) => (
+              {(transactions as Transaction[]).map((item) => (
                 <TableRow key={item._id}>
                   <TableCell className="font-medium capitalize">
                     {key}
