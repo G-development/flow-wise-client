@@ -24,6 +24,7 @@ export default function Navbar() {
 
   return (
     <header className="flex h-20 w-full shrink-0 items-center px-4 md:px-6">
+      {/* THIS IS THE MOBILE NAV */}
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="lg:hidden">
@@ -31,6 +32,11 @@ export default function Navbar() {
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
+
+        <div className="flex items-center w-full text-center justify-center">
+          <Image src={Logo} width={50} />
+          <h1>flowise </h1>
+        </div>
         <SheetContent side="left">
           <SheetTitle>where you flowing? 💸</SheetTitle>
           <Link href="#" className="mr-6 hidden lg:flex" prefetch={false}>
@@ -78,6 +84,7 @@ export default function Navbar() {
         </SheetContent>
       </Sheet>
 
+      {/* THIS IS THE DESKTOP NAV */}
       <Link href="#" className="mr-6 hidden lg:flex" prefetch={false}>
         {/* <MountainIcon className="h-6 w-6" /> */}
         <Image src={Logo} width={50} height={50} alt="Flow-wise-logo" />
