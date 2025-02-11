@@ -85,11 +85,15 @@ interface Category {
 
 interface TransactionFormProps {
   formData: {
-    amount: any;
+    amount: string;
     category: string;
     type: string;
   };
-  setFormData: (data: { amount: any; category: string; type: string }) => void;
+  setFormData: (data: {
+    amount: string;
+    category: string;
+    type: string;
+  }) => void;
   handleSubmit: () => void;
 }
 
@@ -125,7 +129,7 @@ export default function TransactionForm({
 
         setCategories(data.category);
       } catch (err) {
-        setError("Impossible to load categories");
+        setError("Impossible to load categories" + err);
       } finally {
         setLoading(false);
       }
@@ -166,12 +170,12 @@ export default function TransactionForm({
         throw new Error("Errore nella creazione della categoria");
 
       const data = await response.json();
-      setCategories([...categories, data]); // Aggiungi la nuova categoria alla lista
+      setCategories([...categories, data]);
       toast.success("Categoria aggiunta con successo!", {
         position: "top-right",
       });
     } catch (error) {
-      toast.error("Errore durante l'aggiunta della categoria.", {
+      toast.error("Errore durante l'aggiunta della categoria." + error, {
         position: "top-right",
       });
     }
@@ -188,7 +192,7 @@ export default function TransactionForm({
           onChange={(e) =>
             setFormData({
               ...formData,
-              amount: parseFloat(e.target.value) || "",
+              amount: String(e.target.value) || "",
             })
           }
         />

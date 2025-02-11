@@ -28,7 +28,7 @@ export default function NewTransactionDrawer({
 }: NewTransactionDrawerProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<{
-    amount: any;
+    amount: string;
     category: string;
     type: string;
   }>({
@@ -93,7 +93,7 @@ export default function NewTransactionDrawer({
         );
         fetchData();
         setOpen(false);
-        setFormData({ amount: 0, category: "", type: "income" });
+        setFormData({ amount: "", category: "", type: "income" });
       } else {
         throw new Error(data.msg || "Si è verificato un errore");
       }
