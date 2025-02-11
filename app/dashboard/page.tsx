@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import NewTransactionDrawer from "@/components/new-transaction-drawer";
 
 // import { Nav } from "@/components/nav-menu";
 import Navbar from "@/components/navbar";
@@ -44,7 +45,7 @@ export default function Dashboard() {
         console.log(res);
         setData(res);
       } catch (error) {
-        console.error("Errore:", error);
+        console.error(error);
         localStorage.removeItem("fw-token");
         router.push("/login");
       }
@@ -62,7 +63,7 @@ export default function Dashboard() {
     createdAt: string;
     updatedAt: string;
   }
-  
+
   type DashboardData = {
     income?: Transaction[];
     expense?: Transaction[];
@@ -74,6 +75,7 @@ export default function Dashboard() {
     <div>
       <Navbar />
       <div className="mx-auto w-[90%] md:w-[80%]">
+        <NewTransactionDrawer />
         {Object.entries(data).map(([key, transactions]) => (
           <Table key={key}>
             <TableCaption>
@@ -104,7 +106,7 @@ export default function Dashboard() {
                       key === "income" ? "text-green-500" : "text-red-500"
                     }`}
                   >
-                    {key === "income" ? "$" : "-$"}
+                    {key === "income" ? "€" : "-€"}
                     {item.amount}
                   </TableCell>
                 </TableRow>
