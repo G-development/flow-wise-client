@@ -23,7 +23,7 @@ export default function Dashboard() {
   const [data, setData] = useState<DashboardData>({});
   const router = useRouter();
 
-  useEffect(() => {
+  async function fetchData() {
     const token = localStorage.getItem("fw-token");
 
     if (!token) {
@@ -31,26 +31,26 @@ export default function Dashboard() {
       return;
     }
 
-    async function fetchData() {
-      try {
-        const response = await fetch(`${API_URL}/dashboard`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+    try {
+      const response = await fetch(`${API_URL}/dashboard`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        if (!response.ok) {
-          throw new Error("Token non valido");
-        }
-
-        const res = await response.json();
-        console.log(res);
-        setData(res);
-      } catch (error) {
-        console.error(error);
-        localStorage.removeItem("fw-token");
-        router.push("/login");
+      if (!response.ok) {
+        throw new Error("Token non valido");
       }
-    }
 
+      const res = await response.json();
+      console.log(res);
+      setData(res);
+    } catch (error) {
+      console.error(error);
+      localStorage.removeItem("fw-token");
+      router.push("/login");
+    }
+  }
+
+  useEffect(() => {
     fetchData();
   }, [router]);
 
@@ -74,8 +74,8 @@ export default function Dashboard() {
   return (
     <div>
       <Navbar />
-      <div className="mx-auto w-[90%] md:w-[80%]">
-        <NewTransactionDrawer />
+      <div className="mx-auto w-[90%] md:w-[80%] ">
+        <NewTransactionDrawer fetchData={fetchData} />
         {Object.entries(data).map(([key, transactions]) => (
           <Table key={key}>
             <TableCaption>

@@ -19,14 +19,20 @@ import TransactionForm from "@/components/new-transaction-form";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export default function NewTransactionDrawer() {
+interface NewTransactionDrawerProps {
+  fetchData: () => void;
+}
+
+export default function NewTransactionDrawer({
+  fetchData,
+}: NewTransactionDrawerProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<{
-    amount: number;
+    amount: any;
     category: string;
     type: string;
   }>({
-    amount: 0,
+    amount: "",
     category: "",
     type: "income",
   });
@@ -81,24 +87,25 @@ export default function NewTransactionDrawer() {
       if (response.ok) {
         toast.success(
           `${
-            formData.type === "income" ? "Entrata" : "Uscita"
+            formData.type === "income" ? "Income" : "Expense"
           } creata con successo!`,
           { position: "top-right" }
         );
+        fetchData();
         setOpen(false);
         setFormData({ amount: 0, category: "", type: "income" });
       } else {
         throw new Error(data.msg || "Si è verificato un errore");
       }
     } catch (error) {
-      toast.error((error as Error).message);
+      toast.error((error as Error).message, { position: "top-right" });
     }
   };
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button>New</Button>
+        <Button className="w-full m-4">New transaction</Button>
       </DrawerTrigger>
       <DrawerContent className="p-4">
         <DrawerHeader>
