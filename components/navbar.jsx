@@ -34,7 +34,7 @@ export default function Navbar() {
         </SheetTrigger>
 
         <div className="flex items-center w-full text-center justify-center">
-          <Image src={Logo} width={50} />
+          <Image src={Logo} width={50} alt="Flow-wise-logo" />
           <h1>flowise </h1>
         </div>
         <SheetContent side="left">
