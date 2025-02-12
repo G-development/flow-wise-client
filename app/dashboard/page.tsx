@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import NewTransactionDrawer from "@/components/new-transaction-drawer";
+import DatePickerWithRange from "@/components/date-picker";
 
 // import { Nav } from "@/components/nav-menu";
 import Navbar from "@/components/navbar";
@@ -74,7 +75,11 @@ export default function Dashboard() {
   return (
     <div>
       <Navbar />
-      <div className="mx-auto w-[90%] md:w-[80%] ">
+      <div className=" flex-1 space-y-4 p-8 pt-6">
+        <div className="flex flex-col lg:flex-row items-center justify-between space-y-2 lg:space-y-0">
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <DatePickerWithRange />
+        </div>
         <NewTransactionDrawer fetchData={fetchData} />
         {Object.entries(data).map(([key, transactions]) => (
           <Table key={key}>

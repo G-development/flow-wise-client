@@ -23,7 +23,7 @@ export default function Navbar() {
   const router = useRouter();
 
   return (
-    <header className="flex h-16 w-full shrink-0 items-center px-4 md:px-6">
+    <header className="flex h-16 w-full shrink-0 items-center px-4 md:px-6 border-b">
       {/* THIS IS THE MOBILE NAV */}
       <Sheet>
         <SheetTrigger asChild>
@@ -74,13 +74,15 @@ export default function Navbar() {
             >
               Budget
             </Link>
-            <LogOut
-              className="absolute bottom-8 right-8"
+            <div
+              className="flex gap-2 absolute bottom-8 right-8"
               onClick={() => {
                 localStorage.removeItem("fw-token");
                 router.push("/");
               }}
-            />
+            > Logout
+              <LogOut />
+            </div>
           </div>
         </SheetContent>
       </Sheet>
