@@ -9,7 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { LogOut } from "lucide-react";
-import Logo from "../app/flow-wise-logo.png";
+import Logo from "../app/flow-wise-logo.svg";
 
 import {
   Sheet,
@@ -23,7 +23,7 @@ export default function Navbar() {
   const router = useRouter();
 
   return (
-    <header className="flex h-20 w-full shrink-0 items-center px-4 md:px-6">
+    <header className="flex h-16 w-full shrink-0 items-center px-4 md:px-6">
       {/* THIS IS THE MOBILE NAV */}
       <Sheet>
         <SheetTrigger asChild>
@@ -33,16 +33,17 @@ export default function Navbar() {
           </Button>
         </SheetTrigger>
 
-        <div className="mr-6 hidden flex items-center w-full text-center justify-center">
+        <div className="lg:hidden flex items-center w-full text-center justify-center">
           <Image src={Logo} width={50} alt="Flow-wise-logo" />
           <h1>flowise </h1>
         </div>
+
         <SheetContent side="left">
           <SheetTitle>where you flowing? 💸</SheetTitle>
           <Link href="#" className="mr-6 hidden lg:flex" prefetch={false}>
             {/* <MountainIcon className="h-6 w-6" /> */}
-            <Image src={Logo} width={50} height={50} alt="Flow-wise-logo" />
-            <span className="sr-only">Acme Inc</span>
+            <Image src={Logo} width={60} height={60} alt="Flow-wise-logo" />
+            <span className="sr-only">Flow wise</span>
           </Link>
           <div className="grid gap-2 py-6">
             <Link
@@ -87,7 +88,7 @@ export default function Navbar() {
       {/* THIS IS THE DESKTOP NAV */}
       <Link href="#" className="mr-6 hidden lg:flex" prefetch={false}>
         {/* <MountainIcon className="h-6 w-6" /> */}
-        <Image src={Logo} width={50} height={50} alt="Flow-wise-logo" />
+        <Image src={Logo} width={60} height={60} alt="Flow-wise-logo" />
         <span className="sr-only">Acme Inc</span>
       </Link>
       <nav className="ml-auto hidden lg:flex gap-6">
