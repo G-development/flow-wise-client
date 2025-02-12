@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Logo from "../flow-wise-logo.png";
+import Logo from "../flow-wise-logo.svg";
 // import { GalleryVerticalEnd } from "lucide-react";
 import { RegisterForm } from "@/components/register-form";
 
