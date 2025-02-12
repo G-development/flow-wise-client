@@ -1,57 +1,3 @@
-// import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
-// import { Button } from "@/components/ui/button";
-
-// interface TransactionFormProps {
-//   formData: {
-//     amount: number;
-//     category: string;
-//     type: string;
-//   };
-//   setFormData: (data: {
-//     amount: number;
-//     category: string;
-//     type: string;
-//   }) => void;
-//   handleSubmit: () => void;
-// }
-
-// export default function TransactionForm({
-//   formData,
-//   setFormData,
-//   handleSubmit,
-// }: TransactionFormProps) {
-//   return (
-//     <div className="flex flex-col gap-4">
-//       <div>
-//         <Label>Importo</Label>
-//         <Input
-//           type="number"
-//           placeholder="0.00"
-//           value={formData.amount}
-//           onChange={(e) =>
-//             setFormData({ ...formData, amount: parseFloat(e.target.value) })
-//           }
-//         />
-//       </div>
-//       <div>
-//         <Label>Categoria</Label>
-//         <Input
-//           type="text"
-//           placeholder="Categoria"
-//           value={formData.category}
-//           onChange={(e) =>
-//             setFormData({ ...formData, category: e.target.value })
-//           }
-//         />
-//       </div>
-//       <Button className="mt-4 w-full" onClick={handleSubmit}>
-//         Aggiungi {formData.type === "income" ? "Entrata" : "Uscita"}
-//       </Button>
-//     </div>
-//   );
-// }
-
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -201,7 +147,7 @@ export default function TransactionForm({
       <div>
         <Label>Category</Label>
         <div className="flex items-center justify-center gap-8">
-          {loading ? (
+          {/* {loading ? (
             <p>Loading...</p>
           ) : error ? (
             <p className="text-red-500">{error}</p>
@@ -227,8 +173,36 @@ export default function TransactionForm({
             </Select>
           ) : (
             <div>
-              <p>Nessuna categoria trovata.</p>
+              <p>No categories found! 😞</p>
             </div>
+          )} */}
+          {loading ? (
+            <p>Loading...</p>
+          ) : error ? (
+            <p className="text-red-500">{error}</p>
+          ) : categories.filter((cat) => cat.type === formData.type).length >
+            0 ? (
+            <Select
+              onValueChange={(value) =>
+                setFormData({ ...formData, category: value })
+              }
+              value={formData.category}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories
+                  .filter((cat) => cat.type === formData.type)
+                  .map((cat) => (
+                    <SelectItem key={cat._id} value={cat.name}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <p>No categories found for {formData.type}! 😞</p>
           )}
           <AlertDialog>
             <AlertDialogTrigger asChild>
