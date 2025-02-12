@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -42,7 +43,7 @@ export function RegisterForm({
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      console.error("Passwords do not match");
+      toast.error("Passwords do not match!");
       return;
     }
 
@@ -60,9 +61,10 @@ export function RegisterForm({
       const data = await response.json();
 
       if (response.ok) {
-        router.push("/dashboard");
+        router.push("/login");
+        toast.success("Successfully registered!");
       } else {
-        throw new Error(data.msg || "Registration error");
+        toast.error(data.msg || "Authentication error");
       }
 
       console.log("Registered successfully!", data);

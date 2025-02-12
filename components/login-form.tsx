@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -52,7 +53,7 @@ export function LoginForm({
       if (response.ok) {
         router.push("/dashboard");
       } else {
-        throw new Error(data.msg || "Authentication error");
+        toast.error(data.msg || "Authentication error");
       }
 
       console.log("Logged in!", data);
