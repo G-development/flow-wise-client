@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -24,7 +24,7 @@ export default function Dashboard() {
   const [data, setData] = useState<DashboardData>({});
   const router = useRouter();
 
-  async function fetchData() {
+  const fetchData = useCallback(() => {
     const token = localStorage.getItem("fw-token");
 
     if (!token) {
@@ -32,28 +32,32 @@ export default function Dashboard() {
       return;
     }
 
-    try {
-      const response = await fetch(`${API_URL}/dashboard`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    const fetchDataAsync = async () => {
+      try {
+        const response = await fetch(`${API_URL}/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-      if (!response.ok) {
-        throw new Error("Token non valido");
+        if (!response.ok) {
+          throw new Error("Token non valido");
+        }
+
+        const res = await response.json();
+        console.log(res);
+        setData(res);
+      } catch (error) {
+        console.error(error);
+        localStorage.removeItem("fw-token");
+        router.push("/login");
       }
+    };
 
-      const res = await response.json();
-      console.log(res);
-      setData(res);
-    } catch (error) {
-      console.error(error);
-      localStorage.removeItem("fw-token");
-      router.push("/login");
-    }
-  }
+    fetchDataAsync();
+  }, [router]); // Aggiunto array di dipendenze
 
   useEffect(() => {
     fetchData();
-  }, [router]);
+  }, [fetchData]);
 
   interface Transaction {
     _id: string;
