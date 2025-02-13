@@ -128,7 +128,7 @@ export default function Dashboard() {
                   </TableCell>
                   <TableCell className="text-center">
                     <Circle
-                      className={`${getStatusColor(item.amount)} h-4 w-4`}
+                      className={`${getStatusColor(item.amount)} h-4 w-4 inline`}
                     />
                   </TableCell>
                   <TableCell className="text-right flex justify-end gap-2">

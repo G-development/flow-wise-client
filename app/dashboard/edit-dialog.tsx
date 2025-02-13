@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { format } from 'date-fns';
+import { format } from "date-fns";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,11 +52,11 @@ const EditDialog: React.FC<EditDialogProps> = ({
 
           const transaction = await response.json();
           console.log(transaction.date);
-          
+
           setFormData({
             category: transaction.category,
             amount: transaction.amount.toString(),
-            date: format(transaction.date, 'yyyy-MM-dd'),
+            date: format(transaction.date, "yyyy-MM-dd"),
             // date: new Date(transaction.date).toLocaleDateString(),
             // date: "2025-01-01",
           });
@@ -108,16 +108,19 @@ const EditDialog: React.FC<EditDialogProps> = ({
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Modifica Transazione</AlertDialogTitle>
+          <AlertDialogTitle>Edit transaction</AlertDialogTitle>
           <AlertDialogDescription>
-            Puoi modificare i dettagli di questa transazione.
+            You can modify this transaction details.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="space-y-4">
           <div>
             <Label className="block text-sm font-medium text-gray-700">
-              Categoria
+              Category{" "}
+              <p className="inline text-xs text-gray-500">
+                (we are sorry, this will be soon available!)
+              </p>
             </Label>
             <Input
               type="text"
@@ -130,7 +133,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
           </div>
           <div>
             <Label className="block text-sm font-medium text-gray-700">
-              Importo
+              Amount
             </Label>
             <Input
               type="number"
@@ -142,7 +145,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
           </div>
           <div>
             <Label className="block text-sm font-medium text-gray-700">
-              Data
+              Date
             </Label>
             <Input
               type="date"
@@ -153,12 +156,14 @@ const EditDialog: React.FC<EditDialogProps> = ({
               required
             />
           </div>
-          <p className="text-xs text-gray-500 text-right">ID transaction: {id}</p>
+          <p className="text-xs text-gray-500 text-right">
+            ID transaction: {id}
+          </p>
         </div>
 
-        <AlertDialogFooter>
-          <AlertDialogAction onClick={handleSubmit}>Salva</AlertDialogAction>
-          <AlertDialogCancel onClick={onClose}>Annulla</AlertDialogCancel>
+        <AlertDialogFooter className="gap-4 sm:gap-0">
+          <AlertDialogAction onClick={handleSubmit}>Save</AlertDialogAction>
+          <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

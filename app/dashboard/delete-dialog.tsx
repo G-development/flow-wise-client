@@ -59,7 +59,7 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
             This action is irreversible.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
+        <AlertDialogFooter className="gap-4 sm:gap-0">
           <AlertDialogAction onClick={deleteTransaction}>
             Confirm
           </AlertDialogAction>
