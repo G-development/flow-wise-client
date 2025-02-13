@@ -16,11 +16,11 @@ Created with React + Next.js
 ```
 flow-wise-client/
 ├── app/
-			└── dashboard/
-			└── login/
-			└── register/
+	└── dashboard/
+	└── login/
+	└── register/
 ├── components/
-			└── ui/
+	└── ui/
 ├── lib/
 ├── utils/
 ├── public/
@@ -37,4 +37,4 @@ NEXT_PUBLIC_API_URL=http://localhost:5000/
 
 ## Deployment
 
-Deployed using Vercel at https://flow-wise-client.vercel.app/
+Deployed using Vercel at [Flow Wise (Client)](https://flow-wise-client.vercel.app/)
