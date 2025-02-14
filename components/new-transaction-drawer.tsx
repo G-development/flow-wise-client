@@ -21,10 +21,14 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface NewTransactionDrawerProps {
   fetchData: () => void;
+  disableIncome?: boolean;
+  disableExpense?: boolean;
 }
 
 export default function NewTransactionDrawer({
   fetchData,
+  disableIncome = false,
+  disableExpense = false,
 }: NewTransactionDrawerProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<{
@@ -119,8 +123,10 @@ export default function NewTransactionDrawer({
           className="w-full"
         >
           <TabsList className="mb-4 flex w-full justify-center bg-muted">
-            <TabsTrigger value="income">Income</TabsTrigger>
-            <TabsTrigger value="expense">Expense</TabsTrigger>
+            {!disableIncome && <TabsTrigger value="income">Income</TabsTrigger>}
+            {!disableExpense && (
+              <TabsTrigger value="expense">Expense</TabsTrigger>
+            )}
           </TabsList>
           <TabsContent value="income">
             <TransactionForm
@@ -129,13 +135,15 @@ export default function NewTransactionDrawer({
               handleSubmit={handleSubmit}
             />
           </TabsContent>
-          <TabsContent value="expense">
-            <TransactionForm
-              formData={formData}
-              setFormData={setFormData}
-              handleSubmit={handleSubmit}
-            />
-          </TabsContent>
+          {!disableExpense && (
+            <TabsContent value="expense">
+              <TransactionForm
+                formData={formData}
+                setFormData={setFormData}
+                handleSubmit={handleSubmit}
+              />
+            </TabsContent>
+          )}
         </Tabs>
         <DrawerClose asChild>
           <Button variant="outline" className="mt-4 w-full">
