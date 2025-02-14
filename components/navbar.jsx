@@ -3,7 +3,7 @@
  * @see https://v0.dev/t/lJwnQlHSEBA
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
-"use client"; 
+"use client";
 
 import { useRouter } from "next/navigation";
 
@@ -49,7 +49,7 @@ export default function Navbar() {
           </Link>
           <div className="grid gap-2 py-6">
             <Link
-              href="#"
+              href="/dashboard"
               className="flex w-full items-center py-2 text-lg font-semibold"
               prefetch={false}
             >
@@ -82,7 +82,9 @@ export default function Navbar() {
                 localStorage.removeItem("fw-token");
                 router.push("/");
               }}
-            > Logout
+            >
+              {" "}
+              Logout
               <LogOut />
             </div>
           </div>
@@ -90,10 +92,10 @@ export default function Navbar() {
       </Sheet>
 
       {/* THIS IS THE DESKTOP NAV */}
-      <Link href="#" className="mr-6 hidden lg:flex" prefetch={false}>
+      <Link href="/dashboard" className="mr-6 hidden lg:flex" prefetch={false}>
         {/* <MountainIcon className="h-6 w-6" /> */}
         <Image src={Logo} width={60} height={60} alt="Flow-wise-logo" />
-        <span className="sr-only">Acme Inc</span>
+        <span className="sr-only">Flow Wise</span>
       </Link>
       <nav className="ml-auto hidden lg:flex gap-6">
         <Link
