@@ -82,8 +82,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div>
-      <Navbar />
+    <>
+    <Navbar />
       <div className="flex-1 space-y-4 p-8 pt-6">
         <div className="flex flex-col lg:flex-row items-center justify-between space-y-2 lg:space-y-0">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
@@ -128,7 +128,9 @@ export default function Dashboard() {
                   </TableCell>
                   <TableCell className="text-center">
                     <Circle
-                      className={`${getStatusColor(item.amount)} h-4 w-4 inline`}
+                      className={`${getStatusColor(
+                        item.amount
+                      )} h-4 w-4 inline`}
                     />
                   </TableCell>
                   <TableCell className="text-right flex justify-end gap-2">
@@ -170,6 +172,6 @@ export default function Dashboard() {
           </Table>
         ))}
       </div>
-    </div>
+    </>
   );
 }
