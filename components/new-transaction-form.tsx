@@ -147,35 +147,6 @@ export default function TransactionForm({
       <div>
         <Label>Category</Label>
         <div className="flex items-center justify-center gap-8">
-          {/* {loading ? (
-            <p>Loading...</p>
-          ) : error ? (
-            <p className="text-red-500">{error}</p>
-          ) : categories.length > 0 ? (
-            <Select
-              onValueChange={(value) =>
-                setFormData({ ...formData, category: value })
-              }
-              value={formData.category}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories
-                  .filter((cat) => cat.type === formData.type)
-                  .map((cat) => (
-                    <SelectItem key={cat._id} value={cat.name}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          ) : (
-            <div>
-              <p>No categories found! 😞</p>
-            </div>
-          )} */}
           {loading ? (
             <p>Loading...</p>
           ) : error ? (
