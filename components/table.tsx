@@ -3,7 +3,9 @@
  * ONLY in Incomes and Expenses pages  *
  ***************************************/
 
-import React from "react";
+import React, { useState } from "react";
+import { Button } from "./ui/button";
+import { Pencil, Trash } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -13,6 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import EditDialog from "@/app/dashboard/edit-dialog";
+import DeleteDialog from "@/app/dashboard/delete-dialog";
 
 interface Category {
   name: string;
@@ -27,9 +31,23 @@ interface Transaction {
 interface SimpleTableProps {
   data: Transaction[];
   caption?: string;
+  fetchData: () => void;
+  transactionType: "income" | "expense";
 }
 
-const SimpleTable = ({ data, caption = "Default cap" }: SimpleTableProps) => {
+const SimpleTable = ({
+  data,
+  caption = "Default cap",
+  fetchData,
+  transactionType,
+}: SimpleTableProps) => {
+  const [transactionToEdit, setTransactionToEdit] = useState<string | null>(
+    null
+  );
+  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(
+    null
+  );
+
   if (data.length === 0) return <div>No data available</div>;
 
   const removeHeaders = ["_id", "user", "createdAt", "updatedAt", "__v"];
@@ -54,12 +72,6 @@ const SimpleTable = ({ data, caption = "Default cap" }: SimpleTableProps) => {
           <TableRow key={String(income._id) ?? index}>
             {headers.map((header) => (
               <TableCell key={header}>
-                {/* {header === "category"
-                  ? income.category?.name
-                    ? income.category.name.charAt(0).toUpperCase() +
-                      income.category.name.slice(1)
-                    : "No category"
-                  : String(income[header])} */}
                 {(() => {
                   if (header === "category") {
                     return income.category?.name
@@ -86,6 +98,39 @@ const SimpleTable = ({ data, caption = "Default cap" }: SimpleTableProps) => {
                 })()}
               </TableCell>
             ))}
+            <TableCell className="text-right flex justify-end gap-2">
+              {/* Edit */}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setTransactionToEdit(income._id)} // Imposta l'ID della transazione da eliminare
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <EditDialog
+                isOpen={transactionToEdit === income._id} // Mostra solo per la transazione selezionata
+                onClose={() => setTransactionToEdit(null)} // Chiudi il dialogo
+                transactionType={transactionType}
+                id={income._id}
+                fetchData={fetchData}
+              />
+
+              {/* Delete */}
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => setTransactionToDelete(income._id)} // Imposta l'ID della transazione da eliminare
+              >
+                <Trash className="h-4 w-4" />
+              </Button>
+              <DeleteDialog
+                isOpen={transactionToDelete === income._id}
+                onClose={() => setTransactionToDelete(null)} // Chiudi il dialogo
+                transactionType={transactionType}
+                id={income._id}
+                fetchData={fetchData}
+              />
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
