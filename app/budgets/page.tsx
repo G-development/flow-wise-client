@@ -170,7 +170,7 @@ export default function Budgets() {
       <Navbar />
       <div className="flex-1 space-y-4 p-8 pt-6">
         <div className="flex flex-col lg:flex-row items-center justify-between space-y-2 lg:space-y-0">
-          <h1 className="text-3xl font-bold tracking-tight">Budgets</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Budgets - WIP</h1>
           <DatePickerWithRange />
         </div>
 
