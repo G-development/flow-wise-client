@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Analytics } from "@vercel/analytics/react"
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -26,12 +27,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Analytics />
+      <SpeedInsights />
+      <Toaster />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Analytics/>
         {children}
-        <Toaster />
       </body>
     </html>
   );
