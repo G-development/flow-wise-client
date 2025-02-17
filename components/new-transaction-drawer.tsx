@@ -110,7 +110,14 @@ export default function NewTransactionDrawer({
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
         <div className="flex items-center justify-center">
-          <Button className="w-[95%] mt-4 mb-4">New transaction</Button>
+          <Button className="w-[95%] mt-4 mb-4">
+            New{" "}
+            {disableIncome
+              ? "expense"
+              : disableExpense
+              ? "income"
+              : "transaction"}
+          </Button>
         </div>
       </DrawerTrigger>
       <DrawerContent className="p-4">
