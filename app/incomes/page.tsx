@@ -71,7 +71,7 @@ export default function Incomes() {
           <DatePickerWithRange />
         </div>
         <NewTransactionDrawer fetchData={fetchData} disableExpense={true} />
-        <SimpleTable data={incomes} />
+        <SimpleTable data={incomes} caption="List of recent incomes"/>
       </div>
     </>
   );
