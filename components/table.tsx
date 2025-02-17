@@ -32,7 +32,7 @@ interface SimpleTableProps {
   data: Transaction[];
   caption?: string;
   fetchData: () => void;
-  transactionType: "income" | "expense";
+  transactionType: "income" | "expense" | "budget";
 }
 
 const SimpleTable = ({
@@ -98,39 +98,44 @@ const SimpleTable = ({
                 })()}
               </TableCell>
             ))}
-            <TableCell className="text-right flex justify-end gap-2">
-              {/* Edit */}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setTransactionToEdit(income._id)} // Imposta l'ID della transazione da eliminare
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <EditDialog
-                isOpen={transactionToEdit === income._id} // Mostra solo per la transazione selezionata
-                onClose={() => setTransactionToEdit(null)} // Chiudi il dialogo
-                transactionType={transactionType}
-                id={income._id}
-                fetchData={fetchData}
-              />
 
-              {/* Delete */}
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => setTransactionToDelete(income._id)} // Imposta l'ID della transazione da eliminare
-              >
-                <Trash className="h-4 w-4" />
-              </Button>
-              <DeleteDialog
-                isOpen={transactionToDelete === income._id}
-                onClose={() => setTransactionToDelete(null)} // Chiudi il dialogo
-                transactionType={transactionType}
-                id={income._id}
-                fetchData={fetchData}
-              />
-            </TableCell>
+            {transactionType !== "budget" ? (
+              <TableCell className="text-right flex justify-end gap-2">
+                {/* Edit */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setTransactionToEdit(income._id)} // Imposta l'ID della transazione da eliminare
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <EditDialog
+                  isOpen={transactionToEdit === income._id} // Mostra solo per la transazione selezionata
+                  onClose={() => setTransactionToEdit(null)} // Chiudi il dialogo
+                  transactionType={transactionType}
+                  id={income._id}
+                  fetchData={fetchData}
+                />
+
+                {/* Delete */}
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => setTransactionToDelete(income._id)} // Imposta l'ID della transazione da eliminare
+                >
+                  <Trash className="h-4 w-4" />
+                </Button>
+                <DeleteDialog
+                  isOpen={transactionToDelete === income._id}
+                  onClose={() => setTransactionToDelete(null)} // Chiudi il dialogo
+                  transactionType={transactionType}
+                  id={income._id}
+                  fetchData={fetchData}
+                />
+              </TableCell>
+            ) : (
+              ""
+            )}
           </TableRow>
         ))}
       </TableBody>

@@ -301,7 +301,12 @@ export default function Budgets() {
           </DrawerContent>
         </Drawer>
 
-        <SimpleTable data={budgets} />
+        <SimpleTable
+          data={budgets}
+          fetchData={fetchData}
+          caption="Budgets | This page is WIP"
+          transactionType="budget"
+        />
       </div>
     </>
   );
