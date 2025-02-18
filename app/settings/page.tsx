@@ -52,7 +52,9 @@ export default function Settings() {
         </div>
 
         <div className="max-w-lg mx-auto p-4">
-          <h1 className="text-2xl font-semibold">{data?.name + "'s"} profile</h1>
+          <h1 className="text-2xl font-semibold">
+            {data?.name + "'s"} profile
+          </h1>
 
           <div className="mt-6 flex-col justify-center items-center">
             {/* Name */}
