@@ -30,6 +30,8 @@ interface UserData {
   profilePic: string;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function Settings() {
   useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -51,8 +53,35 @@ export default function Settings() {
     console.log("Submit");
   };
 
-  const handleAvatarChange = async () => {
+  const handleAvatarChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     console.log("Submit");
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const response = await fetch(`${API_URL}/users/profile/photo`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("fw-token")}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Upload failed");
+
+      console.log("Profile picture updated:", data.profilePic);
+    } catch (error) {
+      console.error(
+        "Error updating profile picture:",
+        (error as Error).message
+      );
+    }
   };
 
   if (loading) return <p>Loading...</p>;
@@ -68,7 +97,7 @@ export default function Settings() {
         </div>
 
         <div className="max-w-lg mx-auto p-8 border rounded-xl shadow-md">
-        {/* <div className="max-w-lg rounded-xl border bg-card text-card-foreground shadow"> */}
+          {/* <div className="max-w-lg rounded-xl border bg-card text-card-foreground shadow"> */}
           <Avatar
             className="h-20 w-20 rounded-lg"
             onClick={() => {
