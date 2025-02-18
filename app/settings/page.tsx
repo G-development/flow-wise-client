@@ -1,11 +1,21 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { User, KeySquare, Send, Sparkle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  User,
+  KeySquare,
+  Send,
+  HandCoins,
+  BellRing,
+  Sparkle,
+  Fingerprint,
+} from "lucide-react";
 import Navbar from "@/components/navbar";
 
 interface UserData {
@@ -17,10 +27,12 @@ interface UserData {
   _id: string;
   createdAt: string;
   updatedAt: string;
+  profilePic: string;
 }
 
 export default function Settings() {
   useAuth();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { data, loading, error } = useFetch<UserData>("users/profile");
 
   const [name, setName] = useState<string>(data?.name || "");
@@ -39,6 +51,10 @@ export default function Settings() {
     console.log("Submit");
   };
 
+  const handleAvatarChange = async () => {
+    console.log("Submit");
+  };
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
@@ -47,11 +63,28 @@ export default function Settings() {
       <Navbar />
       <div className="flex-1 space-y-4 p-8 pt-6">
         <div className="flex flex-col lg:flex-row items-center justify-between space-y-2 lg:space-y-0">
-          <h1 className="text-3xl font-bold tracking-tight">Settings - WIP</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Account - WIP</h1>
           {/* <DatePickerWithRange /> */}
         </div>
 
-        <div className="max-w-lg mx-auto p-4">
+        <div className="max-w-lg mx-auto p-8 border rounded-xl shadow-md">
+        {/* <div className="max-w-lg rounded-xl border bg-card text-card-foreground shadow"> */}
+          <Avatar
+            className="h-20 w-20 rounded-lg"
+            onClick={() => {
+              fileInputRef.current?.click();
+            }}
+          >
+            <AvatarImage src={data?.profilePic} alt={data?.name} />
+            <AvatarFallback className="rounded-lg">FW</AvatarFallback>
+          </Avatar>
+          <Input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={handleAvatarChange}
+          />
           <h1 className="text-2xl font-semibold">
             {data?.name + "'s"} profile
           </h1>
@@ -103,6 +136,46 @@ export default function Settings() {
                 value={data?.email}
                 disabled
                 placeholder="Your email"
+              />
+            </div>
+
+            {/* Notifications */}
+            <div className="mb-4 mt-4">
+              <Label className="text-sm font-medium text-gray-700">
+                <BellRing className="inline mr-2" width={20} /> Notifications
+                <Checkbox
+                  id="notifications"
+                  className="ml-2"
+                  disabled
+                  value={String(data?.notifications)}
+                />
+              </Label>
+            </div>
+
+            {/* Currency */}
+            <div className="mb-4 mt-4">
+              <Label className="text-sm font-medium text-gray-700">
+                <HandCoins className="inline mr-2" width={20} /> Favorite
+                currency
+              </Label>
+              <Input
+                className="mt-2"
+                value={data?.currency}
+                disabled
+                placeholder="Your currency"
+              />
+            </div>
+
+            {/* Auth method */}
+            <div className="mb-4 mt-4">
+              <Label className="text-sm font-medium text-gray-700">
+                <Fingerprint className="inline mr-2" width={20} /> Auth method
+              </Label>
+              <Input
+                className="mt-2"
+                value={data?.authMethod}
+                disabled
+                placeholder="Auth"
               />
             </div>
 
