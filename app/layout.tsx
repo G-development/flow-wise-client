@@ -15,9 +15,29 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// export const metadata: Metadata = {
+//   title: "Flow wise 💸",
+//   description: "Flow wise - Money tracking ",
+// };
+
 export const metadata: Metadata = {
   title: "Flow wise 💸",
-  description: "Flow wise - Money tracking ",
+  description: "Flow wise - Money tracking",
+  icons: [
+    {
+      rel: "icon",
+      type: "image/png",
+      url: "/favicon-96x96.png",
+      sizes: "96x96",
+    },
+    { rel: "icon", type: "image/svg+xml", url: "/favicon.svg" },
+    { rel: "shortcut icon", url: "/favicon.ico" },
+    { rel: "apple-touch-icon", sizes: "180x180", url: "/apple-touch-icon.png" },
+  ],
+  manifest: "/site.webmanifest",
+  other: {
+    "apple-mobile-web-app-title": "Flow Wise",
+  },
 };
 
 export default function RootLayout({
