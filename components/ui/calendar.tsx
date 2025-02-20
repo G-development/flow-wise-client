@@ -17,21 +17,22 @@ function Calendar({
 }: CalendarProps) {
   return (
     <DayPicker
+      disabled={{ after: new Date() }}
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         month_caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium",
+        caption_label: "text-sm font-bold",
         dropdowns: "space-x-1 flex items-center",
         button_previous: cn(
           buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          "absolute left-5 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 z-10"
         ),
         button_next: cn(
           buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          " absolute right-5 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 z-10"
         ),
         month_grid: "w-full border-collapse space-y-1",
         weekdays: "flex",
@@ -51,7 +52,7 @@ function Calendar({
         range_start: "range_start",
         range_end: "range_end",
         selected:
-          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-md",
         today: "bg-accent text-accent-foreground",
         outside:
           "outside text-muted-foreground aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
