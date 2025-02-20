@@ -73,7 +73,7 @@ export default function Expenses() {
     fetchData();
   }, [fetchData, dateRange]);
 
-  if (loading) return <div>Loading...</div>; // Stato di caricamento
+  // if (loading) return <div>Loading...</div>; // Stato di caricamento
   if (error) return <div>{error}</div>; // Stato errore
 
   return (
@@ -85,12 +85,18 @@ export default function Expenses() {
           <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
         </div>
         <NewTransactionDrawer fetchData={fetchData} disableIncome={true} />
-        <SimpleTable
-          data={expenses}
-          caption="List of recent expenses"
-          fetchData={fetchData}
-          transactionType="expense"
-        />
+        {!loading ? (
+          <SimpleTable
+            data={expenses}
+            caption="List of recent expenses"
+            fetchData={fetchData}
+            transactionType="expense"
+          />
+        ) : (
+          <div className="flex justify-center items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-black-800"></div>
+          </div>
+        )}
       </div>
     </>
   );

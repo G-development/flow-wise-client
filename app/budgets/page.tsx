@@ -31,7 +31,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import DatePickerWithRange from "@/components/date-picker";
 import Navbar from "@/components/navbar";
 import SimpleTable from "@/components/table";
 
@@ -171,7 +170,6 @@ export default function Budgets() {
       <div className="flex-1 space-y-4 p-8 pt-6">
         <div className="flex flex-col lg:flex-row items-center justify-between space-y-2 lg:space-y-0">
           <h1 className="text-3xl font-bold tracking-tight">Budgets - WIP</h1>
-          <DatePickerWithRange />
         </div>
 
         <Drawer open={open} onOpenChange={setOpen}>

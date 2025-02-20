@@ -73,12 +73,8 @@ export default function Incomes() {
     fetchData();
   }, [fetchData, dateRange]);
 
-  if (loading)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-black-800"></div>
-      </div>
-    ); // Stato di caricamento
+  // if (loading)
+  //   return <div>Loading...</div>; // Stato di caricamento
   if (error)
     return (
       <div className="flex justify-center items-center h-screen text-red-500 text-lg font-semibold">
@@ -96,12 +92,18 @@ export default function Incomes() {
           <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
         </div>
         <NewTransactionDrawer fetchData={fetchData} disableExpense={true} />
-        <SimpleTable
-          data={incomes}
-          caption="List of recent incomes"
-          fetchData={fetchData}
-          transactionType="income"
-        />
+        {!loading ? (
+          <SimpleTable
+            data={incomes}
+            caption="List of recent incomes"
+            fetchData={fetchData}
+            transactionType="income"
+          />
+        ) : (
+          <div className="flex justify-center items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-black-800"></div>
+          </div>
+        )}
       </div>
     </>
   );
