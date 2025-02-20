@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-
+import { DateRange } from "react-day-picker";
 import DatePickerWithRange from "@/components/date-picker";
 import NewTransactionDrawer from "@/components/new-transaction-drawer";
 import SimpleTable from "@/components/table";
@@ -24,6 +24,11 @@ export default function Expenses() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState<boolean>(false); // Stato di caricamento
   const [error, setError] = useState<string | null>(null); // Stato errore
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    to: new Date(),
+  });
+
   const router = useRouter();
 
   const fetchData = useCallback(async () => {
@@ -37,9 +42,18 @@ export default function Expenses() {
     setError(null); // Resetta l'errore
 
     try {
-      const response = await fetch(`${API_URL}/expense/all`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const queryParams = new URLSearchParams();
+      if (dateRange?.from)
+        queryParams.append("startDate", dateRange.from.toISOString());
+      if (dateRange?.to)
+        queryParams.append("endDate", dateRange.to.toISOString());
+
+      const response = await fetch(
+        `${API_URL}/expense/all?${queryParams.toString()}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       if (!response.ok) throw new Error("Token is not valid");
 
@@ -53,11 +67,11 @@ export default function Expenses() {
     } finally {
       setLoading(false); // Termina il caricamento
     }
-  }, [router]);
+  }, [router, dateRange]);
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, dateRange]);
 
   if (loading) return <div>Loading...</div>; // Stato di caricamento
   if (error) return <div>{error}</div>; // Stato errore
@@ -68,7 +82,7 @@ export default function Expenses() {
       <div className="flex-1 space-y-4 p-8 pt-6">
         <div className="flex flex-col lg:flex-row items-center justify-between space-y-2 lg:space-y-0">
           <h1 className="text-3xl font-bold tracking-tight">Expenses</h1>
-          <DatePickerWithRange />
+          <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
         </div>
         <NewTransactionDrawer fetchData={fetchData} disableIncome={true} />
         <SimpleTable
