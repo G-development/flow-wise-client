@@ -23,9 +23,8 @@ interface User {
 export function NavUser() {
   const router = useRouter();
 
-  const { data: user, loading, error } = useFetch<User>("users/profile");
+  const { data: user, error } = useFetch<User>("users/profile");
 
-  if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
   return (
