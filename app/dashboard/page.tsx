@@ -79,18 +79,18 @@ export default function Dashboard() {
   return (
     <>
       <Navbar />
-      <div className="flex-1 space-y-4 p-8 pt-6">
+      <div className="flex-1 space-y-6 p-8 pt-6">
         <div className="flex flex-col lg:flex-row items-center justify-between space-y-2 lg:space-y-0">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-7">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
             <CardHeader>
               <CardTitle>Incomes</CardTitle>
-              <CardDescription>
-                Total incomes for the selected period
+              <CardDescription className="hidden sm:block">
+                Total incomes
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -108,8 +108,8 @@ export default function Dashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Expenses</CardTitle>
-              <CardDescription>
-                Total expenses for the selected period
+              <CardDescription className="hidden sm:block">
+                Total expenses
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -127,8 +127,8 @@ export default function Dashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Net balance</CardTitle>
-              <CardDescription>
-                Difference between incomes and expenses
+              <CardDescription className="hidden sm:block">
+                Incomes - Expenses
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -148,8 +148,10 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Savings Rate</CardTitle>
-              <CardDescription>Percentage of income not spent</CardDescription>
+              <CardTitle>Savings rate</CardTitle>
+              <CardDescription className="hidden sm:block">
+                % income not spent
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{data?.savingsRate}</p>
@@ -164,7 +166,7 @@ export default function Dashboard() {
 
         {data &&
           Object.entries(data).map(([key, transactions]) =>
-            Array.isArray(transactions) ? (
+            Array.isArray(transactions) && transactions.length > 0 ? (
               <Table key={key} className="caption-top">
                 <TableCaption>
                   A list of your recent {key} transactions.
@@ -187,9 +189,8 @@ export default function Dashboard() {
                       <TableCell className="font-medium capitalize">
                         {key}
                       </TableCell>
-                      <TableCell className="truncate max-w-[10ch] md:max-w-none">
-                        {item.category.name.charAt(0).toUpperCase() +
-                          item.category.name.slice(1)}
+                      <TableCell className="truncate max-w-[10ch] md:max-w-none capitalize">
+                        {item.category.name}
                       </TableCell>
                       <TableCell>
                         {new Date(item.date).toLocaleDateString()}
