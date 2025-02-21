@@ -31,6 +31,7 @@ import Navbar from "@/components/navbar";
 import DeleteDialog from "./delete-dialog";
 import EditDialog from "./edit-dialog";
 import { getStatusColor } from "./calculateStatus";
+import { Line_Chart } from "@/components/line-chart";
 
 interface Transaction {
   _id: string;
@@ -53,6 +54,9 @@ type DashboardData = {
   totals?: Totals;
   net?: number;
   savingsRate?: string;
+  charts?: {
+    income_expense: { date: string; income: number; expense: number }[];
+  };
 };
 
 export default function Dashboard() {
@@ -75,6 +79,27 @@ export default function Dashboard() {
   useEffect(() => {
     fetchData();
   }, [fetchData, dateRange]);
+
+  const chartConfig = {
+    income: {
+      label: "Income",
+      color: "#22c55e",
+    },
+    expense: {
+      label: "Expense",
+      color: "#dc2626",
+    },
+  };
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return null; // Oppure puoi renderizzare un loading spinner o un altro fallback
+  }
 
   return (
     <>
@@ -161,6 +186,15 @@ export default function Dashboard() {
             </CardFooter>
           </Card>
         </div>
+
+        <Line_Chart
+          data={data?.charts?.income_expense ?? []} //{chartData}
+          XAxisKey="date"
+          chartConfig={chartConfig}
+          title="Income & expense"
+          description={dateRange?.from + " to " + dateRange?.to}
+          footerText="Overview of the selected period"
+        />
 
         <NewTransactionDrawer fetchData={fetchData} />
 
