@@ -27,11 +27,12 @@ import {
 import NewTransactionDrawer from "@/components/new-transaction-drawer";
 import DatePickerWithRange from "@/components/date-picker";
 import Navbar from "@/components/navbar";
+import { Line_Chart } from "@/components/line-chart";
+import { Pie_Chart } from "@/components/pie-chart";
 
 import DeleteDialog from "./delete-dialog";
 import EditDialog from "./edit-dialog";
 import { getStatusColor } from "./calculateStatus";
-import { Line_Chart } from "@/components/line-chart";
 
 interface Transaction {
   _id: string;
@@ -56,6 +57,7 @@ type DashboardData = {
   savingsRate?: string;
   charts?: {
     income_expense: { date: string; income: number; expense: number }[];
+    expense_category: { category: string; value: number; fill: string }[];
   };
 };
 
@@ -90,6 +92,40 @@ export default function Dashboard() {
       color: "#dc2626",
     },
   };
+
+  const pieConfig = {
+    visitors: {
+      label: "Visitors",
+    },
+    chrome: {
+      label: "Chrome",
+      color: "hsl(var(--chart-1))",
+    },
+    safari: {
+      label: "Safari",
+      color: "hsl(var(--chart-2))",
+    },
+    firefox: {
+      label: "Firefox",
+      color: "hsl(var(--chart-3))",
+    },
+    edge: {
+      label: "Edge",
+      color: "hsl(var(--chart-4))",
+    },
+    other: {
+      label: "Other",
+      color: "hsl(var(--chart-5))",
+    },
+  };
+
+  const pieData = [
+    { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
+    { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
+    { browser: "firefox", visitors: 187, fill: "var(--color-firefox)" },
+    { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
+    { browser: "other", visitors: 90, fill: "var(--color-other)" },
+  ];
 
   const [isMounted, setIsMounted] = useState(false);
 
@@ -199,11 +235,10 @@ export default function Dashboard() {
             />
           </div>
           <div className="rounded-lg">
-            <Line_Chart
-              data={data?.charts?.income_expense ?? []} //{chartData}
-              XAxisKey="date"
-              chartConfig={chartConfig}
-              title="Income & expense"
+            <Pie_Chart
+              data={data?.charts?.expense_category ?? []} //pieData}
+              chartConfig={pieConfig}
+              title="Expenses by category"
               description={dateRange?.from + " to " + dateRange?.to}
               footerText="Overview of the selected period"
             />
