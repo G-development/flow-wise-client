@@ -34,11 +34,13 @@ interface TransactionFormProps {
     amount: string;
     category: string;
     type: string;
+    date: string;
   };
   setFormData: (data: {
     amount: string;
     category: string;
     type: string;
+    date: string;
   }) => void;
   handleSubmit: () => void;
 }
@@ -132,6 +134,7 @@ export default function TransactionForm({
       <div>
         <Label>Amount</Label>
         <Input
+          min={1}
           type="number"
           placeholder="0.00"
           value={formData.amount}
@@ -218,6 +221,18 @@ export default function TransactionForm({
             </AlertDialogContent>
           </AlertDialog>
         </div>
+      </div>
+
+      <div>
+        <Label className="block text-sm font-medium text-gray-700">Date</Label>
+        <Input
+          type="date"
+          name="date"
+          value={formData.date}
+          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+          className="mt-2 w-full p-2 border rounded-md"
+          required
+        />
       </div>
 
       <Button className="mt-4 w-full" onClick={handleSubmit}>

@@ -35,10 +35,12 @@ export default function NewTransactionDrawer({
     amount: string;
     category: string;
     type: string;
+    date: string;
   }>({
     amount: "",
     category: "",
     type: "income",
+    date: new Date().toISOString().split("T")[0],
   });
   const router = useRouter();
 
@@ -78,12 +80,14 @@ export default function NewTransactionDrawer({
         body: JSON.stringify({
           amount: currentFormData.amount,
           category: currentFormData.category,
+          date: currentFormData.date,
         }),
       });
 
       console.log("Dati inviati:", {
         amount: currentFormData.amount,
         category: currentFormData.category,
+        date: currentFormData.date,
       });
 
       const data = await response.json();
@@ -97,7 +101,7 @@ export default function NewTransactionDrawer({
         );
         fetchData();
         setOpen(false);
-        setFormData({ amount: "", category: "", type: "income" });
+        setFormData({ amount: "", category: "", type: "income", date: "" });
       } else {
         throw new Error(data.msg || "Si è verificato un errore");
       }
@@ -125,7 +129,7 @@ export default function NewTransactionDrawer({
           <DrawerTitle>Add transaction</DrawerTitle>
         </DrawerHeader>
         <Tabs
-          defaultValue="income"
+          defaultValue={disableExpense ? "income" : "expense"}
           onValueChange={(value) => setFormData({ ...formData, type: value })}
           className="w-full"
         >
