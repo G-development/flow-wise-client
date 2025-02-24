@@ -42,7 +42,7 @@ export function Pie_Chart({
       <CardContent>
         <ChartContainer
           config={chartConfig}
-          className="aspect-square min-h-[150px] max-h-[300px] w-full"
+          className="aspect-square max-h-[300px] w-full"
         >
           <PieChart className="capitalize">
             <ChartTooltip
