@@ -165,7 +165,7 @@ export default function TransactionForm({
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="capitalize">
                 {categories
                   .filter((cat) => cat.type === formData.type)
                   .map((cat) => (

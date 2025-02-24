@@ -101,7 +101,12 @@ export default function NewTransactionDrawer({
         );
         fetchData();
         setOpen(false);
-        setFormData({ amount: "", category: "", type: "income", date: "" });
+        setFormData({
+          amount: "",
+          category: "",
+          type: disableExpense ? "income" : "expense",
+          date: new Date().toISOString().split("T")[0],
+        });
       } else {
         throw new Error(data.msg || "An error has occurred");
       }
@@ -144,7 +149,7 @@ export default function NewTransactionDrawer({
             </TabsList>
           ) : null}
           {!disableIncome && (
-            <TabsContent value="income" className="z-[100]">
+            <TabsContent value="income">
               <TransactionForm
                 formData={formData}
                 setFormData={setFormData}
@@ -153,7 +158,7 @@ export default function NewTransactionDrawer({
             </TabsContent>
           )}
           {!disableExpense && (
-            <TabsContent value="expense" className="z-[100]">
+            <TabsContent value="expense">
               <TransactionForm
                 formData={formData}
                 setFormData={setFormData}
