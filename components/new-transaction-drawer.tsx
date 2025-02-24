@@ -39,7 +39,7 @@ export default function NewTransactionDrawer({
   }>({
     amount: "",
     category: "",
-    type: "income",
+    type: disableExpense ? "income" : "expense",
     date: new Date().toISOString().split("T")[0],
   });
   const router = useRouter();
@@ -133,19 +133,25 @@ export default function NewTransactionDrawer({
           onValueChange={(value) => setFormData({ ...formData, type: value })}
           className="w-full"
         >
-          <TabsList className="mb-4 flex w-full justify-center bg-muted">
-            {!disableIncome && <TabsTrigger value="income">Income</TabsTrigger>}
-            {!disableExpense && (
-              <TabsTrigger value="expense">Expense</TabsTrigger>
-            )}
-          </TabsList>
-          <TabsContent value="income">
-            <TransactionForm
-              formData={formData}
-              setFormData={setFormData}
-              handleSubmit={handleSubmit}
-            />
-          </TabsContent>
+          {!disableExpense && !disableIncome ? (
+            <TabsList className="mb-4 flex w-full justify-center bg-muted">
+              {!disableIncome && (
+                <TabsTrigger value="income">Income</TabsTrigger>
+              )}
+              {!disableExpense && (
+                <TabsTrigger value="expense">Expense</TabsTrigger>
+              )}
+            </TabsList>
+          ) : null}
+          {!disableIncome && (
+            <TabsContent value="income">
+              <TransactionForm
+                formData={formData}
+                setFormData={setFormData}
+                handleSubmit={handleSubmit}
+              />
+            </TabsContent>
+          )}
           {!disableExpense && (
             <TabsContent value="expense">
               <TransactionForm
