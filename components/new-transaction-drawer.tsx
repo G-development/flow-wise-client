@@ -103,7 +103,7 @@ export default function NewTransactionDrawer({
         setOpen(false);
         setFormData({ amount: "", category: "", type: "income", date: "" });
       } else {
-        throw new Error(data.msg || "Si è verificato un errore");
+        throw new Error(data.msg || "An error has occurred");
       }
     } catch (error) {
       toast.error((error as Error).message, { position: "top-right" });
@@ -144,7 +144,7 @@ export default function NewTransactionDrawer({
             </TabsList>
           ) : null}
           {!disableIncome && (
-            <TabsContent value="income">
+            <TabsContent value="income" className="z-[100]">
               <TransactionForm
                 formData={formData}
                 setFormData={setFormData}
@@ -153,7 +153,7 @@ export default function NewTransactionDrawer({
             </TabsContent>
           )}
           {!disableExpense && (
-            <TabsContent value="expense">
+            <TabsContent value="expense" className="z-[100]">
               <TransactionForm
                 formData={formData}
                 setFormData={setFormData}
@@ -164,7 +164,7 @@ export default function NewTransactionDrawer({
         </Tabs>
         <DrawerClose asChild>
           <Button variant="outline" className="mt-4 w-full">
-            Chiudi
+            Cancel
           </Button>
         </DrawerClose>
       </DrawerContent>
