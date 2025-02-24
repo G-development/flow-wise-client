@@ -10,7 +10,14 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-import { LogOut } from "lucide-react";
+import {
+  LogOut,
+  ChartNoAxesCombined,
+  Plus,
+  Minus,
+  HandCoins,
+  User,
+} from "lucide-react";
 import Logo from "../app/flow-wise-logo.svg";
 
 import {
@@ -54,6 +61,7 @@ export default function Navbar() {
               className="flex w-full items-center py-2 text-lg font-semibold"
               prefetch={false}
             >
+              <ChartNoAxesCombined className="mr-2" />
               Dashboard
             </Link>
             <Link
@@ -61,6 +69,7 @@ export default function Navbar() {
               className="flex w-full items-center py-2 text-lg font-semibold"
               prefetch={false}
             >
+              <Plus className="mr-2" />
               Incomes
             </Link>
             <Link
@@ -68,6 +77,7 @@ export default function Navbar() {
               className="flex w-full items-center py-2 text-lg font-semibold"
               prefetch={false}
             >
+              <Minus className="mr-2" />
               Expenses
             </Link>
             <Link
@@ -75,6 +85,7 @@ export default function Navbar() {
               className="flex w-full items-center py-2 text-lg font-semibold"
               prefetch={false}
             >
+              <HandCoins className="mr-2" />
               Budgets
             </Link>
             <Link
@@ -82,7 +93,8 @@ export default function Navbar() {
               className="flex w-full items-center py-2 text-lg font-semibold"
               prefetch={false}
             >
-              account
+              <User className="mr-2" />
+              Account
             </Link>
             <div
               className="flex gap-2 absolute bottom-8 right-8"
@@ -91,7 +103,6 @@ export default function Navbar() {
                 router.push("/");
               }}
             >
-              {" "}
               Logout
               <LogOut />
             </div>

@@ -38,7 +38,7 @@ export function Line_Chart({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
+        <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
           <LineChart
             accessibilityLayer
             data={data}

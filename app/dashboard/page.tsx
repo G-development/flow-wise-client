@@ -187,14 +187,28 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        <Line_Chart
-          data={data?.charts?.income_expense ?? []} //{chartData}
-          XAxisKey="date"
-          chartConfig={chartConfig}
-          title="Income & expense"
-          description={dateRange?.from + " to " + dateRange?.to}
-          footerText="Overview of the selected period"
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="rounded-lg">
+            <Line_Chart
+              data={data?.charts?.income_expense ?? []} //{chartData}
+              XAxisKey="date"
+              chartConfig={chartConfig}
+              title="Income & expense"
+              description={dateRange?.from + " to " + dateRange?.to}
+              footerText="Overview of the selected period"
+            />
+          </div>
+          <div className="rounded-lg">
+            <Line_Chart
+              data={data?.charts?.income_expense ?? []} //{chartData}
+              XAxisKey="date"
+              chartConfig={chartConfig}
+              title="Income & expense"
+              description={dateRange?.from + " to " + dateRange?.to}
+              footerText="Overview of the selected period"
+            />
+          </div>
+        </div>
 
         <NewTransactionDrawer fetchData={fetchData} />
 
