@@ -65,6 +65,7 @@ const SimpleTable = ({
               {header.charAt(0).toUpperCase() + header.slice(1)}
             </TableHead>
           ))}
+          <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
