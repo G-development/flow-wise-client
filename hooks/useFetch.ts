@@ -3,12 +3,22 @@ import { useState, useCallback, useEffect } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export function useFetch<T>(endpoint: string, options?: RequestInit) {
+export function useFetch<T>(
+  endpoint: string,
+  options?: RequestInit,
+  manual: boolean = false
+) {
   const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(!manual);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
+    if (!API_URL) {
+      setError("API URL is not defined.");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -25,7 +35,7 @@ export function useFetch<T>(endpoint: string, options?: RequestInit) {
         },
       });
 
-      if (!res.ok) throw new Error("Failed to fetch data");
+      if (!res.ok) throw new Error(`Error: ${res.status}: ${res.statusText}`);
 
       const result = await res.json();
       setData(result);
@@ -35,11 +45,11 @@ export function useFetch<T>(endpoint: string, options?: RequestInit) {
     } finally {
       setLoading(false);
     }
-  }, [endpoint, options]);
+  }, [endpoint, JSON.stringify(options)]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (!manual) fetchData();
+  }, [fetchData, manual]);
 
   return { data, loading, error, fetchData };
 }
