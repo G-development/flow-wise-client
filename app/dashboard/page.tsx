@@ -29,6 +29,7 @@ import DatePickerWithRange from "@/components/date-picker";
 import Navbar from "@/components/navbar";
 import { Line_Chart } from "@/components/line-chart";
 import { Pie_Chart } from "@/components/pie-chart";
+import LoadingSpinner from "@/components/loading-spinner";
 
 import DeleteDialog from "./delete-dialog";
 import EditDialog from "./edit-dialog";
@@ -74,7 +75,7 @@ export default function Dashboard() {
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     to: new Date(),
   });
-  const { data, fetchData } = useFetch<DashboardData>(
+  const { data, loading, fetchData } = useFetch<DashboardData>(
     `dashboard?startDate=${dateRange?.from}&endDate=${dateRange?.to}`
   );
 
@@ -147,11 +148,15 @@ export default function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-green-500">
-                {data?.totals
-                  ? "+" + data.totals.income + "€"
-                  : "No sum available"}
-              </p>
+              {loading ? (
+                <LoadingSpinner />
+              ) : (
+                <p className="text-2xl font-bold text-green-500">
+                  {data?.totals
+                    ? "+" + data.totals.income + "€"
+                    : "No sum available"}
+                </p>
+              )}
             </CardContent>
             <CardFooter className="text-sm">
               <p>Δ PM: +1%</p>
@@ -166,11 +171,15 @@ export default function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-red-600">
-                {data?.totals
-                  ? "-" + data.totals.expense + "€"
-                  : "No sum available"}
-              </p>
+              {loading ? (
+                <LoadingSpinner />
+              ) : (
+                <p className="text-2xl font-bold text-red-600">
+                  {data?.totals
+                    ? "-" + data.totals.expense + "€"
+                    : "No sum available"}
+                </p>
+              )}
             </CardContent>
             <CardFooter className="text-sm">
               <p>Δ PM: +1.2%</p>
@@ -185,14 +194,18 @@ export default function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold flex items-center">
-                {data?.net}€
-                {data?.net && data.net > 0 ? (
-                  <MoveUp className="text-green-500" />
-                ) : (
-                  <MoveDown className="text-red-500" />
-                )}
-              </p>
+              {loading ? (
+                <LoadingSpinner />
+              ) : (
+                <p className="text-2xl font-bold flex items-center">
+                  {data?.net}€
+                  {data?.net && data.net > 0 ? (
+                    <MoveUp className="text-green-500" />
+                  ) : (
+                    <MoveDown className="text-red-500" />
+                  )}
+                </p>
+              )}
             </CardContent>
             <CardFooter className="text-sm">
               <p>Trend compared to last month</p>
@@ -207,7 +220,11 @@ export default function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{data?.savingsRate}</p>
+              {loading ? (
+                <LoadingSpinner />
+              ) : (
+                <p className="text-2xl font-bold">{data?.savingsRate}</p>
+              )}
             </CardContent>
             <CardFooter className="text-sm">
               <p>Monthly savings goal: X%</p>
@@ -216,25 +233,33 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-lg">
-            <Line_Chart
-              data={data?.charts?.income_expense ?? []}
-              XAxisKey="date"
-              chartConfig={chartConfig}
-              title="Income & expense"
-              description={dateRange?.from + " to " + dateRange?.to}
-              footerText="Overview of the selected period"
-            />
-          </div>
-          <div className="rounded-lg">
-            <Pie_Chart
-              data={data?.charts?.expense_category ?? []}
-              chartConfig={pieConfig}
-              title="Expenses by category"
-              description={dateRange?.from + " to " + dateRange?.to}
-              footerText="Overview of the selected period"
-            />
-          </div>
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+            <div className="rounded-lg">
+              <Line_Chart
+                data={data?.charts?.income_expense ?? []}
+                XAxisKey="date"
+                chartConfig={chartConfig}
+                title="Income & expense"
+                description={dateRange?.from + " to " + dateRange?.to}
+                footerText="Overview of the selected period"
+              />
+            </div>
+          )}
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+            <div className="rounded-lg">
+              <Pie_Chart
+                data={data?.charts?.expense_category ?? []}
+                chartConfig={pieConfig}
+                title="Expenses by category"
+                description={dateRange?.from + " to " + dateRange?.to}
+                footerText="Overview of the selected period"
+              />
+            </div>
+          )}
         </div>
 
         <NewTransactionDrawer fetchData={fetchData} />
