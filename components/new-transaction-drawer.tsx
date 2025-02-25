@@ -64,6 +64,7 @@ export default function NewTransactionDrawer({
   const handleSubmit = async () => {
     if (!token) {
       toast.error("Token non trovato. Effettua il login.");
+      router.push("/login");
       return;
     }
 

@@ -51,7 +51,6 @@ const EditDialog: React.FC<EditDialogProps> = ({
           if (!response.ok) throw new Error("Errore nel recupero dei dati");
 
           const transaction = await response.json();
-          console.log(transaction.date);
 
           setFormData({
             category: transaction.category,
