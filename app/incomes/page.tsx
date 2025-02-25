@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DateRange } from "react-day-picker";
 import { useAuth } from "@/hooks/useAuth";
+import { useFetch } from "@/hooks/useFetch";
 import DatePickerWithRange from "@/components/date-picker";
 import NewTransactionDrawer from "@/components/new-transaction-drawer";
 import SimpleTable from "@/components/table";
 import Navbar from "@/components/navbar";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface Category {
   name: string;
@@ -23,62 +22,39 @@ interface Income {
 
 export default function Incomes() {
   useAuth();
-  const [incomes, setIncomes] = useState<Income[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     to: new Date(),
   });
 
-  const router = useRouter();
+  const queryParams = new URLSearchParams();
+  if (dateRange?.from)
+    queryParams.append("startDate", dateRange.from.toISOString());
+  if (dateRange?.to) queryParams.append("endDate", dateRange.to.toISOString());
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null); // Resetta l'errore
-
-    const token = localStorage.getItem("fw-token")
-    try {
-      const queryParams = new URLSearchParams();
-      if (dateRange?.from)
-        queryParams.append("startDate", dateRange.from.toISOString());
-      if (dateRange?.to)
-        queryParams.append("endDate", dateRange.to.toISOString());
-
-      const response = await fetch(
-        `${API_URL}/income/all?${queryParams.toString()}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (!response.ok) throw new Error("Token is not valid");
-
-      const res = await response.json();
-      setIncomes(res);
-    } catch (error) {
-      console.error(error);
-      setError("An error occurred while fetching data.");
-      localStorage.removeItem("fw-token");
-      router.push("/login");
-    } finally {
-      setLoading(false);
-    }
-  }, [router, dateRange]);
+  const {
+    data: incomes,
+    loading,
+    error,
+    fetchData,
+  } = useFetch<Income[]>(`income/all?${queryParams.toString()}`);
 
   useEffect(() => {
     fetchData();
   }, [fetchData, dateRange]);
 
-  // if (loading)
-  //   return <div>Loading...</div>;
-  if (error)
+  if (error) {
+    localStorage.removeItem("fw-token");
+    router.push("/login");
     return (
       <div className="flex justify-center items-center h-screen text-red-500 text-lg font-semibold">
         <span>Error occurred: {error}</span>
         <span className="ml-2 text-2xl cursor-pointer">✖</span>
       </div>
-    ); // Stato errore
+    );
+  }
 
   return (
     <>
@@ -91,7 +67,7 @@ export default function Incomes() {
         <NewTransactionDrawer fetchData={fetchData} disableExpense={true} />
         {!loading ? (
           <SimpleTable
-            data={incomes}
+            data={incomes ?? []}
             caption="List of recent incomes"
             fetchData={fetchData}
             transactionType="income"

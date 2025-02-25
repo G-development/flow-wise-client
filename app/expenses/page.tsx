@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DateRange } from "react-day-picker";
 import { useAuth } from "@/hooks/useAuth";
+import { useFetch } from "@/hooks/useFetch";
 import DatePickerWithRange from "@/components/date-picker";
 import NewTransactionDrawer from "@/components/new-transaction-drawer";
 import SimpleTable from "@/components/table";
 import Navbar from "@/components/navbar";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface Category {
   name: string;
@@ -23,55 +22,34 @@ interface Expense {
 
 export default function Expenses() {
   useAuth();
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [loading, setLoading] = useState<boolean>(false); // Stato di caricamento
-  const [error, setError] = useState<string | null>(null); // Stato errore
+  const router = useRouter();
+
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     to: new Date(),
   });
 
-  const router = useRouter();
+  const queryParams = new URLSearchParams();
+  if (dateRange?.from)
+    queryParams.append("startDate", dateRange.from.toISOString());
+  if (dateRange?.to) queryParams.append("endDate", dateRange.to.toISOString());
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    
-    const token = localStorage.getItem("fw-token");
-    try {
-      const queryParams = new URLSearchParams();
-      if (dateRange?.from)
-        queryParams.append("startDate", dateRange.from.toISOString());
-      if (dateRange?.to)
-        queryParams.append("endDate", dateRange.to.toISOString());
-
-      const response = await fetch(
-        `${API_URL}/expense/all?${queryParams.toString()}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (!response.ok) throw new Error("Token is not valid");
-
-      const res = await response.json();
-      setExpenses(res);
-    } catch (error) {
-      console.error(error);
-      setError("An error occurred while fetching data.");
-      localStorage.removeItem("fw-token");
-      router.push("/login");
-    } finally {
-      setLoading(false);
-    }
-  }, [router, dateRange]);
+  const {
+    data: expenses,
+    loading,
+    error,
+    fetchData,
+  } = useFetch<Expense[]>(`expense/all?${queryParams.toString()}`);
 
   useEffect(() => {
     fetchData();
   }, [fetchData, dateRange]);
 
-  // if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (error) {
+    localStorage.removeItem("fw-token");
+    router.push("/login");
+    return <div>{error}</div>;
+  }
 
   return (
     <>
@@ -84,7 +62,7 @@ export default function Expenses() {
         <NewTransactionDrawer fetchData={fetchData} disableIncome={true} />
         {!loading ? (
           <SimpleTable
-            data={expenses}
+            data={expenses ?? []}
             caption="List of recent expenses"
             fetchData={fetchData}
             transactionType="expense"

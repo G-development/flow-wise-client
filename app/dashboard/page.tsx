@@ -126,7 +126,7 @@ export default function Dashboard() {
   }, []);
 
   if (!isMounted) {
-    return null; // Oppure puoi renderizzare un loading spinner o un altro fallback
+    return null;
   }
 
   return (
@@ -218,7 +218,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="rounded-lg">
             <Line_Chart
-              data={data?.charts?.income_expense ?? []} //{chartData}
+              data={data?.charts?.income_expense ?? []}
               XAxisKey="date"
               chartConfig={chartConfig}
               title="Income & expense"
@@ -228,7 +228,7 @@ export default function Dashboard() {
           </div>
           <div className="rounded-lg">
             <Pie_Chart
-              data={data?.charts?.expense_category ?? []} //pieData}
+              data={data?.charts?.expense_category ?? []}
               chartConfig={pieConfig}
               title="Expenses by category"
               description={dateRange?.from + " to " + dateRange?.to}
