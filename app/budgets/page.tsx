@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
+import { useAuth } from "@/hooks/useAuth";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -49,6 +49,7 @@ interface Budget {
 }
 
 export default function Budgets() {
+  useAuth();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -70,15 +71,10 @@ export default function Budgets() {
   const router = useRouter();
 
   const fetchData = useCallback(async () => {
-    const token = localStorage.getItem("fw-token");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
+    const token = localStorage.getItem("fw-token");
     try {
       const [budgetsRes, categoriesRes] = await Promise.all([
         fetch(`${API_URL}/budget/all`, {
@@ -153,8 +149,8 @@ export default function Budgets() {
       }
 
       setFormData({ amount: "", category: "", period: "" });
-      fetchData(); // Ricarica i dati aggiornati
-      setOpen(false); // Chiudi il drawer
+      fetchData();
+      setOpen(false);
     } catch (error) {
       console.error(error);
       setError("An error occurred while submitting the budget.");

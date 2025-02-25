@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { DateRange } from "react-day-picker";
+import { useAuth } from "@/hooks/useAuth";
 import DatePickerWithRange from "@/components/date-picker";
 import NewTransactionDrawer from "@/components/new-transaction-drawer";
 import SimpleTable from "@/components/table";
@@ -21,6 +22,7 @@ interface Expense {
 }
 
 export default function Expenses() {
+  useAuth();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState<boolean>(false); // Stato di caricamento
   const [error, setError] = useState<string | null>(null); // Stato errore
@@ -32,15 +34,10 @@ export default function Expenses() {
   const router = useRouter();
 
   const fetchData = useCallback(async () => {
-    const token = localStorage.getItem("fw-token");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-
     setLoading(true);
-    setError(null); // Resetta l'errore
-
+    setError(null);
+    
+    const token = localStorage.getItem("fw-token");
     try {
       const queryParams = new URLSearchParams();
       if (dateRange?.from)
@@ -61,11 +58,11 @@ export default function Expenses() {
       setExpenses(res);
     } catch (error) {
       console.error(error);
-      setError("An error occurred while fetching data."); // Mostra errore utente
+      setError("An error occurred while fetching data.");
       localStorage.removeItem("fw-token");
       router.push("/login");
     } finally {
-      setLoading(false); // Termina il caricamento
+      setLoading(false);
     }
   }, [router, dateRange]);
 
@@ -73,8 +70,8 @@ export default function Expenses() {
     fetchData();
   }, [fetchData, dateRange]);
 
-  // if (loading) return <div>Loading...</div>; // Stato di caricamento
-  if (error) return <div>{error}</div>; // Stato errore
+  // if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <>

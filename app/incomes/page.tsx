@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { DateRange } from "react-day-picker";
+import { useAuth } from "@/hooks/useAuth";
 import DatePickerWithRange from "@/components/date-picker";
 import NewTransactionDrawer from "@/components/new-transaction-drawer";
 import SimpleTable from "@/components/table";
@@ -21,9 +22,10 @@ interface Income {
 }
 
 export default function Incomes() {
+  useAuth();
   const [incomes, setIncomes] = useState<Income[]>([]);
-  const [loading, setLoading] = useState<boolean>(false); // Stato di caricamento
-  const [error, setError] = useState<string | null>(null); // Stato errore
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     to: new Date(),
@@ -32,15 +34,10 @@ export default function Incomes() {
   const router = useRouter();
 
   const fetchData = useCallback(async () => {
-    const token = localStorage.getItem("fw-token");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-
     setLoading(true);
     setError(null); // Resetta l'errore
 
+    const token = localStorage.getItem("fw-token")
     try {
       const queryParams = new URLSearchParams();
       if (dateRange?.from)
@@ -61,11 +58,11 @@ export default function Incomes() {
       setIncomes(res);
     } catch (error) {
       console.error(error);
-      setError("An error occurred while fetching data."); // Mostra errore utente
+      setError("An error occurred while fetching data.");
       localStorage.removeItem("fw-token");
       router.push("/login");
     } finally {
-      setLoading(false); // Termina il caricamento
+      setLoading(false);
     }
   }, [router, dateRange]);
 
@@ -74,7 +71,7 @@ export default function Incomes() {
   }, [fetchData, dateRange]);
 
   // if (loading)
-  //   return <div>Loading...</div>; // Stato di caricamento
+  //   return <div>Loading...</div>;
   if (error)
     return (
       <div className="flex justify-center items-center h-screen text-red-500 text-lg font-semibold">
