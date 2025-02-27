@@ -40,7 +40,7 @@ export function Line_Chart({
       <CardContent className="flex items-center justify-center">
         <ChartContainer
           config={chartConfig}
-          className="aspect-square w-full md:max-h-[300px]"
+          className="w-full max-h-[300px] md:max-h-[300px] md:w-full aspect-square"
         >
           <LineChart
             accessibilityLayer
