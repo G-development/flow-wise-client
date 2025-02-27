@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
-import { Pencil, Trash, Circle, MoveUp, MoveDown } from "lucide-react";
+import {
+  Pencil,
+  Trash,
+  Circle,
+  MoveUp,
+  MoveDown,
+  MousePointerClick,
+} from "lucide-react";
 import { DateRange } from "react-day-picker";
 
 import {
@@ -24,6 +31,13 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import NewTransactionDrawer from "@/components/new-transaction-drawer";
 import DatePickerWithRange from "@/components/date-picker";
 import Navbar from "@/components/navbar";
@@ -64,6 +78,9 @@ type DashboardData = {
 
 export default function Dashboard() {
   useAuth();
+
+  const [openIncome, setOpenIncome] = useState(false);
+  const [openExpense, setOpenExpense] = useState(false);
 
   const [transactionToEdit, setTransactionToEdit] = useState<string | null>(
     null
@@ -136,55 +153,234 @@ export default function Dashboard() {
       <div className="flex-1 space-y-6 p-8 pt-6">
         <div className="flex flex-col lg:flex-row items-center justify-between space-y-2 lg:space-y-0">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
+          <div className="flex flex-col items-center md:flex-row gap-6">
+            {/* NEW TRANSACTION BTN */}
+            <NewTransactionDrawer fetchData={fetchData} />
+            <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
+          </div>
         </div>
 
+        {/* 4 CARDS */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Incomes</CardTitle>
-              <CardDescription className="hidden sm:block">
-                Total incomes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <LoadingSpinner />
-              ) : (
-                <p className="text-2xl font-bold text-green-500">
-                  {data?.totals
-                    ? "+" + data.totals.income + "€"
-                    : "No sum available"}
-                </p>
-              )}
-            </CardContent>
-            <CardFooter className="text-sm">
-              <p>Δ PM: +1%</p>
-            </CardFooter>
-          </Card>
+          <Dialog open={openIncome} onOpenChange={setOpenIncome}>
+            <Card
+              onClick={() => setOpenIncome(true)}
+              className="cursor-pointer group"
+            >
+              <CardHeader>
+                <CardTitle className="flex justify-between items-center">
+                  Incomes{" "}
+                  <MousePointerClick className="cursor-pointer transition-colors duration-200 group-hover:text-blue-500" />
+                </CardTitle>
+                <CardDescription className="hidden sm:block">
+                  Total incomes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <LoadingSpinner />
+                ) : (
+                  <p className="text-2xl font-bold text-green-500">
+                    {data?.totals
+                      ? "+" + data.totals.income + "€"
+                      : "No sum available"}
+                  </p>
+                )}
+              </CardContent>
+              <CardFooter className="text-sm">
+                <p>Δ PM: +1%</p>
+              </CardFooter>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Expenses</CardTitle>
-              <CardDescription className="hidden sm:block">
-                Total expenses
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <LoadingSpinner />
-              ) : (
-                <p className="text-2xl font-bold text-red-600">
-                  {data?.totals
-                    ? "-" + data.totals.expense + "€"
-                    : "No sum available"}
-                </p>
-              )}
-            </CardContent>
-            <CardFooter className="text-sm">
-              <p>Δ PM: +1.2%</p>
-            </CardFooter>
-          </Card>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Incomes detail</DialogTitle>
+                <DialogDescription>
+                  Tabulate of incomes of the selected period
+                </DialogDescription>
+              </DialogHeader>
+              <Table className="caption-top">
+                <TableCaption></TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px] capitalize">
+                      Income
+                    </TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data?.income?.map((item) => (
+                    <TableRow key={item._id}>
+                      <TableCell className="font-medium capitalize">
+                        Income
+                      </TableCell>
+                      <TableCell className="truncate max-w-[10ch] md:max-w-none capitalize">
+                        {item.category.name}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(item.date).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-right text-green-500">
+                        €{item.amount}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Circle
+                          className={`${getStatusColor(
+                            item.amount
+                          )} h-4 w-4 inline`}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right flex justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setTransactionToEdit(item._id)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <EditDialog
+                          isOpen={transactionToEdit === item._id}
+                          onClose={() => setTransactionToEdit(null)}
+                          transactionType="income"
+                          id={item._id}
+                          fetchData={fetchData}
+                        />
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => setTransactionToDelete(item._id)}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                        <DeleteDialog
+                          isOpen={transactionToDelete === item._id}
+                          onClose={() => setTransactionToDelete(null)}
+                          transactionType="income"
+                          id={item._id}
+                          fetchData={fetchData}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={openExpense} onOpenChange={setOpenExpense}>
+            <Card
+              onClick={() => setOpenExpense(true)}
+              className="cursor-pointer group"
+            >
+              <CardHeader>
+                <CardTitle className="flex justify-between items-center">
+                  Expenses{" "}
+                  <MousePointerClick className="cursor-pointer transition-colors duration-200 group-hover:text-blue-500" />
+                </CardTitle>
+                <CardDescription className="hidden sm:block">
+                  Total expenses
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <LoadingSpinner />
+                ) : (
+                  <p className="text-2xl font-bold text-red-600">
+                    {data?.totals
+                      ? "-" + data.totals.expense + "€"
+                      : "No sum available"}
+                  </p>
+                )}
+              </CardContent>
+              <CardFooter className="text-sm">
+                <p>Δ PM: +1.2%</p>
+              </CardFooter>
+            </Card>
+
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Expenses detail</DialogTitle>
+                <DialogDescription>
+                  Tabulate of expenses of the selected period
+                </DialogDescription>
+              </DialogHeader>
+              <Table className="caption-top">
+                <TableCaption></TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px] capitalize">
+                      Expense
+                    </TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data?.expense?.map((item) => (
+                    <TableRow key={item._id}>
+                      <TableCell className="font-medium capitalize">
+                        Expense
+                      </TableCell>
+                      <TableCell className="truncate max-w-[10ch] md:max-w-none capitalize">
+                        {item.category.name}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(item.date).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-right text-red-600">
+                        -€{item.amount}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Circle
+                          className={`${getStatusColor(
+                            item.amount
+                          )} h-4 w-4 inline`}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right flex justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setTransactionToEdit(item._id)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <EditDialog
+                          isOpen={transactionToEdit === item._id}
+                          onClose={() => setTransactionToEdit(null)}
+                          transactionType="expense"
+                          id={item._id}
+                          fetchData={fetchData}
+                        />
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => setTransactionToDelete(item._id)}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                        <DeleteDialog
+                          isOpen={transactionToDelete === item._id}
+                          onClose={() => setTransactionToDelete(null)}
+                          transactionType="expense"
+                          id={item._id}
+                          fetchData={fetchData}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </DialogContent>
+          </Dialog>
 
           <Card>
             <CardHeader>
@@ -232,6 +428,7 @@ export default function Dashboard() {
           </Card>
         </div>
 
+        {/* CHARTS */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {loading ? (
             <LoadingSpinner />
@@ -270,8 +467,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        <NewTransactionDrawer fetchData={fetchData} />
-
+        {/* TABLE
         {data &&
           Object.entries(data).map(([key, transactions]) =>
             Array.isArray(transactions) && transactions.length > 0 ? (
@@ -353,7 +549,7 @@ export default function Dashboard() {
                 </TableBody>
               </Table>
             ) : null
-          )}
+          )} */}
       </div>
     </>
   );
