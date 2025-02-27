@@ -37,8 +37,11 @@ export function Line_Chart({
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="aspect-square w-full">
+      <CardContent className="flex items-center justify-center">
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-square w-full md:w-auto md:max-h-[300px]"
+        >
           <LineChart
             accessibilityLayer
             data={data}
