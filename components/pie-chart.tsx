@@ -40,10 +40,7 @@ export function Pie_Chart({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer
-          config={chartConfig}
-          className="aspect-square max-h-[300px] w-full"
-        >
+        <ChartContainer config={chartConfig} className="aspect-square w-full">
           <PieChart className="capitalize">
             <ChartTooltip
               cursor={false}

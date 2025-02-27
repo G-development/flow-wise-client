@@ -242,7 +242,11 @@ export default function Dashboard() {
                 XAxisKey="date"
                 chartConfig={chartConfig}
                 title="Income & expense"
-                description={dateRange?.from + " to " + dateRange?.to}
+                description={
+                  dateRange?.from?.toLocaleDateString("it-IT") +
+                  " to " +
+                  dateRange?.to?.toLocaleDateString("it-IT")
+                }
                 footerText="Overview of the selected period"
               />
             </div>
@@ -255,7 +259,11 @@ export default function Dashboard() {
                 data={data?.charts?.expense_category ?? []}
                 chartConfig={pieConfig}
                 title="Expenses by category"
-                description={dateRange?.from + " to " + dateRange?.to}
+                description={
+                  dateRange?.from?.toLocaleDateString("it-IT") +
+                  " to " +
+                  dateRange?.to?.toLocaleDateString("it-IT")
+                }
                 footerText="Overview of the selected period"
               />
             </div>
