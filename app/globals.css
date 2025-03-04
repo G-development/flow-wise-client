@@ -6,6 +6,25 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+::-webkit-scrollbar {
+  width: 0.25rem;
+  height: 0.25rem;
+}
+::-webkit-scrollbar-track {
+  background: white;
+}
+::-webkit-scrollbar-thumb {
+  background: #bbbbbb;
+  border-radius: 2rem;
+}
+::-webkit-scrollbar-corner {
+  background: white;
+}
+
+::selection {
+  background: #bbbbbb;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -70,8 +89,6 @@ body {
     @apply bg-background text-foreground;
   }
 }
-
-
 
 @layer base {
   * {
