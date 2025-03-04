@@ -67,6 +67,7 @@ type Totals = {
 type DashboardData = {
   income?: Transaction[];
   expense?: Transaction[];
+  categories?: [{ _id: string; name: string; type: string }];
   totals?: Totals;
   net?: number;
   savingsRate?: string;
@@ -192,7 +193,7 @@ export default function Dashboard() {
               </CardFooter>
             </Card>
 
-            <DialogContent>
+            <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Incomes detail</DialogTitle>
                 <DialogDescription>
@@ -302,7 +303,7 @@ export default function Dashboard() {
               </CardFooter>
             </Card>
 
-            <DialogContent>
+            <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Expenses detail</DialogTitle>
                 <DialogDescription>

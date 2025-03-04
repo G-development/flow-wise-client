@@ -10,6 +10,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -31,14 +38,16 @@ const EditDialog: React.FC<EditDialogProps> = ({
   id,
   fetchData,
 }) => {
-  // Stato per i campi del modulo
   const [formData, setFormData] = useState({
     category: "",
     amount: "",
     date: "",
   });
 
-  // Carica i dati della transazione quando il dialogo si apre
+  const [categories, setCategories] = useState<{ _id: string; name: string }[]>(
+    []
+  );
+
   useEffect(() => {
     if (isOpen) {
       const fetchTransactionData = async () => {
@@ -53,12 +62,12 @@ const EditDialog: React.FC<EditDialogProps> = ({
           const transaction = await response.json();
 
           setFormData({
-            category: transaction.category,
+            category: transaction.category._id, // Salviamo l'ID della categoria
             amount: transaction.amount.toString(),
-            date: format(transaction.date, "yyyy-MM-dd"),
-            // date: new Date(transaction.date).toLocaleDateString(),
-            // date: "2025-01-01",
+            date: format(new Date(transaction.date), "yyyy-MM-dd"),
           });
+
+          setCategories(transaction.alternativeCategories || []);
         } catch (error) {
           console.error(error);
         }
@@ -68,11 +77,20 @@ const EditDialog: React.FC<EditDialogProps> = ({
     }
   }, [isOpen, transactionType, id]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+    }));
+  };
+
+  const handleCategoryChange = (categoryId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      category: categoryId,
     }));
   };
 
@@ -93,10 +111,10 @@ const EditDialog: React.FC<EditDialogProps> = ({
       toast.success(
         `${
           transactionType.charAt(0).toUpperCase() + transactionType.slice(1)
-        } updated succesfully`
+        } updated successfully`
       );
-      fetchData(); // Ricarica i dati
-      onClose(); // Chiudi il dialogo
+      fetchData();
+      onClose();
     } catch (error) {
       toast.error("Error while editing");
       console.error(error);
@@ -116,20 +134,29 @@ const EditDialog: React.FC<EditDialogProps> = ({
         <div className="space-y-4">
           <div>
             <Label className="block text-sm font-medium text-gray-700">
-              Category{" "}
-              <p className="inline text-xs text-gray-500">
-                (we are sorry, this will be soon available!)
-              </p>
+              Category
             </Label>
-            <Input
-              type="text"
-              name="category"
-              value={formData.category}
-              onChange={handleInputChange}
-              className="mt-2 w-full p-2 border rounded-md"
-              disabled={true}
-            />
+            <Select
+              onValueChange={handleCategoryChange}
+              value={formData.category || "Select a category"}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent className="capitalize">
+                {categories.map((cat) => (
+                  <SelectItem
+                    className="capitalize"
+                    key={cat._id}
+                    value={cat.name}
+                  >
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
           <div>
             <Label className="block text-sm font-medium text-gray-700">
               Amount
@@ -142,6 +169,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
               className="mt-2 w-full p-2 border rounded-md"
             />
           </div>
+
           <div>
             <Label className="block text-sm font-medium text-gray-700">
               Date
@@ -155,6 +183,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
               required
             />
           </div>
+
           <p className="text-xs text-gray-500 text-right">
             ID transaction: {id}
           </p>
