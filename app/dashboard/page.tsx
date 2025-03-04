@@ -73,6 +73,7 @@ type DashboardData = {
   charts?: {
     income_expense: { date: string; income: number; expense: number }[];
     expense_category: { category: string; value: number; fill: string }[];
+    running_balance: { date: string; sum: number }[];
   };
 };
 
@@ -99,6 +100,13 @@ export default function Dashboard() {
   useEffect(() => {
     fetchData();
   }, [fetchData, dateRange]);
+
+  const balanceChartConfig = {
+    sum: {
+      label: "Balance",
+      color: "#6495ED",
+    },
+  };
 
   const chartConfig = {
     income: {
@@ -150,7 +158,7 @@ export default function Dashboard() {
   return (
     <>
       <Navbar />
-      <div className="flex-1 space-y-6 p-8 pt-6">
+      <div className="flex-1 space-y-3 md:space-y-6 p-4 md:p-8 pt-3 md:pt-6">
         <div className="flex flex-col lg:flex-row items-center justify-between space-y-2 lg:space-y-0">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <div className="flex flex-col items-center md:flex-row gap-6">
@@ -192,7 +200,7 @@ export default function Dashboard() {
               </CardFooter>
             </Card>
 
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-[90%] rounded-md md:max-w-2xl max-h-[70%] md:max-h-[90%] overflow-y-auto overflow-x-hidden">
               <DialogHeader>
                 <DialogTitle>Incomes detail</DialogTitle>
                 <DialogDescription>
@@ -302,7 +310,7 @@ export default function Dashboard() {
               </CardFooter>
             </Card>
 
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-[90%] rounded-md md:max-w-2xl max-h-[70%] md:max-h-[90%] overflow-y-auto overflow-x-hidden">
               <DialogHeader>
                 <DialogTitle>Expenses detail</DialogTitle>
                 <DialogDescription>
@@ -429,7 +437,44 @@ export default function Dashboard() {
         </div>
 
         {/* CHARTS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+            <div className="rounded-lg">
+              <Line_Chart
+                data={data?.charts?.running_balance ?? []}
+                XAxisKey="date"
+                chartConfig={balanceChartConfig}
+                title="Running balance"
+                description={
+                  dateRange?.from?.toLocaleDateString("it-IT") +
+                  " to " +
+                  dateRange?.to?.toLocaleDateString("it-IT")
+                }
+                footerText="Overview of the selected period"
+              />
+            </div>
+          )}
+
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+            <div className="rounded-lg">
+              <Pie_Chart
+                data={data?.charts?.expense_category ?? []}
+                chartConfig={pieConfig}
+                title="Expenses by category"
+                description={
+                  dateRange?.from?.toLocaleDateString("it-IT") +
+                  " to " +
+                  dateRange?.to?.toLocaleDateString("it-IT")
+                }
+                footerText="Overview of the selected period"
+              />
+            </div>
+          )}
+
           {loading ? (
             <LoadingSpinner />
           ) : (
@@ -448,108 +493,7 @@ export default function Dashboard() {
               />
             </div>
           )}
-          {loading ? (
-            <LoadingSpinner />
-          ) : (
-            <div className="rounded-lg">
-              <Pie_Chart
-                data={data?.charts?.expense_category ?? []}
-                chartConfig={pieConfig}
-                title="Expenses by category"
-                description={
-                  dateRange?.from?.toLocaleDateString("it-IT") +
-                  " to " +
-                  dateRange?.to?.toLocaleDateString("it-IT")
-                }
-                footerText="Overview of the selected period"
-              />
-            </div>
-          )}
         </div>
-
-        {/* TABLE
-        {data &&
-          Object.entries(data).map(([key, transactions]) =>
-            Array.isArray(transactions) && transactions.length > 0 ? (
-              <Table key={key} className="caption-top">
-                <TableCaption>
-                  A list of your recent {key} transactions.
-                </TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[100px] capitalize">
-                      {key}
-                    </TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {transactions.map((item) => (
-                    <TableRow key={item._id}>
-                      <TableCell className="font-medium capitalize">
-                        {key}
-                      </TableCell>
-                      <TableCell className="truncate max-w-[10ch] md:max-w-none capitalize">
-                        {item.category.name}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(item.date).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell
-                        className={`text-right ${
-                          key === "income" ? "text-green-500" : "text-red-500"
-                        }`}
-                      >
-                        {key === "income" ? "€" : "-€"}
-                        {item.amount}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Circle
-                          className={`${getStatusColor(
-                            item.amount
-                          )} h-4 w-4 inline`}
-                        />
-                      </TableCell>
-                      <TableCell className="text-right flex justify-end gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setTransactionToEdit(item._id)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <EditDialog
-                          isOpen={transactionToEdit === item._id}
-                          onClose={() => setTransactionToEdit(null)}
-                          transactionType={key}
-                          id={item._id}
-                          fetchData={fetchData}
-                        />
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => setTransactionToDelete(item._id)}
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                        <DeleteDialog
-                          isOpen={transactionToDelete === item._id}
-                          onClose={() => setTransactionToDelete(null)}
-                          transactionType={key}
-                          id={item._id}
-                          fetchData={fetchData}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : null
-          )} */}
       </div>
     </>
   );
