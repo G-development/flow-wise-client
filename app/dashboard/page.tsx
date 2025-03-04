@@ -67,7 +67,6 @@ type Totals = {
 type DashboardData = {
   income?: Transaction[];
   expense?: Transaction[];
-  categories?: [{ _id: string; name: string; type: string }];
   totals?: Totals;
   net?: number;
   savingsRate?: string;
