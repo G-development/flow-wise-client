@@ -62,7 +62,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
           const transaction = await response.json();
 
           setFormData({
-            category: transaction.category._id, // Salviamo l'ID della categoria
+            category: transaction.category.name,
             amount: transaction.amount.toString(),
             date: format(new Date(transaction.date), "yyyy-MM-dd"),
           });
@@ -139,6 +139,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
             <Select
               onValueChange={handleCategoryChange}
               value={formData.category || "Select a category"}
+              defaultValue={formData.category}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
