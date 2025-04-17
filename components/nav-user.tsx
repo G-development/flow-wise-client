@@ -2,7 +2,14 @@
 import { useFetch } from "@/hooks/useFetch";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { BadgeCheck, Bell, CreditCard, LogOut, Sparkles } from "lucide-react";
+import {
+  BadgeCheck,
+  Bell,
+  CreditCard,
+  LogOut,
+  Sparkles,
+  Import,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -76,6 +83,15 @@ export function NavUser() {
             <Bell />
             Notifications
           </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <Link href="/import">
+            <DropdownMenuItem>
+              <Import />
+              Import utility
+            </DropdownMenuItem>
+          </Link>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem
