@@ -10,6 +10,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
+import { Separator } from "@/components/ui/separator";
+
 import {
   LogOut,
   ChartNoAxesCombined,
@@ -17,6 +19,8 @@ import {
   Minus,
   HandCoins,
   User,
+  Upload,
+  Banknote,
 } from "lucide-react";
 import Logo from "../app/flow-wise-logo.svg";
 
@@ -64,6 +68,9 @@ export default function Navbar() {
               <ChartNoAxesCombined className="mr-2" />
               Dashboard
             </Link>
+
+            <Separator className="my-4" />
+
             <Link
               href="/incomes"
               className="flex w-full items-center py-2 text-lg font-semibold"
@@ -80,6 +87,9 @@ export default function Navbar() {
               <Minus className="mr-2" />
               Expenses
             </Link>
+
+            <Separator className="my-4" />
+
             <Link
               href="/budgets"
               className="flex w-full items-center py-2 text-lg font-semibold"
@@ -88,6 +98,9 @@ export default function Navbar() {
               <HandCoins className="mr-2" />
               Budgets
             </Link>
+
+            <Separator className="my-4" />
+
             <Link
               href="/settings"
               className="flex w-full items-center py-2 text-lg font-semibold"
@@ -95,6 +108,23 @@ export default function Navbar() {
             >
               <User className="mr-2" />
               Account
+            </Link>
+            <Link
+              href="/settings/import"
+              className="flex w-full items-center py-1 text-base font-normal pl-6"
+              prefetch={false}
+            >
+              <Upload className="mr-2 h-5 w-5" />
+              Import
+            </Link>
+
+            <Link
+              href="/settings/yourbank"
+              className="flex w-full items-center py-1 text-base font-normal pl-6"
+              prefetch={false}
+            >
+              <Banknote className="mr-2 h-5 w-5" />
+              Your Bank
             </Link>
             <div
               className="flex gap-2 absolute bottom-8 right-8"
