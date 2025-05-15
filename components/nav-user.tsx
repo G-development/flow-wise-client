@@ -76,17 +76,20 @@ export function NavUser() {
             </DropdownMenuItem>
           </Link>
           <DropdownMenuItem disabled>
-            <CreditCard />
-            Billing
-          </DropdownMenuItem>
-          <DropdownMenuItem disabled>
             <Bell />
             Notifications
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        <Link href="/settings/yourbank">
+          <DropdownMenuItem>
+            <CreditCard />
+            Your bank
+          </DropdownMenuItem>
+        </Link>
+        <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <Link href="/import">
+          <Link href="/settings/import">
             <DropdownMenuItem>
               <Import />
               Import utility
