@@ -55,8 +55,11 @@ interface Transaction {
   amount: number;
   category: { _id: string; name: string };
   date: string;
+  bookingDate: string;
   createdAt: string;
   updatedAt: string;
+  description: string;
+  currency: string;
 }
 
 type Totals = {
@@ -75,6 +78,7 @@ type DashboardData = {
     expense_category: { category: string; value: number; fill: string }[];
     running_balance: { date: string; sum: number }[];
   };
+  externalTransactions: Transaction[];
 };
 
 export default function Dashboard() {
@@ -494,6 +498,54 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+
+        {loading ? (
+          <LoadingSpinner />
+        ) : (
+          <div>
+            <p className="text-2xl font-bold flex items-center mb-4">
+              External Transactions
+            </p>
+
+            {data?.externalTransactions?.length ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Currency</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.externalTransactions.map((tx, idx) => {
+                    console.log(
+                      "data.externalTransactions",
+                      data.externalTransactions
+                    );
+
+                    return (
+                      <TableRow key={idx}>
+                        <TableCell>
+                          {new Date(tx.bookingDate).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>{tx.description || "-"}</TableCell>
+                        <TableCell className="text-right">
+                          {tx.amount}
+                        </TableCell>
+                        <TableCell>{tx.currency}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-gray-500">
+                No external transactions available.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </>
   );
