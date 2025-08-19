@@ -49,7 +49,7 @@ export default function NewTransactionDrawer({
   useEffect(() => {
     const storedToken = localStorage.getItem("fw-token");
     if (!storedToken) {
-      router.push("/login");
+      // router.push("/login");
       return;
     }
     setToken(storedToken); // Salva il token nello stato
@@ -64,7 +64,7 @@ export default function NewTransactionDrawer({
   const handleSubmit = async () => {
     if (!token) {
       toast.error("Token non trovato. Effettua il login.");
-      router.push("/login");
+      // router.push("/login");
       return;
     }
 

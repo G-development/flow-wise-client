@@ -61,8 +61,9 @@ export function RegisterForm({
       const data = await response.json();
 
       if (response.ok) {
-        router.push("/login");
+        // router.push("/login");
         toast.success("Successfully registered!");
+        router.replace("/");
       } else {
         toast.error(data.msg || "Authentication error");
       }
@@ -133,19 +134,20 @@ export function RegisterForm({
               <Button type="submit" className="w-full">
                 Sign Up
               </Button>
-            </div>
-            <div className="text-center text-sm">
-              Already have an account?{" "}
-              <a href="/login" className="underline underline-offset-4">
-                Log in
-              </a>
+
+              <div className="text-center text-sm">
+                Already have an account?{" "}
+                <a href="/login" className="underline underline-offset-4">
+                  Log in
+                </a>
+              </div>
             </div>
           </form>
         </CardContent>
       </Card>
       <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary  ">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+        By clicking sign up, you agree to our <a href="#">Terms of Service</a>{" "}
+        and <a href="/privacy">Privacy Policy</a>.
       </div>
     </div>
   );

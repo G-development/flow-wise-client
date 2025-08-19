@@ -1,19 +1,26 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("fw-token");
+    const checkAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    if (!isLoggedIn) {
-      router.push("/login");
-    } else {
-      router.push("/dashboard");
-    }
-  }, [router]);
+      if (session) {
+        router.replace("/dashboard");
+      } else {
+        router.replace("/login");
+      }
+    };
+
+    checkAuth();
+  }, [router, supabase]);
 
   return (
     <div className="flex h-screen items-center justify-center">

@@ -1,5 +1,5 @@
 "use client";
-import { useFetch } from "@/hooks/useFetch";
+import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -30,9 +30,12 @@ interface User {
 export function NavUser() {
   const router = useRouter();
 
-  const { data: user, error } = useFetch<User>("users/profile");
-
-  if (error) return <p>{error}</p>;
+  const user = {
+    user: "ciao",
+    profilePic: "lol",
+    name: "name",
+    email: "email",
+  };
 
   return (
     <DropdownMenu>
@@ -99,8 +102,8 @@ export function NavUser() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            localStorage.removeItem("fw-token");
-            router.push("/");
+            supabase.auth.signOut();
+            router.replace("/");
           }}
         >
           <LogOut />

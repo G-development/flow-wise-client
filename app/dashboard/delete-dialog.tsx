@@ -9,44 +9,35 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabaseClient";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface DeleteDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  transactionType: string;
-  id: string;
-  fetchData: () => void;
+  id: string | number;
 }
 
-const DeleteDialog: React.FC<DeleteDialogProps> = ({
-  isOpen,
-  onClose,
-  transactionType,
-  id,
-  fetchData,
-}) => {
-  const deleteTransaction = async () => {
-
+const DeleteDialog: React.FC<DeleteDialogProps> = ({ isOpen, onClose, id }) => {
+  const handleDelete = async () => {
     try {
-      const token = localStorage.getItem("fw-token");
-      const response = await fetch(
-        `${API_URL}/${transactionType}/delete/${id}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+      if (!token) throw new Error("No active session");
 
-      if (!response.ok)
-        // throw new Error(`Error while deleting ${transactionType}`);
-        toast.error(`Error while deleting ${transactionType}`);
+      const response = await fetch(`${API_URL}/transaction/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      fetchData();
-      onClose(); // Close dialog
+      if (!response.ok) throw new Error("Errore durante l'eliminazione");
+
+      toast.success("Transaction deleted successfully");
+      onClose();
     } catch (error) {
       console.error(error);
+      toast.error("Errore durante l'eliminazione");
     }
   };
 
@@ -54,16 +45,21 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+          <AlertDialogTitle>Delete transaction</AlertDialogTitle>
           <AlertDialogDescription>
-            This action is irreversible.
+            Are you sure you want to delete this transaction? This action cannot
+            be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="gap-4 sm:gap-0">
-          <AlertDialogAction onClick={deleteTransaction}>
-            Confirm
-          </AlertDialogAction>
+
+        <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            Delete
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

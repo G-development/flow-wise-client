@@ -1,5 +1,5 @@
 "use client";
-import { useAuth } from "@/hooks/useAuth";
+// import { useAuth } from "@/hooks/useAuth";
 // import { useFetch } from "@/hooks/useFetch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,7 @@ interface csvRow {
 }
 
 export default function Import() {
-  useAuth();
+  // useAuth();
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const token = localStorage.getItem("fw-token");

@@ -3,26 +3,29 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DateRange } from "react-day-picker";
-import { useAuth } from "@/hooks/useAuth";
-import { useFetch } from "@/hooks/useFetch";
 import DatePickerWithRange from "@/components/date-picker";
-import NewTransactionDrawer from "@/components/new-transaction-drawer";
-import SimpleTable from "@/components/table";
+import { DynamicTable } from "@/components/dynamic-table";
 import Navbar from "@/components/navbar";
 
-interface Category {
-  name: string;
-}
+import { supabase } from "@/lib/supabaseClient";
 
-interface Expense {
-  _id: string;
-  category?: Category;
-  [key: string]: unknown;
-}
+export default function Incomes() {
+  type Transaction = {
+    id: number;
+    userid: string;
+    description: string;
+    note: string | null;
+    amount: number;
+    date: string;
+    type: string;
+    wallet_id: number;
+    category_id: number;
+    created_at: string | null;
+  };
 
-export default function Expenses() {
-  useAuth();
-  const router = useRouter();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
@@ -31,25 +34,45 @@ export default function Expenses() {
 
   const queryParams = new URLSearchParams();
   if (dateRange?.from)
-    queryParams.append("startDate", dateRange.from.toISOString());
-  if (dateRange?.to) queryParams.append("endDate", dateRange.to.toISOString());
-
-  const {
-    data: expenses,
-    loading,
-    error,
-    fetchData,
-  } = useFetch<Expense[]>(`expense/all?${queryParams.toString()}`);
+    queryParams.append("startDate", dateRange.from.toISOString().split("T")[0]);
+  if (dateRange?.to)
+    queryParams.append("endDate", dateRange.to.toISOString().split("T")[0]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData, dateRange]);
+    const fetchTransactions = async () => {
+      const session = supabase.auth.getSession
+        ? await supabase.auth.getSession()
+        : null;
+      const token = session?.data?.session?.access_token;
 
-  if (error) {
-    localStorage.removeItem("fw-token");
-    router.push("/login");
-    return <div>{error}</div>;
-  }
+      if (!token) {
+        console.error("No Supabase session found");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/expense/all?${queryParams.toString()}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+          setTransactions(data);
+        } else {
+          console.error("API did not return an array:", data);
+          setTransactions([]);
+        }
+      } catch (err) {
+        console.error(err);
+        setTransactions([]);
+      }
+    };
+
+    fetchTransactions();
+  }, [dateRange]);
 
   return (
     <>
@@ -59,19 +82,11 @@ export default function Expenses() {
           <h1 className="text-3xl font-bold tracking-tight">Expenses</h1>
           <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
         </div>
-        <NewTransactionDrawer fetchData={fetchData} disableIncome={true} />
-        {!loading ? (
-          <SimpleTable
-            data={expenses ?? []}
-            caption="List of recent expenses"
-            fetchData={fetchData}
-            transactionType="expense"
-          />
-        ) : (
-          <div className="flex justify-center items-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-black-800"></div>
-          </div>
-        )}
+
+        <DynamicTable
+          data={transactions}
+          caption={`Expense transactions shown from ${dateRange?.from?.toDateString()} to ${dateRange?.to?.toDateString()} `}
+        />
       </div>
     </>
   );

@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useFetch } from "@/hooks/useFetch";
+
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -33,9 +32,19 @@ interface UserData {
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Settings() {
-  useAuth();
+  // useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const { data, loading, error } = useFetch<UserData>("users/profile");
+
+  const data = {
+    name: "name",
+    email: "email",
+    profilePic: "profilePic",
+    currency: "currency",
+    notifications: "notifications",
+    createdAt: "createdAt",
+    updatedAt: "updatedAt",
+    authMethod: "authMethod",
+  };
 
   const [name, setName] = useState<string>(data?.name || "");
   const [username, setUsername] = useState<string>(
@@ -83,9 +92,6 @@ export default function Settings() {
       );
     }
   };
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
 
   return (
     <>
@@ -226,9 +232,7 @@ export default function Settings() {
                 onClick={handleSubmit}
                 //   disabled={loading}
                 disabled={true}
-              >
-                {loading ? "Updating..." : "Save Changes"}
-              </Button>
+              ></Button>
             </div>
           </div>
         </div>

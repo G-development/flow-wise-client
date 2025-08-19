@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -26,25 +27,17 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 interface EditDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  transactionType: string;
-  id: string;
-  fetchData: () => void;
+  id: string | number;
 }
 
-const EditDialog: React.FC<EditDialogProps> = ({
-  isOpen,
-  onClose,
-  transactionType,
-  id,
-  fetchData,
-}) => {
+const EditDialog: React.FC<EditDialogProps> = ({ isOpen, onClose, id }) => {
   const [formData, setFormData] = useState({
-    category: "",
+    category_id: "",
     amount: "",
     date: "",
   });
 
-  const [categories, setCategories] = useState<{ _id: string; name: string }[]>(
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
     []
   );
 
@@ -52,30 +45,43 @@ const EditDialog: React.FC<EditDialogProps> = ({
     if (isOpen) {
       const fetchTransactionData = async () => {
         try {
-          const token = localStorage.getItem("fw-token");
-          const response = await fetch(`${API_URL}/${transactionType}/${id}`, {
+          const session = await supabase.auth.getSession();
+          console.log("session", session);
+          const token = session?.data?.session?.access_token;
+          if (!token) throw new Error("No active session");
+
+          // recupero transazione
+          const response = await fetch(`${API_URL}/transaction/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-
-          if (!response.ok) throw new Error("Errore nel recupero dei dati");
-
+          if (!response.ok)
+            throw new Error("Errore nel recupero della transazione");
           const transaction = await response.json();
 
           setFormData({
-            category: transaction.category.name,
-            amount: transaction.amount.toString(),
-            date: format(new Date(transaction.date), "yyyy-MM-dd"),
+            category_id: transaction.category_id?.toString() || "",
+            amount: transaction.amount?.toString() || "",
+            date: transaction.date
+              ? format(new Date(transaction.date), "yyyy-MM-dd")
+              : "",
           });
 
-          setCategories(transaction.alternativeCategories || []);
+          // recupero categorie
+          const catRes = await fetch(`${API_URL}/category/active`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (!catRes.ok) throw new Error("Errore nel recupero categorie");
+          const cats = await catRes.json();
+          setCategories(cats);
         } catch (error) {
           console.error(error);
+          toast.error("Errore nel caricamento dati");
         }
       };
 
       fetchTransactionData();
     }
-  }, [isOpen, transactionType, id]);
+  }, [isOpen, id]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -90,14 +96,17 @@ const EditDialog: React.FC<EditDialogProps> = ({
   const handleCategoryChange = (categoryId: string) => {
     setFormData((prev) => ({
       ...prev,
-      category: categoryId,
+      category_id: categoryId,
     }));
   };
 
   const handleSubmit = async () => {
     try {
-      const token = localStorage.getItem("fw-token");
-      const response = await fetch(`${API_URL}/${transactionType}/${id}`, {
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+      if (!token) throw new Error("No active session");
+
+      const response = await fetch(`${API_URL}/transaction/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -106,17 +115,12 @@ const EditDialog: React.FC<EditDialogProps> = ({
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) throw new Error("Error while editing");
+      if (!response.ok) throw new Error("Errore durante l'update");
 
-      toast.success(
-        `${
-          transactionType.charAt(0).toUpperCase() + transactionType.slice(1)
-        } updated successfully`
-      );
-      fetchData();
+      toast.success("Transaction updated successfully");
       onClose();
     } catch (error) {
-      toast.error("Error while editing");
+      toast.error("Errore durante l'update");
       console.error(error);
     }
   };
@@ -138,8 +142,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
             </Label>
             <Select
               onValueChange={handleCategoryChange}
-              value={formData.category || "Select a category"}
-              defaultValue={formData.category}
+              value={formData.category_id}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
@@ -148,8 +151,8 @@ const EditDialog: React.FC<EditDialogProps> = ({
                 {categories.map((cat) => (
                   <SelectItem
                     className="capitalize"
-                    key={cat._id}
-                    value={cat.name}
+                    key={cat.id}
+                    value={cat.id.toString()}
                   >
                     {cat.name}
                   </SelectItem>

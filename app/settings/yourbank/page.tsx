@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
 
-import { useAuth } from "@/hooks/useAuth";
+// import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/navbar";
 
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,7 @@ interface Transaction {
 }
 
 function YourBank() {
-  useAuth();
+  // useAuth();
   const [accessToken, setAccessToken] = useState("");
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [selectedInstitution, setSelectedInstitution] = useState("");
