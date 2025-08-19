@@ -6,13 +6,20 @@ import Navbar from "@/components/navbar";
 
 import { supabase } from "@/lib/supabaseClient";
 
+interface Wallet {
+  id: string;
+  name: string;
+  balance: number;
+  currency: string;
+  is_default: boolean;
+}
+
 export default function Wallets() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
-  const [wallets, setWallets] = useState<any[]>([]);
+  const [wallets, setWallets] = useState<Wallet[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Fetch wallets
   const fetchWallets = async () => {
     try {
       const session = supabase.auth.getSession
@@ -27,8 +34,12 @@ export default function Wallets() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to fetch wallets");
       setWallets(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(String(err));
+      }
     } finally {
       setLoading(false);
     }

@@ -18,7 +18,7 @@ import EditDialog from "@/app/dashboard/edit-dialog";
 import DeleteDialog from "@/app/dashboard/delete-dialog";
 
 interface Props {
-  data: Record<string, any>[];
+  data: Record<string, unknown>[];
   caption?: string;
 }
 
@@ -70,7 +70,7 @@ export function DynamicTable({ data, caption = "default cap" }: Props) {
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    setSelectedId(row.id);
+                    setSelectedId(row.id as string | number);
                     setEditOpen(true);
                   }}
                 >
@@ -82,7 +82,7 @@ export function DynamicTable({ data, caption = "default cap" }: Props) {
                   size="sm"
                   variant="destructive"
                   onClick={() => {
-                    setSelectedId(row.id);
+                    setSelectedId(row.id as string | number);
                     setDeleteOpen(true);
                   }}
                 >

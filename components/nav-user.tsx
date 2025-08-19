@@ -21,12 +21,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface User {
-  name: string;
-  email: string;
-  profilePic: string;
-}
-
 export function NavUser() {
   const router = useRouter();
 

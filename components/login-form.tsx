@@ -44,6 +44,7 @@ export function LoginForm({
         email: formData.email,
         password: formData.password,
       });
+      console.log(data);
 
       if (error) {
         toast.error(error.message);
@@ -115,8 +116,8 @@ export function LoginForm({
         </CardContent>
       </Card>
       <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary">
-        By clicking login, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="/privacy">Privacy Policy</a>.
+        By clicking login, you agree to our <a href="#">Terms of Service</a> and{" "}
+        <a href="/privacy">Privacy Policy</a>.
       </div>
     </div>
   );

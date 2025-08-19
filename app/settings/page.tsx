@@ -17,18 +17,6 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/navbar";
 
-interface UserData {
-  name: string;
-  email: string;
-  currency: string;
-  notifications: boolean;
-  authMethod: string;
-  _id: string;
-  createdAt: string;
-  updatedAt: string;
-  profilePic: string;
-}
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Settings() {
