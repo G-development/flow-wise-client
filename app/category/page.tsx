@@ -49,6 +49,38 @@ export default function Categories() {
     }
   };
 
+  // toggle active category
+  const toggleActive = async (category: Category) => {
+    try {
+      const session = supabase.auth.getSession
+        ? await supabase.auth.getSession()
+        : null;
+      const token = session?.data?.session?.access_token;
+
+      const res = await fetch(`${API_URL}/category/${category.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ active: !category.active }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update category");
+
+      // aggiorna lo stato locale
+      setCategories((prev) =>
+        prev.map((c) =>
+          c.id === category.id ? { ...c, active: data.active } : c
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Errore aggiornando la categoria");
+    }
+  };
+
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
@@ -73,7 +105,12 @@ export default function Categories() {
             data={categories.map((c) => ({
               Name: c.name,
               Type: c.type,
-              Active: <Switch checked={c.active} disabled />,
+              Active: (
+                <Switch
+                  checked={c.active}
+                  onCheckedChange={() => toggleActive(c)}
+                />
+              ),
             }))}
             caption={`You currently have ${categories.length} categories.`}
           />
