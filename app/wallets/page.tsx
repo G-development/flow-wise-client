@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { DynamicTable } from "@/components/dynamic-table";
 import { Switch } from "@/components/ui/switch";
 import Navbar from "@/components/navbar";
-
 import { supabase } from "@/lib/supabaseClient";
 
 interface Wallet {
@@ -27,28 +26,59 @@ export default function Wallets() {
         ? await supabase.auth.getSession()
         : null;
       const token = session?.data?.session?.access_token;
+
       const res = await fetch(`${API_URL}/wallet`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to fetch wallets");
+
       setWallets(data);
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError(String(err));
-      }
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
   };
 
+  // toggle default wallet
+  const toggleDefault = async (wallet: Wallet) => {
+    try {
+      const session = supabase.auth.getSession
+        ? await supabase.auth.getSession()
+        : null;
+      const token = session?.data?.session?.access_token;
+
+      const res = await fetch(`${API_URL}/wallet/${wallet.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ is_default: !wallet.is_default }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update wallet");
+
+      // aggiorna stato locale: setta tutti false, poi il nuovo true
+      setWallets((prev) =>
+        prev.map((w) =>
+          w.id === data.id
+            ? { ...w, is_default: data.is_default }
+            : { ...w, is_default: false }
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Errore aggiornando il wallet");
+    }
+  };
+
   useEffect(() => {
     fetchWallets();
-  }, [fetchWallets]);
+  }, []);
 
   return (
     <>
@@ -69,8 +99,13 @@ export default function Wallets() {
           <DynamicTable
             data={wallets.map((w) => ({
               Name: w.name,
-              Balance: w.balance.toFixed(2),
-              Default: <Switch checked={w.is_default} disabled />,
+              Balance: w.balance.toFixed(2) + " " + w.currency,
+              Default: (
+                <Switch
+                  checked={w.is_default}
+                  onCheckedChange={() => toggleDefault(w)}
+                />
+              ),
             }))}
             caption={`You can create up to 3 wallets. You currently have ${wallets.length}.`}
           />
