@@ -20,7 +20,7 @@ export default function Home() {
     };
 
     checkAuth();
-  }, [router, supabase]);
+  }, [router, supabase, supabase]);
 
   return (
     <div className="flex h-screen items-center justify-center">
