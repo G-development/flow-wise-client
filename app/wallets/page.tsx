@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { DynamicTable } from "@/components/dynamic-table";
+import { Switch } from "@/components/ui/switch";
 import Navbar from "@/components/navbar";
 
 import { supabase } from "@/lib/supabaseClient";
@@ -47,7 +48,7 @@ export default function Wallets() {
 
   useEffect(() => {
     fetchWallets();
-  }, []);
+  }, [fetchWallets]);
 
   return (
     <>
@@ -69,7 +70,7 @@ export default function Wallets() {
             data={wallets.map((w) => ({
               Name: w.name,
               Balance: w.balance.toFixed(2),
-              Default: w.is_default ? "Yes" : "No",
+              Default: <Switch checked={w.is_default} disabled />,
             }))}
             caption={`You can create up to 3 wallets. You currently have ${wallets.length}.`}
           />
