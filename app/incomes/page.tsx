@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import { DateRange } from "react-day-picker";
 import DatePickerWithRange from "@/components/date-picker";
 import { DynamicTable } from "@/components/dynamic-table";
 import Navbar from "@/components/navbar";
-
-import { supabase } from "@/lib/supabaseClient";
+import NewTransaction from "@/components/new-transaction";
 
 export default function Incomes() {
   type Transaction = {
@@ -37,39 +37,42 @@ export default function Incomes() {
   if (dateRange?.to)
     queryParams.append("endDate", dateRange.to.toISOString().split("T")[0]);
 
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      const session = supabase.auth.getSession
-        ? await supabase.auth.getSession()
-        : null;
-      const token = session?.data?.session?.access_token;
+  const fetchTransactions = async () => {
+    const session = supabase.auth.getSession
+      ? await supabase.auth.getSession()
+      : null;
+    const token = session?.data?.session?.access_token;
 
-      if (!token) {
-        console.error("No Supabase session found");
-        return;
-      }
+    if (!token) {
+      console.error("No Supabase session found");
+      return;
+    }
 
-      try {
-        const res = await fetch(`${API_URL}/income/all?${queryParams.toString()}`, {
+    try {
+      const res = await fetch(
+        `${API_URL}/income/all?${queryParams.toString()}`,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
-
-        const data = await res.json();
-
-        if (Array.isArray(data)) {
-          setTransactions(data);
-        } else {
-          console.error("API did not return an array:", data);
-          setTransactions([]);
         }
-      } catch (err) {
-        console.error(err);
+      );
+
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        setTransactions(data);
+      } else {
+        console.error("API did not return an array:", data);
         setTransactions([]);
       }
-    };
+    } catch (err) {
+      console.error(err);
+      setTransactions([]);
+    }
+  };
 
+  useEffect(() => {
     fetchTransactions();
   }, [dateRange]);
 
@@ -79,12 +82,17 @@ export default function Incomes() {
       <div className="flex-1 space-y-4 p-8 pt-6">
         <div className="flex flex-col lg:flex-row items-center justify-between space-y-2 lg:space-y-0">
           <h1 className="text-3xl font-bold tracking-tight">Incomes</h1>
-          <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
+          <div className="flex gap-2">
+            <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
+            <NewTransaction onSuccess={() => fetchTransactions()} />
+          </div>
         </div>
 
         <DynamicTable
           data={transactions}
           caption={`Income transactions shown from ${dateRange?.from?.toDateString()} to ${dateRange?.to?.toDateString()} `}
+          actions={true}
+          onEditSuccess={() => fetchTransactions()}
         />
       </div>
     </>

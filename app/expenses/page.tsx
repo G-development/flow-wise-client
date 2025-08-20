@@ -5,7 +5,7 @@ import { DateRange } from "react-day-picker";
 import DatePickerWithRange from "@/components/date-picker";
 import { DynamicTable } from "@/components/dynamic-table";
 import Navbar from "@/components/navbar";
-
+import NewTransaction from "@/components/new-transaction";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function Incomes() {
@@ -50,11 +50,14 @@ export default function Incomes() {
       }
 
       try {
-        const res = await fetch(`${API_URL}/expense/all?${queryParams.toString()}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await fetch(
+          `${API_URL}/expense/all?${queryParams.toString()}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         const data = await res.json();
 
@@ -79,12 +82,16 @@ export default function Incomes() {
       <div className="flex-1 space-y-4 p-8 pt-6">
         <div className="flex flex-col lg:flex-row items-center justify-between space-y-2 lg:space-y-0">
           <h1 className="text-3xl font-bold tracking-tight">Expenses</h1>
-          <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
+          <div className="flex gap-2">
+            <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
+            <NewTransaction />
+          </div>
         </div>
 
         <DynamicTable
           data={transactions}
           caption={`Expense transactions shown from ${dateRange?.from?.toDateString()} to ${dateRange?.to?.toDateString()} `}
+          actions={true}
         />
       </div>
     </>
