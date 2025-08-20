@@ -2,13 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { DateRange } from "react-day-picker";
+import { supabase } from "@/lib/supabaseClient";
 import DatePickerWithRange from "@/components/date-picker";
 import { DynamicTable } from "@/components/dynamic-table";
 import Navbar from "@/components/navbar";
 import NewTransaction from "@/components/new-transaction";
-import { supabase } from "@/lib/supabaseClient";
+import { Button } from "@/components/ui/button";
+import EditDialog from "@/components/edit-dialog";
+import DeleteDialog from "@/components/delete-dialog";
+import { Pencil, Trash } from "lucide-react";
 
-export default function Incomes() {
+export default function Expenses() {
   type Transaction = {
     id: number;
     userid: string;
@@ -23,6 +27,9 @@ export default function Incomes() {
   };
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -31,48 +38,47 @@ export default function Incomes() {
     to: new Date(),
   });
 
-  const queryParams = new URLSearchParams();
-  if (dateRange?.from)
-    queryParams.append("startDate", dateRange.from.toISOString().split("T")[0]);
-  if (dateRange?.to)
-    queryParams.append("endDate", dateRange.to.toISOString().split("T")[0]);
+  const fetchTransactions = async () => {
+    const session = supabase.auth.getSession
+      ? await supabase.auth.getSession()
+      : null;
+    const token = session?.data?.session?.access_token;
 
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      const session = supabase.auth.getSession
-        ? await supabase.auth.getSession()
-        : null;
-      const token = session?.data?.session?.access_token;
+    if (!token) {
+      console.error("No Supabase session found");
+      return;
+    }
 
-      if (!token) {
-        console.error("No Supabase session found");
-        return;
-      }
-
-      try {
-        const res = await fetch(
-          `${API_URL}/expense/all?${queryParams.toString()}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+    try {
+      const queryParams = new URLSearchParams();
+      if (dateRange?.from)
+        queryParams.append(
+          "startDate",
+          dateRange.from.toISOString().split("T")[0]
         );
+      if (dateRange?.to)
+        queryParams.append("endDate", dateRange.to.toISOString().split("T")[0]);
 
-        const data = await res.json();
-
-        if (Array.isArray(data)) {
-          setTransactions(data);
-        } else {
-          console.error("API did not return an array:", data);
-          setTransactions([]);
+      const res = await fetch(
+        `${API_URL}/expense/all?${queryParams.toString()}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-      } catch (err) {
-        console.error(err);
+      );
+
+      const data = await res.json();
+      if (Array.isArray(data)) setTransactions(data);
+      else {
+        console.error("API did not return an array:", data);
         setTransactions([]);
       }
-    };
+    } catch (err) {
+      console.error(err);
+      setTransactions([]);
+    }
+  };
 
+  useEffect(() => {
     fetchTransactions();
   }, [dateRange]);
 
@@ -84,15 +90,55 @@ export default function Incomes() {
           <h1 className="text-3xl font-bold tracking-tight">Expenses</h1>
           <div className="flex gap-2">
             <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
-            <NewTransaction />
+            <NewTransaction onSuccess={fetchTransactions} />
           </div>
         </div>
 
         <DynamicTable
           data={transactions}
-          caption={`Expense transactions shown from ${dateRange?.from?.toDateString()} to ${dateRange?.to?.toDateString()} `}
-          actions={true}
+          caption={`Expense transactions shown from ${dateRange?.from?.toDateString()} to ${dateRange?.to?.toDateString()}`}
+          renderActions={(row) => (
+            <div className="text-right">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setSelectedId(row.id as number);
+                  setEditOpen(true);
+                }}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => {
+                  setSelectedId(row.id as number);
+                  setDeleteOpen(true);
+                }}
+              >
+                <Trash className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         />
+
+        {selectedId !== null && (
+          <>
+            <EditDialog
+              id={selectedId}
+              isOpen={editOpen}
+              onClose={() => setEditOpen(false)}
+              onSuccess={fetchTransactions}
+            />
+            <DeleteDialog
+              id={selectedId}
+              isOpen={deleteOpen}
+              onClose={() => setDeleteOpen(false)}
+              onSuccess={fetchTransactions}
+            />
+          </>
+        )}
       </div>
     </>
   );

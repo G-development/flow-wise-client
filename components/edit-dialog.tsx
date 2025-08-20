@@ -33,8 +33,8 @@ interface EditDialogProps {
 
 const EditDialog: React.FC<EditDialogProps> = ({
   isOpen,
-  onClose,
   id,
+  onClose,
   onSuccess,
 }) => {
   const [formData, setFormData] = useState({

@@ -15,11 +15,17 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface DeleteDialogProps {
   isOpen: boolean;
-  onClose: () => void;
   id: string | number;
+  onClose: () => void;
+  onSuccess?: () => void;
 }
 
-const DeleteDialog: React.FC<DeleteDialogProps> = ({ isOpen, onClose, id }) => {
+const DeleteDialog: React.FC<DeleteDialogProps> = ({
+  isOpen,
+  id,
+  onClose,
+  onSuccess,
+}) => {
   const handleDelete = async () => {
     try {
       const session = await supabase.auth.getSession();
@@ -34,6 +40,7 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({ isOpen, onClose, id }) => {
       if (!response.ok) throw new Error("Errore durante l'eliminazione");
 
       toast.success("Transaction deleted successfully");
+      onSuccess?.();
       onClose();
     } catch (error) {
       console.error(error);
