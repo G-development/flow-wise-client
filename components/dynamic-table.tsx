@@ -1,5 +1,5 @@
 "use client";
-
+import React from "react";
 import { useState } from "react";
 import {
   Table,
@@ -14,15 +14,22 @@ import {
 import { Button } from "./ui/button";
 import { Pencil, Trash } from "lucide-react";
 
-import EditDialog from "@/app/dashboard/edit-dialog";
-import DeleteDialog from "@/app/dashboard/delete-dialog";
+import EditDialog from "@/components/edit-dialog";
+import DeleteDialog from "@/components/delete-dialog";
 
 interface Props {
   data: Record<string, unknown>[];
   caption?: string;
+  actions?: boolean;
+  onEditSuccess?: () => void;
 }
 
-export function DynamicTable({ data, caption = "default cap" }: Props) {
+export function DynamicTable({
+  data,
+  caption = "default cap",
+  actions = false,
+  onEditSuccess,
+}: Props) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | number | null>(null);
@@ -51,56 +58,66 @@ export function DynamicTable({ data, caption = "default cap" }: Props) {
                 {col}
               </TableHead>
             ))}
-            <TableHead className="text-right">Actions</TableHead>
+            {actions ? (
+              <TableHead className="text-right">Actions</TableHead>
+            ) : null}
           </TableRow>
         </TableHeader>
         <TableBody>
           {data.map((row, i) => (
             <TableRow key={i}>
-              {columns.map((col) => (
-                <TableCell key={col}>
-                  {row[col] !== null && row[col] !== undefined
-                    ? row[col].toString()
-                    : "-"}
-                </TableCell>
-              ))}
-              <TableCell className="text-right flex justify-end gap-2">
-                {/* Edit */}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedId(row.id as string | number);
-                    setEditOpen(true);
-                  }}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
+              {columns.map((col) => {
+                const value = row[col];
+                return (
+                  <TableCell key={col}>
+                    {value === null || value === undefined
+                      ? "-"
+                      : React.isValidElement(value)
+                      ? value
+                      : value.toString()}
+                  </TableCell>
+                );
+              })}
+              {actions ? (
+                <TableCell className="text-right flex justify-end gap-2">
+                  {/* Edit */}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedId(row.id as string | number);
+                      setEditOpen(true);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
 
-                {/* Delete */}
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => {
-                    setSelectedId(row.id as string | number);
-                    setDeleteOpen(true);
-                  }}
-                >
-                  <Trash className="h-4 w-4" />
-                </Button>
-              </TableCell>
+                  {/* Delete */}
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => {
+                      setSelectedId(row.id as string | number);
+                      setDeleteOpen(true);
+                    }}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              ) : null}
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
       {/* Dialogs */}
-      {selectedId && (
+      {selectedId != null && (
         <>
           <EditDialog
             isOpen={editOpen}
             onClose={() => setEditOpen(false)}
             id={selectedId}
+            onSuccess={onEditSuccess}
           />
           <DeleteDialog
             isOpen={deleteOpen}
