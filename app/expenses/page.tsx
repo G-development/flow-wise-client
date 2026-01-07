@@ -52,7 +52,7 @@ export default function Expenses() {
       }
       const data = await res.json();
       setTransactions(Array.isArray(data) ? data : []);
-    } catch (err) {
+    } catch {
       setTransactions([]);
     }
   }, [dateRange]);

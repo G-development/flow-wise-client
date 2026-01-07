@@ -15,10 +15,20 @@ export async function apiFetch(
   const authToken = token ?? (await getAuthToken());
   if (!authToken) throw new Error("No Supabase session found");
 
-  const headers: HeadersInit = {
-    ...(options.headers || {}),
+  const headers: Record<string, string> = {
     Authorization: `Bearer ${authToken}`,
   };
+
+  // Merge existing headers (handle both object and Headers instance)
+  if (options.headers) {
+    if (options.headers instanceof Headers) {
+      options.headers.forEach((value, key) => {
+        headers[key] = value;
+      });
+    } else {
+      Object.assign(headers, options.headers);
+    }
+  }
 
   // Imposta Content-Type JSON automaticamente se è presente un body non-FormData
   const hasBody = typeof options.body !== "undefined" && options.body !== null;
