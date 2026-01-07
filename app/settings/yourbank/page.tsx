@@ -2,7 +2,6 @@
 import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import axios from "axios";
 import { useSearchParams } from "next/navigation";
 
 // import { useAuth } from "@/hooks/useAuth";
@@ -50,8 +49,9 @@ function YourBank() {
   useEffect(() => {
     const fetchToken = async () => {
       try {
-        const res = await axios.post(`${API_URL}/bank/token`);
-        setAccessToken(res.data.access);
+        const res = await fetch(`${API_URL}/bank/token`, { method: "POST" });
+        const data = await res.json();
+        setAccessToken(data.access);
       } catch (err) {
         console.error("Errore nel recupero token:", err);
       }
@@ -64,10 +64,11 @@ function YourBank() {
     if (!accessToken) return;
     const fetchInstitutions = async () => {
       try {
-        const res = await axios.get(`${API_URL}/bank/institutions`, {
+        const res = await fetch(`${API_URL}/bank/institutions`, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
-        setInstitutions(res.data);
+        const data = await res.json();
+        setInstitutions(data);
       } catch (err) {
         console.error("Errore nel recupero banche:", err);
       }
@@ -91,19 +92,20 @@ function YourBank() {
           try {
             console.log(`${API_URL}/bank/requisition/user`);
 
-            const res = await axios.get(`${API_URL}/bank/requisition/user`, {
+            const res = await fetch(`${API_URL}/bank/requisition/user`, {
               headers: {
                 Authorization: `Bearer ${fw_token}`,
               },
             });
+            const data = await res.json();
 
-            if (res.data?.requisitionId) {
-              currentRequisitionId = res.data.requisitionId;
+            if (data?.requisitionId) {
+              currentRequisitionId = data.requisitionId;
               console.log(
                 "Requisition recuperata da DB:",
                 currentRequisitionId
               );
-            } else if (res.data?.message === "No requisition found") {
+            } else if (data?.message === "No requisition found") {
               console.log("Nessuna requisition trovata per l'utente.");
               // eventualmente logica per crearne una nuova
             }
@@ -124,14 +126,15 @@ function YourBank() {
 
         // 2. Verifica lo stato della requisition
         try {
-          const res = await axios.get(
+          const res = await fetch(
             `${API_URL}/bank/requisition/${currentRequisitionId}`,
             {
               headers: { Authorization: `Bearer ${accessToken}` },
             }
           );
+          const resData = await res.json();
 
-          const { accounts, status } = res.data;
+          const { accounts, status } = resData;
           console.log("Status requisition:", status); // 👈 aggiungi questo log
 
           setAccounts(accounts);
@@ -180,37 +183,47 @@ function YourBank() {
 
     try {
       // 1. Crea agreement
-      const agreementRes = await axios.post(
-        `${API_URL}/bank/agreement`,
-        { institution_id: selectedInstitution },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-      const agreement = agreementRes.data.id;
+      const agreementRes = await fetch(`${API_URL}/bank/agreement`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ institution_id: selectedInstitution }),
+      });
+      const agreementData = await agreementRes.json();
+      const agreement = agreementData.id;
 
       // 2. Crea requisition
-      const requisitionRes = await axios.post(
-        `${API_URL}/bank/requisition`,
-        {
+      const requisitionRes = await fetch(`${API_URL}/bank/requisition`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
           institution_id: selectedInstitution,
           agreement,
-        },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
+        }),
+      });
+      const requisitionData = await requisitionRes.json();
 
-      const { id, institution_id, status, accounts, link } =
-        requisitionRes.data;
+      const { id, institution_id, status, accounts, link } = requisitionData;
 
       // 3. Salva requisition nel DB
-      await axios.post(
-        `${API_URL}/bank/requisition/save`,
-        {
+      await fetch(`${API_URL}/bank/requisition/save`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${fw_token}`,
+        },
+        body: JSON.stringify({
           requisitionId: id,
           institutionId: institution_id,
           status,
           accounts,
-        },
-        { headers: { Authorization: `Bearer ${fw_token}` } }
-      );
+        }),
+      });
 
       // 4. Redirect
       window.location.href = link;
@@ -227,11 +240,10 @@ function YourBank() {
     setFetchError("");
     try {
       setSelectedAccount(accountId);
-      const res = await axios.get(
+      const res = await fetch(
         `${API_URL}/bank/accounts/${accountId}/transactions`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-          validateStatus: () => true,
         }
       );
 
@@ -241,10 +253,11 @@ function YourBank() {
         return;
       }
 
-      setTransactions(res.data);
-      console.log("here", res.data);
+      const data = await res.json();
+      setTransactions(data);
+      console.log("here", data);
 
-      saveTransactions(accountId, res.data.transactions, fw_token);
+      saveTransactions(accountId, data.transactions, fw_token);
     } catch (error) {
       setFetchError("Errore nel recupero delle transazioni:");
       setTransactions([]);
