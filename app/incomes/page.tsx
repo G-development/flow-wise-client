@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { DateRange } from "react-day-picker";
-import { supabase } from "@/lib/supabaseClient";
+import { apiFetch, buildQuery, getAuthToken } from "@/lib/api";
 import DatePickerWithRange from "@/components/date-picker";
 import { DynamicTable } from "@/components/dynamic-table";
 import Navbar from "@/components/navbar";
@@ -31,56 +31,35 @@ export default function Incomes() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     to: new Date(),
   });
 
-  const fetchTransactions = async () => {
-    const session = supabase.auth.getSession
-      ? await supabase.auth.getSession()
-      : null;
-    const token = session?.data?.session?.access_token;
-
-    if (!token) {
-      console.error("No Supabase session found");
-      return;
-    }
-
+  const fetchTransactions = useCallback(async () => {
     try {
-      const queryParams = new URLSearchParams();
-      if (dateRange?.from)
-        queryParams.append(
-          "startDate",
-          dateRange.from.toISOString().split("T")[0]
-        );
-      if (dateRange?.to)
-        queryParams.append("endDate", dateRange.to.toISOString().split("T")[0]);
+      const token = await getAuthToken();
+      const query = buildQuery({
+        startDate: dateRange?.from?.toISOString().split("T")[0],
+        endDate: dateRange?.to?.toISOString().split("T")[0],
+      });
 
-      const res = await fetch(
-        `${API_URL}/income/all?${queryParams.toString()}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      const data = await res.json();
-      if (Array.isArray(data)) setTransactions(data);
-      else {
-        console.error("API did not return an array:", data);
+      const res = await apiFetch(`/income/all${query}`, {}, token);
+      if (!res.ok) {
         setTransactions([]);
+        return;
       }
+      const data = await res.json();
+      setTransactions(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error(err);
       setTransactions([]);
     }
-  };
+  }, [dateRange]);
 
   useEffect(() => {
     fetchTransactions();
-  }, [dateRange]);
+  }, [fetchTransactions]);
 
   return (
     <>

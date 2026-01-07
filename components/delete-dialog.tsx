@@ -9,9 +9,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabaseClient";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { apiFetch, getAuthToken } from "@/lib/api";
 
 interface DeleteDialogProps {
   isOpen: boolean;
@@ -28,14 +26,16 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
 }) => {
   const handleDelete = async () => {
     try {
-      const session = await supabase.auth.getSession();
-      const token = session.data.session?.access_token;
+      const token = await getAuthToken();
       if (!token) throw new Error("No active session");
 
-      const response = await fetch(`${API_URL}/transaction/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiFetch(
+        `/transaction/${id}`,
+        {
+          method: "DELETE",
+        },
+        token
+      );
 
       if (!response.ok) throw new Error("Errore durante l'eliminazione");
 

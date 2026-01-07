@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { DynamicTable } from "@/components/dynamic-table";
 import { Switch } from "@/components/ui/switch";
 import Navbar from "@/components/navbar";
@@ -21,7 +21,7 @@ export default function Categories() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const session = supabase.auth.getSession
         ? await supabase.auth.getSession()
@@ -47,7 +47,7 @@ export default function Categories() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL]);
 
   // toggle active category
   const toggleActive = async (category: Category) => {

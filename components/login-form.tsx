@@ -44,7 +44,6 @@ export function LoginForm({
         email: formData.email,
         password: formData.password,
       });
-      console.log(data);
 
       if (error) {
         toast.error(error.message);

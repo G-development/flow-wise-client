@@ -24,9 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabaseClient";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { apiFetch, getAuthToken } from "@/lib/api";
 
 type Wallet = {
   id: number;
@@ -67,56 +65,57 @@ export default function NewTransaction({ onSuccess }: NewTransactionProps) {
     category_id: null,
     date: null,
   });
-  const [token, setToken] = useState<string | null>(null);
-
-  // Ottieni token Supabase quando il componente monta
   useEffect(() => {
-    const getSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setToken(data.session?.access_token ?? null);
+    if (!open) return;
+
+    const fetchData = async () => {
+      try {
+        const token = await getAuthToken();
+        if (!token) throw new Error("No token available");
+
+        const [walletRes, catRes] = await Promise.all([
+          apiFetch(`/wallet`, {}, token),
+          apiFetch(`/category/active`, {}, token),
+        ]);
+
+        const [walletData, catData] = await Promise.all([
+          walletRes.json(),
+          catRes.json(),
+        ]);
+
+        setWallets(Array.isArray(walletData) ? walletData : []);
+        setCategories(Array.isArray(catData) ? catData : []);
+      } catch (err) {
+        console.error(err);
+      }
     };
-    getSession();
-  }, []);
 
-  useEffect(() => {
-    if (open && token) {
-      // fetch wallets con auth header
-      fetch(`${API_URL}/wallet`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => res.json())
-        .then((data) => setWallets(Array.isArray(data) ? data : []))
-        .catch(console.error);
-
-      // fetch categories
-      fetch(`${API_URL}/category/active`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => res.json())
-        .then((data) => setCategories(Array.isArray(data) ? data : []))
-        .catch(console.error);
-    }
-  }, [open, token]);
+    fetchData();
+  }, [open]);
 
   const filteredCategories = categories.filter(
     (cat) => cat.type === formData.type
   );
 
   const handleSubmit = async () => {
-    if (!token) {
-      console.error("No token available");
-      return;
-    }
-
     try {
-      const response = await fetch(`${API_URL}/transaction`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const token = await getAuthToken();
+      if (!token) {
+        console.error("No token available");
+        return;
+      }
+
+      const response = await apiFetch(
+        `/transaction`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
         },
-        body: JSON.stringify(formData),
-      });
+        token
+      );
 
       if (!response.ok) {
         const errorData = await response.json();

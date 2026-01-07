@@ -19,10 +19,8 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/lib/supabaseClient";
+import { apiFetch, getAuthToken } from "@/lib/api";
 import { toast } from "sonner";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface EditDialogProps {
   isOpen: boolean;
@@ -54,17 +52,24 @@ const EditDialog: React.FC<EditDialogProps> = ({
     if (isOpen) {
       const fetchTransactionData = async () => {
         try {
-          const session = await supabase.auth.getSession();
-          const token = session?.data?.session?.access_token;
+          const token = await getAuthToken();
           if (!token) throw new Error("No active session");
 
-          // recupero transazione
-          const response = await fetch(`${API_URL}/transaction/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (!response.ok)
-            throw new Error("Errore nel recupero della transazione");
-          const transaction = await response.json();
+          const [txRes, walletRes, catRes] = await Promise.all([
+            apiFetch(`/transaction/${id}`, {}, token),
+            apiFetch(`/wallet`, {}, token),
+            apiFetch(`/category/active`, {}, token),
+          ]);
+
+          if (!txRes.ok) throw new Error("Errore nel recupero della transazione");
+          if (!walletRes.ok) throw new Error("Errore nel recupero wallet");
+          if (!catRes.ok) throw new Error("Errore nel recupero categorie");
+
+          const [transaction, walletData, cats] = await Promise.all([
+            txRes.json(),
+            walletRes.json(),
+            catRes.json(),
+          ]);
 
           setFormData({
             wallet_id: transaction.wallet_id?.toString() || "",
@@ -75,20 +80,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
               : "",
           });
 
-          // recupero wallets
-          const walletRes = await fetch(`${API_URL}/wallet`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (!walletRes.ok) throw new Error("Errore nel recupero wallet");
-          const walletData = await walletRes.json();
           setWallets(walletData);
-
-          // recupero categorie
-          const catRes = await fetch(`${API_URL}/category/active`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (!catRes.ok) throw new Error("Errore nel recupero categorie");
-          const cats = await catRes.json();
           setCategories(cats);
         } catch (error) {
           console.error(error);
@@ -119,18 +111,16 @@ const EditDialog: React.FC<EditDialogProps> = ({
 
   const handleSubmit = async () => {
     try {
-      const session = await supabase.auth.getSession();
-      const token = session.data.session?.access_token;
+      const token = await getAuthToken();
       if (!token) throw new Error("No active session");
 
-      const response = await fetch(`${API_URL}/transaction/${id}`, {
+      const response = await apiFetch(`/transaction/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
-      });
+      }, token);
 
       if (!response.ok) throw new Error("Errore durante l'update");
 

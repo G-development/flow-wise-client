@@ -1,7 +1,7 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const handleEdit = (id: string) => {
-  console.log("Modifica transazione:", id);
+  // noop: implementazione futura
 };
 
 export const handleDelete = async (key: string, id: string, fetchData: () => void) => {

@@ -67,9 +67,7 @@ export function RegisterForm({
       } else {
         toast.error(data.msg || "Authentication error");
       }
-
-      console.log("Registered successfully!", data);
-      localStorage.setItem("fw-token", data.token);
+      // Non salviamo token custom nel client: usiamo solo Supabase auth
     } catch (error) {
       console.error("Registration error:", (error as Error).message);
     }
