@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -24,19 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { apiFetch, getAuthToken } from "@/lib/api";
-
-type Wallet = {
-  id: number;
-  name: string;
-  balance: number;
-};
-
-type Category = {
-  id: number;
-  name: string;
-  type: "I" | "E";
-};
+import { useWallets, useCategories, useCreateTransaction } from "@/lib/hooks/useQueries";
 
 type FormData = {
   description: string;
@@ -54,8 +42,10 @@ type NewTransactionProps = {
 
 export default function NewTransaction({ onSuccess }: NewTransactionProps) {
   const [open, setOpen] = useState(false);
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { data: wallets = [] } = useWallets();
+  const { data: categories = [] } = useCategories();
+  const createTransaction = useCreateTransaction();
+  
   const [formData, setFormData] = useState<FormData>({
     description: "",
     note: "",
@@ -65,82 +55,40 @@ export default function NewTransaction({ onSuccess }: NewTransactionProps) {
     category_id: null,
     date: null,
   });
-  useEffect(() => {
-    if (!open) return;
-
-    const fetchData = async () => {
-      try {
-        const token = await getAuthToken();
-        if (!token) throw new Error("No token available");
-
-        const [walletRes, catRes] = await Promise.all([
-          apiFetch(`/wallet`, {}, token),
-          apiFetch(`/category/active`, {}, token),
-        ]);
-
-        const [walletData, catData] = await Promise.all([
-          walletRes.json(),
-          catRes.json(),
-        ]);
-
-        setWallets(Array.isArray(walletData) ? walletData : []);
-        setCategories(Array.isArray(catData) ? catData : []);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchData();
-  }, [open]);
 
   const filteredCategories = categories.filter(
-    (cat) => cat.type === formData.type
+    (cat) => cat.active && cat.type === (formData.type === "I" ? "income" : "expense")
   );
 
   const handleSubmit = async () => {
-    try {
-      const token = await getAuthToken();
-      if (!token) {
-        console.error("No token available");
-        return;
-      }
-
-      const response = await apiFetch(
-        `/transaction`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        },
-        token
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Error creating transaction:", errorData);
-        return;
-      }
-
-      if (response.ok && onSuccess) {
-        onSuccess(); // refresh
-        toast.success("Transaction created!");
-      }
-
-      setFormData({
-        description: "",
-        note: "",
-        amount: "",
-        type: "E",
-        wallet_id: null,
-        category_id: null,
-        date: null,
-      });
-      setOpen(false);
-    } catch (error) {
-      toast.error((error as Error).message);
+    if (!formData.amount || !formData.wallet_id || !formData.category_id) {
+      toast.error("Please fill all required fields");
+      return;
     }
+
+    createTransaction.mutate({
+      description: formData.description,
+      note: formData.note,
+      amount: Number(formData.amount),
+      type: formData.type,
+      wallet_id: formData.wallet_id,
+      category_id: formData.category_id,
+      date: formData.date || undefined,
+    }, {
+      onSuccess: () => {
+        onSuccess?.();
+        setFormData({
+          description: "",
+          note: "",
+          amount: "",
+          type: "E",
+          wallet_id: null,
+          category_id: null,
+          date: null,
+        });
+        setOpen(false);
+      },
+    });
   };
 
   return (

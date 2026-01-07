@@ -1,15 +1,11 @@
 "use client";
-// import { useAuth } from "@/hooks/useAuth";
-// import { useFetch } from "@/hooks/useFetch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
 import Navbar from "@/components/navbar";
 import Papa from "papaparse";
 import { parse } from "date-fns";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { apiFetch } from "@/lib/api";
 
 interface csvRow {
   Type: string;
@@ -19,11 +15,7 @@ interface csvRow {
 }
 
 export default function Import() {
-  // useAuth();
-
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const token = localStorage.getItem("fw-token");
-
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -63,10 +55,8 @@ export default function Import() {
 
         console.log(JSON.stringify({ income, expense }));
 
-        const res = await fetch(`${API_URL}/import`, {
+        const res = await apiFetch("/import", {
           method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          //headers: { Authorization: `Bearer ${token}` },
           body: JSON.stringify({ income, expense }),
         });
 

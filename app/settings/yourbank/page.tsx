@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
+import { apiFetch, bankApiFetch } from "@/lib/api";
+import { API_URL } from "@/lib/constants";
 
 // import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/navbar";
@@ -18,8 +20,6 @@ import {
 } from "@/components/ui/table";
 
 import BankDrawer from "./BankDrawer";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 type Institution = {
   id: string;
@@ -49,7 +49,10 @@ function YourBank() {
   useEffect(() => {
     const fetchToken = async () => {
       try {
-        const res = await fetch(`${API_URL}/bank/token`, { method: "POST" });
+        // Public endpoint for GoCardless token - no auth needed
+        const res = await fetch(`${API_URL}/bank/token`, { 
+          method: "POST" 
+        });
         const data = await res.json();
         setAccessToken(data.access);
       } catch (err) {
@@ -64,9 +67,7 @@ function YourBank() {
     if (!accessToken) return;
     const fetchInstitutions = async () => {
       try {
-        const res = await fetch(`${API_URL}/bank/institutions`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
+        const res = await bankApiFetch("/bank/institutions", accessToken);
         const data = await res.json();
         setInstitutions(data);
       } catch (err) {
@@ -80,9 +81,6 @@ function YourBank() {
   useEffect(() => {
     if (!accessToken) return;
 
-    const fw_token = localStorage.getItem("fw-token");
-    if (!fw_token) return;
-
     const checkOrCreateRequisition = async () => {
       try {
         let currentRequisitionId = requisitionId;
@@ -90,13 +88,7 @@ function YourBank() {
         // 1. If no ref in params, search in db
         if (!currentRequisitionId) {
           try {
-            console.log(`${API_URL}/bank/requisition/user`);
-
-            const res = await fetch(`${API_URL}/bank/requisition/user`, {
-              headers: {
-                Authorization: `Bearer ${fw_token}`,
-              },
-            });
+            const res = await apiFetch("/bank/requisition/user");
             const data = await res.json();
 
             if (data?.requisitionId) {
@@ -126,11 +118,9 @@ function YourBank() {
 
         // 2. Verifica lo stato della requisition
         try {
-          const res = await fetch(
-            `${API_URL}/bank/requisition/${currentRequisitionId}`,
-            {
-              headers: { Authorization: `Bearer ${accessToken}` },
-            }
+          const res = await bankApiFetch(
+            `/bank/requisition/${currentRequisitionId}`,
+            accessToken
           );
           const resData = await res.json();
 
@@ -178,29 +168,18 @@ function YourBank() {
   const linkBank = async () => {
     if (!accessToken || !selectedInstitution) return;
 
-    const fw_token = localStorage.getItem("fw-token");
-    if (!fw_token) return;
-
     try {
       // 1. Crea agreement
-      const agreementRes = await fetch(`${API_URL}/bank/agreement`, {
+      const agreementRes = await bankApiFetch("/bank/agreement", accessToken, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
         body: JSON.stringify({ institution_id: selectedInstitution }),
       });
       const agreementData = await agreementRes.json();
       const agreement = agreementData.id;
 
       // 2. Crea requisition
-      const requisitionRes = await fetch(`${API_URL}/bank/requisition`, {
+      const requisitionRes = await bankApiFetch("/bank/requisition", accessToken, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
         body: JSON.stringify({
           institution_id: selectedInstitution,
           agreement,
@@ -210,13 +189,9 @@ function YourBank() {
 
       const { id, institution_id, status, accounts, link } = requisitionData;
 
-      // 3. Salva requisition nel DB
-      await fetch(`${API_URL}/bank/requisition/save`, {
+      // 3. Salva requisition nel DB (usa apiFetch per auth Supabase)
+      await apiFetch("/bank/requisition/save", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${fw_token}`,
-        },
         body: JSON.stringify({
           requisitionId: id,
           institutionId: institution_id,
@@ -234,17 +209,12 @@ function YourBank() {
 
   // - Retrieve transactions
   const fetchTransactions = async (accountId: string) => {
-    const fw_token = localStorage.getItem("fw-token");
-    if (!fw_token) return;
-
     setFetchError("");
     try {
       setSelectedAccount(accountId);
-      const res = await fetch(
-        `${API_URL}/bank/accounts/${accountId}/transactions`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
+      const res = await bankApiFetch(
+        `/bank/accounts/${accountId}/transactions`,
+        accessToken
       );
 
       if (res.status === 429 || res.status === 500) {
@@ -257,7 +227,7 @@ function YourBank() {
       setTransactions(data);
       console.log("here", data);
 
-      saveTransactions(accountId, data.transactions, fw_token);
+      saveTransactions(accountId, data.transactions);
     } catch (error) {
       setFetchError("Errore nel recupero delle transazioni:");
       setTransactions([]);
@@ -268,17 +238,12 @@ function YourBank() {
   // - Save transactions
   const saveTransactions = async (
     accountId: string,
-    transactions: Transaction[],
-    token: string
+    transactions: Transaction[]
   ) => {
     setSelectedAccount(accountId);
     try {
-      const response = await fetch(`${API_URL}/bank/transactions/save`, {
+      const response = await apiFetch("/bank/transactions/save", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({
           accountId,
           transactions,

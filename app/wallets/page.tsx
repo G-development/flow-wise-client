@@ -1,84 +1,36 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { DynamicTable } from "@/components/dynamic-table";
 import { Switch } from "@/components/ui/switch";
 import Navbar from "@/components/navbar";
-import { supabase } from "@/lib/supabaseClient";
+import { useWallets, useUpdateWallet } from "@/lib/hooks/useQueries";
+import { toast } from "sonner";
 
 interface Wallet {
   id: string;
   name: string;
   balance: number;
   currency: string;
-  is_default: boolean;
+  isdefault: boolean;
 }
 
 export default function Wallets() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { data: wallets = [], isLoading, isError } = useWallets();
+  const updateWallet = useUpdateWallet();
 
-  const fetchWallets = useCallback(async () => {
-    try {
-      const session = supabase.auth.getSession
-        ? await supabase.auth.getSession()
-        : null;
-      const token = session?.data?.session?.access_token;
-
-      const res = await fetch(`${API_URL}/wallet`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to fetch wallets");
-
-      setWallets(data);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setLoading(false);
-    }
-  }, [API_URL]);
-
-  // toggle default wallet
-  const toggleDefault = async (wallet: Wallet) => {
-    try {
-      const session = supabase.auth.getSession
-        ? await supabase.auth.getSession()
-        : null;
-      const token = session?.data?.session?.access_token;
-
-      const res = await fetch(`${API_URL}/wallet/${wallet.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+  const toggleDefault = (wallet: Wallet) => {
+    updateWallet.mutate(
+      {
+        id: wallet.id,
+        data: { isdefault: !wallet.isdefault },
+      },
+      {
+        onError: () => {
+          toast.error("Failed to update wallet");
         },
-        body: JSON.stringify({ is_default: !wallet.is_default }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to update wallet");
-
-      // aggiorna stato locale: setta tutti false, poi il nuovo true
-      setWallets((prev) =>
-        prev.map((w) =>
-          w.id === data.id
-            ? { ...w, is_default: data.is_default }
-            : { ...w, is_default: false }
-        )
-      );
-    } catch (err) {
-      console.error(err);
-      alert("Errore aggiornando il wallet");
-    }
+      }
+    );
   };
-
-  useEffect(() => {
-    fetchWallets();
-  }, [fetchWallets]);
 
   return (
     <>
@@ -88,21 +40,21 @@ export default function Wallets() {
           <h1 className="text-3xl font-bold tracking-tight">Wallets</h1>
         </div>
 
-        {loading && <p>Loading wallets...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {isLoading && <p>Loading wallets...</p>}
+        {isError && <p className="text-red-500">Failed to load wallets</p>}
 
-        {!loading && !error && wallets.length === 0 && (
+        {!isLoading && !isError && wallets.length === 0 && (
           <p>You have no wallets yet. You can create up to 3 wallets.</p>
         )}
 
-        {!loading && wallets.length > 0 && (
+        {!isLoading && wallets.length > 0 && (
           <DynamicTable
             data={wallets.map((w) => ({
               Name: w.name,
               Balance: w.balance.toFixed(2) + " " + w.currency,
               Default: (
                 <Switch
-                  checked={w.is_default}
+                  checked={w.isdefault}
                   onCheckedChange={() => toggleDefault(w)}
                 />
               ),

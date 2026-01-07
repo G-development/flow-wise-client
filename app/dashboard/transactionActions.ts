@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { apiFetch } from "@/lib/api";
 
 export const handleEdit = () => {
   // noop: implementazione futura
@@ -8,10 +8,8 @@ export const handleDelete = async (key: string, id: string, fetchData: () => voi
   if (!confirm("Sei sicuro di voler eliminare questa transazione?")) return;
 
   try {
-    const token = localStorage.getItem("fw-token");
-    const response = await fetch(`${API_URL}/${key}/delete/${id}`, {
+    const response = await apiFetch(`/${key}/delete/${id}`, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
     });
 
     if (!response.ok) throw new Error("Errore durante l'eliminazione");

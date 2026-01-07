@@ -6,6 +6,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -146,10 +147,10 @@ export default function Navbar() {
               Your Bank
             </Link>
             <div
-              className="flex gap-2 absolute bottom-8 right-8"
-              onClick={() => {
-                localStorage.removeItem("fw-token");
-                // router.push("/");
+              className="flex gap-2 absolute bottom-8 right-8 cursor-pointer"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                router.push("/login");
               }}
             >
               Logout

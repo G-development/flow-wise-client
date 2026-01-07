@@ -19,8 +19,9 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiFetch, getAuthToken } from "@/lib/api";
+import { useUpdateTransaction } from "@/lib/hooks/useQueries";
 import { toast } from "sonner";
+import { apiFetch, getAuthToken } from "@/lib/api";
 
 interface EditDialogProps {
   isOpen: boolean;
@@ -35,18 +36,16 @@ const EditDialog: React.FC<EditDialogProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const updateTransaction = useUpdateTransaction();
+  const [wallets, setWallets] = useState<{ id: string; name: string }[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  
   const [formData, setFormData] = useState({
     wallet_id: "",
     category_id: "",
     amount: "",
     date: "",
   });
-
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
-    []
-  );
-
-  const [wallets, setWallets] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -109,28 +108,29 @@ const EditDialog: React.FC<EditDialogProps> = ({
     }));
   };
 
-  const handleSubmit = async () => {
-    try {
-      const token = await getAuthToken();
-      if (!token) throw new Error("No active session");
-
-      const response = await apiFetch(`/transaction/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      }, token);
-
-      if (!response.ok) throw new Error("Errore durante l'update");
-
-      toast.success("Transaction updated successfully");
-      onSuccess?.();
-      onClose();
-    } catch (error) {
-      toast.error("Errore durante l'update");
-      console.error(error);
+  const handleSubmit = () => {
+    if (!formData.wallet_id || !formData.category_id || !formData.amount) {
+      toast.error("Please fill all required fields");
+      return;
     }
+
+    updateTransaction.mutate(
+      {
+        id: String(id),
+        data: {
+          wallet_id: formData.wallet_id,
+          category_id: formData.category_id,
+          amount: parseFloat(formData.amount),
+          date: formData.date,
+        },
+      },
+      {
+        onSuccess: () => {
+          onSuccess?.();
+          onClose();
+        },
+      }
+    );
   };
 
   return (

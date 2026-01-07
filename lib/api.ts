@@ -1,10 +1,38 @@
 import { supabase } from "./supabaseClient";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL as string;
+import { API_URL } from "./constants";
 
 export async function getAuthToken(): Promise<string | null> {
   const { data } = await supabase.auth.getSession();
   return data.session?.access_token ?? null;
+}
+
+// Helper for bank API calls that use a different token (GoCardless accessToken)
+export async function bankApiFetch(
+  path: string,
+  accessToken: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${accessToken}`,
+  };
+
+  if (options.headers) {
+    if (options.headers instanceof Headers) {
+      options.headers.forEach((value, key) => {
+        headers[key] = value;
+      });
+    } else {
+      Object.assign(headers, options.headers);
+    }
+  }
+
+  const hasBody = typeof options.body !== "undefined" && options.body !== null;
+  const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
+  if (hasBody && !isFormData && !("Content-Type" in headers)) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  return fetch(`${API_URL}${path}`, { ...options, headers });
 }
 
 export async function apiFetch(

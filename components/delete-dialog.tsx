@@ -8,8 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
-import { apiFetch, getAuthToken } from "@/lib/api";
+import { useDeleteTransaction } from "@/lib/hooks/useQueries";
 
 interface DeleteDialogProps {
   isOpen: boolean;
@@ -24,28 +23,15 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const handleDelete = async () => {
-    try {
-      const token = await getAuthToken();
-      if (!token) throw new Error("No active session");
+  const deleteTransaction = useDeleteTransaction();
 
-      const response = await apiFetch(
-        `/transaction/${id}`,
-        {
-          method: "DELETE",
-        },
-        token
-      );
-
-      if (!response.ok) throw new Error("Errore durante l'eliminazione");
-
-      toast.success("Transaction deleted successfully");
-      onSuccess?.();
-      onClose();
-    } catch (error) {
-      console.error(error);
-      toast.error("Errore durante l'eliminazione");
-    }
+  const handleDelete = () => {
+    deleteTransaction.mutate(String(id), {
+      onSuccess: () => {
+        onSuccess?.();
+        onClose();
+      },
+    });
   };
 
   return (

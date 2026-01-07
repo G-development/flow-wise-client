@@ -13,8 +13,7 @@ import { toast } from "sonner";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { API_URL } from "@/lib/constants";
 
 export function RegisterForm({
   className,
@@ -61,15 +60,14 @@ export function RegisterForm({
       const data = await response.json();
 
       if (response.ok) {
-        // router.push("/login");
         toast.success("Successfully registered!");
         router.replace("/");
       } else {
-        toast.error(data.msg || "Authentication error");
+        toast.error(data.msg || data.error || "Authentication error");
       }
-      // Non salviamo token custom nel client: usiamo solo Supabase auth
-    } catch (error) {
-      console.error("Registration error:", (error as Error).message);
+      // Registration uses custom endpoint, not Supabase SDK directly
+    } catch {
+      toast.error("Registration error. Please try again.");
     }
   };
 

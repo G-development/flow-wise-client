@@ -15,13 +15,22 @@ interface Props {
   data: Record<string, unknown>[];
   caption?: string;
   renderActions?: (row: Record<string, unknown>) => React.ReactNode;
+  isLoading?: boolean;
 }
 
 export function DynamicTable({
   data,
   caption = "default cap",
   renderActions,
+  isLoading = false,
 }: Props) {
+  if (isLoading)
+    return (
+      <div className="flex flex-col items-center justify-center text-center py-8">
+        <p className="mb-2">Loading...</p>
+      </div>
+    );
+
   if (!Array.isArray(data) || data.length === 0)
     return (
       <div className="flex flex-col items-center justify-center text-center py-8">
