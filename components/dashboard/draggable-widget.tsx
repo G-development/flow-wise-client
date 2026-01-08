@@ -13,14 +13,12 @@ interface DraggableWidgetProps {
 export function DraggableWidget({ widget, children, disableDrag }: DraggableWidgetProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: widget.id,
+    disabled: disableDrag,
   });
 
   const style = {
-    gridColumn: `${widget.position.x + 1} / span ${widget.position.w}`,
-    gridRow: `${widget.position.y + 1} / span ${widget.position.h}`,
     transform: disableDrag ? undefined : CSS.Translate.toString(transform),
     opacity: disableDrag ? 1 : isDragging ? 0.5 : 1,
-    cursor: disableDrag ? "default" : isDragging ? "grabbing" : "grab",
   };
 
   return (
@@ -29,7 +27,7 @@ export function DraggableWidget({ widget, children, disableDrag }: DraggableWidg
       style={style}
       {...(!disableDrag ? listeners : {})}
       {...(!disableDrag ? attributes : {})}
-      className="touch-none"
+      className={`h-full w-full ${!disableDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
     >
       {children}
     </div>

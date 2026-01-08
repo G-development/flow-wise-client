@@ -4,16 +4,27 @@ import {
   DndContext, 
   DragEndEvent, 
   DragStartEvent,
+  DragOverEvent,
   closestCenter, 
   DragOverlay, 
   useSensor, 
   useSensors, 
-  PointerSensor 
+  PointerSensor,
+  useDroppable 
 } from "@dnd-kit/core";
 import { useEffect, useMemo, useState } from "react";
 import { Widget, GRID_COLS, GRID_ROWS, isValidPosition } from "@/lib/types/dashboard";
 import { DraggableWidget } from "./draggable-widget";
 import { WidgetRenderer } from "./widget-renderer";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { MoreVertical } from "lucide-react";
 
 interface DashboardGridProps {
   widgets: Widget[];
@@ -23,6 +34,7 @@ interface DashboardGridProps {
 export function DashboardGrid({ widgets, onLayoutChange }: DashboardGridProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [gridRef, setGridRef] = useState<HTMLDivElement | null>(null);
 
   // Detect viewport to toggle mobile stacking
   useEffect(() => {
@@ -66,15 +78,18 @@ export function DashboardGrid({ widgets, onLayoutChange }: DashboardGridProps) {
     const widgetId = active.id as string;
     
     const widget = widgets.find((w) => w.id === widgetId);
-    if (!widget) return;
+    if (!widget || !gridRef) return;
 
-    // Calcola nuova posizione basata sul delta (movimento in pixels)
-    // Assumiamo che ogni cella sia ~200px (da adattare con CSS)
-    const cellWidth = 200; // Verrà calcolato dinamicamente nel componente
-    const cellHeight = 150;
+    // Calcola dimensioni reali delle celle
+    const gridRect = gridRef.getBoundingClientRect();
+    const cellWidth = gridRect.width / GRID_COLS;
+    const cellHeight = gridRect.height / GRID_ROWS;
     
     const deltaX = Math.round(delta.x / cellWidth);
     const deltaY = Math.round(delta.y / cellHeight);
+
+    // Se non c'è movimento significativo, ignora
+    if (deltaX === 0 && deltaY === 0) return;
 
     const newWidget: Widget = {
       ...widget,
@@ -104,6 +119,34 @@ export function DashboardGrid({ widgets, onLayoutChange }: DashboardGridProps) {
 
   const activeWidget = effectiveWidgets.find((w) => w.id === activeId);
 
+  const handleResize = (widgetId: string, w: number, h: number) => {
+    if (isMobile) return; // evitiamo resize su mobile
+    const widget = widgets.find((wdg) => wdg.id === widgetId);
+    if (!widget) return;
+
+    const resized: Widget = {
+      ...widget,
+      position: {
+        ...widget.position,
+        w: Math.min(Math.max(1, w), GRID_COLS),
+        h: Math.min(Math.max(1, h), GRID_ROWS),
+      },
+    };
+
+    // Clamp per non uscire dai bordi
+    resized.position.x = Math.min(resized.position.x, GRID_COLS - resized.position.w);
+    resized.position.y = Math.min(resized.position.y, GRID_ROWS - resized.position.h);
+
+    if (!isValidPosition(resized, widgets)) {
+      toast.error("Impossibile ridimensionare: collisione con un altro widget");
+      return;
+    }
+
+    const updated = widgets.map((wdg) => (wdg.id === widgetId ? resized : wdg));
+    onLayoutChange(updated);
+    toast.success("Widget ridimensionato");
+  };
+
   return (
     <DndContext
       sensors={sensors}
@@ -114,6 +157,7 @@ export function DashboardGrid({ widgets, onLayoutChange }: DashboardGridProps) {
     >
       {/* Griglia principale */}
       <div
+        ref={setGridRef}
         className="grid gap-4 p-4 border-2 border-dashed border-gray-300 rounded-lg"
         style={{
           gridTemplateColumns: `repeat(${isMobile ? 1 : GRID_COLS}, 1fr)`,
@@ -123,9 +167,47 @@ export function DashboardGrid({ widgets, onLayoutChange }: DashboardGridProps) {
         }}
       >
         {effectiveWidgets.map((widget) => (
-          <DraggableWidget key={widget.id} widget={widget} disableDrag={isMobile}>
-            <WidgetRenderer widget={widget} />
-          </DraggableWidget>
+          <div 
+            key={widget.id} 
+            className="relative group transition-all duration-300 ease-in-out"
+            style={{
+              gridColumn: `${widget.position.x + 1} / span ${widget.position.w}`,
+              gridRow: `${widget.position.y + 1} / span ${widget.position.h}`,
+            }}
+          >
+            {!isMobile && (
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                      <span className="sr-only">Resize widget</span>
+                    </Button>
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" sideOffset={4}>
+                  <DropdownMenuItem onSelect={() => handleResize(widget.id, 1, 1)}>
+                    1 x 1
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => handleResize(widget.id, 2, 1)}>
+                    2 x 1
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => handleResize(widget.id, 2, 2)}>
+                    2 x 2
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            <DraggableWidget widget={widget} disableDrag={isMobile}>
+              <WidgetRenderer widget={widget} />
+            </DraggableWidget>
+          </div>
         ))}
       </div>
 
