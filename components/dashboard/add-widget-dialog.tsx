@@ -43,6 +43,11 @@ const AVAILABLE_WIDGETS: Array<{
     label: "Income vs Expenses",
     description: "Visual comparison between income and expenses",
   },
+  {
+    type: "expense-breakdown",
+    label: "Expense Breakdown",
+    description: "Pie chart of expenses by category",
+  },
 ];
 
 export function AddWidgetDialog({
