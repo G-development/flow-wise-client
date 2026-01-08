@@ -27,9 +27,10 @@ import { MoreVertical } from "lucide-react";
 interface DashboardGridProps {
   widgets: Widget[];
   onLayoutChange: (widgets: Widget[]) => void;
+  dateFilter?: { startDate?: string; endDate?: string };
 }
 
-export function DashboardGrid({ widgets, onLayoutChange }: DashboardGridProps) {
+export function DashboardGrid({ widgets, onLayoutChange, dateFilter }: DashboardGridProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [gridRef, setGridRef] = useState<HTMLDivElement | null>(null);
@@ -203,7 +204,7 @@ export function DashboardGrid({ widgets, onLayoutChange }: DashboardGridProps) {
             )}
 
             <DraggableWidget widget={widget} disableDrag={isMobile}>
-              <WidgetRenderer widget={widget} />
+              <WidgetRenderer widget={widget} dateFilter={dateFilter} />
             </DraggableWidget>
           </div>
         ))}
@@ -213,7 +214,7 @@ export function DashboardGrid({ widgets, onLayoutChange }: DashboardGridProps) {
       <DragOverlay>
         {activeWidget ? (
           <div className="opacity-80">
-            <WidgetRenderer widget={activeWidget} />
+            <WidgetRenderer widget={activeWidget} dateFilter={dateFilter} />
           </div>
         ) : null}
       </DragOverlay>

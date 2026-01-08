@@ -8,9 +8,10 @@ import { useMemo } from "react";
 
 interface PeriodIncomesWidgetProps {
   config?: WidgetConfig;
+  dateFilter?: { startDate?: string; endDate?: string };
 }
 
-export function PeriodIncomesWidget({ config }: PeriodIncomesWidgetProps) {
+export function PeriodIncomesWidget({ config, dateFilter }: PeriodIncomesWidgetProps) {
   // Default: ultimi 30 giorni
   const defaultEndDate = useMemo(() => new Date().toISOString().split("T")[0], []);
   const defaultStartDate = useMemo(() => {
@@ -19,8 +20,8 @@ export function PeriodIncomesWidget({ config }: PeriodIncomesWidgetProps) {
     return date.toISOString().split("T")[0];
   }, []);
 
-  const startDate = config?.startDate || defaultStartDate;
-  const endDate = config?.endDate || defaultEndDate;
+  const startDate = dateFilter?.startDate || config?.startDate || defaultStartDate;
+  const endDate = dateFilter?.endDate || config?.endDate || defaultEndDate;
 
   const { data: incomes = [], isLoading } = useIncomes(startDate, endDate);
 
@@ -28,6 +29,16 @@ export function PeriodIncomesWidget({ config }: PeriodIncomesWidgetProps) {
     const amount = typeof income.amount === "number" ? income.amount : 0;
     return sum + amount;
   }, 0);
+
+  const formatCurrency = new Intl.NumberFormat("it-IT", {
+    style: "currency",
+    currency: "EUR",
+  });
+
+  const periodLabel = startDate && endDate
+    ? `Dal ${new Date(startDate).toLocaleDateString("it-IT")}` +
+      ` al ${new Date(endDate).toLocaleDateString("it-IT")}`
+    : "Ultimi 30 giorni";
 
   return (
     <Card className="h-full">
@@ -40,11 +51,11 @@ export function PeriodIncomesWidget({ config }: PeriodIncomesWidgetProps) {
           <div className="text-xl sm:text-2xl font-bold text-muted-foreground">...</div>
         ) : (
           <div className="text-xl sm:text-2xl font-bold text-green-600 truncate">
-            +€{totalIncomes.toFixed(2)}
+            +{formatCurrency.format(totalIncomes)}
           </div>
         )}
         <p className="text-xs text-muted-foreground mt-1 truncate">
-          {incomes.length} transazioni • Ultimi 30 giorni
+          {incomes.length} transazioni • {periodLabel}
         </p>
       </CardContent>
     </Card>
