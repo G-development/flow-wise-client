@@ -22,15 +22,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Trash2 } from "lucide-react";
 
 interface DashboardGridProps {
   widgets: Widget[];
   onLayoutChange: (widgets: Widget[]) => void;
   dateFilter?: { startDate?: string; endDate?: string };
+  isEditMode?: boolean;
+  onRemoveWidget?: (widgetId: string) => void;
 }
 
-export function DashboardGrid({ widgets, onLayoutChange, dateFilter }: DashboardGridProps) {
+export function DashboardGrid({ widgets, onLayoutChange, dateFilter, isEditMode = false, onRemoveWidget }: DashboardGridProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [gridRef, setGridRef] = useState<HTMLDivElement | null>(null);
@@ -62,7 +64,7 @@ export function DashboardGrid({ widgets, onLayoutChange, dateFilter }: Dashboard
   );
 
   const handleDragStart = (event: DragStartEvent) => {
-    if (isMobile) return; // disabilita drag su mobile
+    if (isMobile || !isEditMode) return; // disabilita drag su mobile e in view mode
     setActiveId(String(event.active.id));
   };
 
@@ -157,67 +159,114 @@ export function DashboardGrid({ widgets, onLayoutChange, dateFilter }: Dashboard
       {/* Griglia principale */}
       <div
         ref={setGridRef}
-        className="grid gap-2 md:gap-4 p-2 md:p-4 border-2 border-dashed border-gray-300 rounded-lg"
+        className={`grid gap-2 md:gap-4 p-2 md:p-4 rounded-lg ${isEditMode ? 'border-2 border-dashed border-gray-300' : ''}`}
         style={{
           gridTemplateColumns: `repeat(${isMobile ? 1 : GRID_COLS}, 1fr)`,
           gridTemplateRows: isMobile
             ? `repeat(${effectiveWidgets.length || 1}, minmax(150px, auto))`
             : `repeat(${GRID_ROWS}, minmax(150px, 1fr))`,
+          ...(isEditMode && !isMobile && {
+            backgroundImage: `
+              repeating-linear-gradient(
+                to right,
+                transparent,
+                transparent calc(100% / ${GRID_COLS} - 1px),
+                rgba(150, 150, 150, 0.3) calc(100% / ${GRID_COLS} - 1px),
+                rgba(150, 150, 150, 0.3) calc(100% / ${GRID_COLS})
+              ),
+              repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent calc(100% / ${GRID_ROWS} - 1px),
+                rgba(150, 150, 150, 0.3) calc(100% / ${GRID_ROWS} - 1px),
+                rgba(150, 150, 150, 0.3) calc(100% / ${GRID_ROWS})
+              )
+            `,
+            backgroundSize: '100% 100%',
+            backgroundPosition: '0 0',
+            backgroundAttachment: 'local',
+          }),
         }}
       >
         {effectiveWidgets.map((widget) => (
           <div 
             key={widget.id} 
-            className="relative group transition-all duration-300 ease-in-out"
+            className={`relative group transition-all duration-300 ease-in-out ${isEditMode ? 'border border-dashed border-gray-300' : ''}`}
             style={{
               gridColumn: `${widget.position.x + 1} / span ${widget.position.w}`,
               gridRow: `${widget.position.y + 1} / span ${widget.position.h}`,
             }}
           >
             {!isMobile && (
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
+              <>
+                {/* Resize menu (visible on hover in edit mode) */}
+                {isEditMode && (
+                  <DropdownMenu modal={false}>
+                    <DropdownMenuTrigger asChild>
+                      <div className="absolute right-8 top-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                          <span className="sr-only">Resize widget</span>
+                        </Button>
+                      </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" sideOffset={4}>
+                      <DropdownMenuItem onSelect={() => handleResize(widget.id, 1, 1)}>
+                        1 x 1
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => handleResize(widget.id, 2, 1)}>
+                        2 x 1
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => handleResize(widget.id, 2, 2)}>
+                        2 x 2
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+
+                {/* Remove button (visible on hover in edit mode) */}
+                {isEditMode && onRemoveWidget && (
                   <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8"
-                      onClick={(e) => e.stopPropagation()}
+                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemoveWidget(widget.id);
+                        toast.success("Widget removed");
+                      }}
                     >
-                      <MoreVertical className="h-4 w-4" />
-                      <span className="sr-only">Resize widget</span>
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Remove widget</span>
                     </Button>
                   </div>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" sideOffset={4}>
-                  <DropdownMenuItem onSelect={() => handleResize(widget.id, 1, 1)}>
-                    1 x 1
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => handleResize(widget.id, 2, 1)}>
-                    2 x 1
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => handleResize(widget.id, 2, 2)}>
-                    2 x 2
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                )}
+              </>
             )}
 
-            <DraggableWidget widget={widget} disableDrag={isMobile}>
+            <DraggableWidget widget={widget} disableDrag={isMobile || !isEditMode}>
               <WidgetRenderer widget={widget} dateFilter={dateFilter} />
             </DraggableWidget>
           </div>
         ))}
       </div>
 
-      {/* Overlay durante il drag */}
-      <DragOverlay>
-        {activeWidget ? (
-          <div className="opacity-80">
-            <WidgetRenderer widget={activeWidget} dateFilter={dateFilter} />
-          </div>
-        ) : null}
-      </DragOverlay>
+      {/* Overlay durante il drag (solo in edit mode) */}
+      {isEditMode && (
+        <DragOverlay>
+          {activeWidget ? (
+            <div className="opacity-80">
+              <WidgetRenderer widget={activeWidget} dateFilter={dateFilter} />
+            </div>
+          ) : null}
+        </DragOverlay>
+      )}
     </DndContext>
   );
 }
