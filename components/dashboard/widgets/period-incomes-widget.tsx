@@ -1,0 +1,52 @@
+"use client";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useIncomes } from "@/lib/hooks/useQueries";
+import { TrendingUp } from "lucide-react";
+import { WidgetConfig } from "@/lib/types/dashboard";
+import { useMemo } from "react";
+
+interface PeriodIncomesWidgetProps {
+  config?: WidgetConfig;
+}
+
+export function PeriodIncomesWidget({ config }: PeriodIncomesWidgetProps) {
+  // Default: ultimi 30 giorni
+  const defaultEndDate = useMemo(() => new Date().toISOString().split("T")[0], []);
+  const defaultStartDate = useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() - 30);
+    return date.toISOString().split("T")[0];
+  }, []);
+
+  const startDate = config?.startDate || defaultStartDate;
+  const endDate = config?.endDate || defaultEndDate;
+
+  const { data: incomes = [], isLoading } = useIncomes(startDate, endDate);
+
+  const totalIncomes = incomes.reduce((sum, income) => {
+    const amount = typeof income.amount === "number" ? income.amount : 0;
+    return sum + amount;
+  }, 0);
+
+  return (
+    <Card className="h-full">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">Entrate del Periodo</CardTitle>
+        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="text-2xl font-bold text-muted-foreground">...</div>
+        ) : (
+          <div className="text-2xl font-bold text-green-600">
+            +€{totalIncomes.toFixed(2)}
+          </div>
+        )}
+        <p className="text-xs text-muted-foreground mt-1">
+          {incomes.length} transazioni • Ultimi 30 giorni
+        </p>
+      </CardContent>
+    </Card>
+  );
+}

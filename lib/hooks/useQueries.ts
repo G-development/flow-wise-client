@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, buildQuery } from "@/lib/api";
 import { toast } from "sonner";
+import { DashboardLayout, Widget } from "@/lib/types/dashboard";
 
 // Query Keys
 export const queryKeys = {
@@ -24,6 +25,9 @@ export const queryKeys = {
     all: ["expenses"] as const,
     byDateRange: (start?: string, end?: string) => 
       ["expenses", { start, end }] as const,
+  },
+  dashboardLayout: {
+    current: ["dashboard-layout"] as const,
   },
 };
 
@@ -317,6 +321,41 @@ export function useExpenses(startDate?: string, endDate?: string) {
       const res = await apiFetch(`/expense/all${query}`);
       if (!res.ok) throw new Error("Failed to fetch expenses");
       return res.json() as Promise<Transaction[]>;
+    },
+  });
+}
+
+// ============= Dashboard Layout Hooks =============
+
+export function useDashboardLayout() {
+  return useQuery({
+    queryKey: queryKeys.dashboardLayout.current,
+    queryFn: async () => {
+      const res = await apiFetch("/dashboard-layout");
+      if (!res.ok) throw new Error("Failed to fetch dashboard layout");
+      return res.json() as Promise<DashboardLayout>;
+    },
+  });
+}
+
+export function useSaveDashboardLayout() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (widgets: Widget[]) => {
+      const res = await apiFetch("/dashboard-layout", {
+        method: "PUT",
+        body: JSON.stringify({ widgets }),
+      });
+      if (!res.ok) throw new Error("Failed to save dashboard layout");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardLayout.current });
+      toast.success("Layout salvato");
+    },
+    onError: () => {
+      toast.error("Errore nel salvataggio del layout");
     },
   });
 }
