@@ -10,7 +10,7 @@ import {
   useSensors, 
   PointerSensor 
 } from "@dnd-kit/core";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Widget, GRID_COLS, GRID_ROWS, isValidPosition } from "@/lib/types/dashboard";
 import { DraggableWidget } from "./draggable-widget";
 import { WidgetRenderer } from "./widget-renderer";
@@ -22,6 +22,25 @@ interface DashboardGridProps {
 
 export function DashboardGrid({ widgets, onLayoutChange }: DashboardGridProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect viewport to toggle mobile stacking
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const handler = (e: MediaQueryListEvent | MediaQueryList) => setIsMobile(e.matches);
+    handler(mq);
+    mq.addEventListener("change", handler as (ev: MediaQueryListEvent) => void);
+    return () => mq.removeEventListener("change", handler as (ev: MediaQueryListEvent) => void);
+  }, []);
+
+  // In mobile view, stack widgets in a single column and normalize positions
+  const effectiveWidgets = useMemo(() => {
+    if (!isMobile) return widgets;
+    return widgets.map((w, idx) => ({
+      ...w,
+      position: { ...w.position, x: 0, y: idx, w: 1, h: 1 },
+    }));
+  }, [widgets, isMobile]);
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -32,10 +51,15 @@ export function DashboardGrid({ widgets, onLayoutChange }: DashboardGridProps) {
   );
 
   const handleDragStart = (event: DragStartEvent) => {
+    if (isMobile) return; // disabilita drag su mobile
     setActiveId(String(event.active.id));
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
+    if (isMobile) {
+      setActiveId(null);
+      return; // drag off su mobile
+    }
     setActiveId(null);
     
     const { active, delta } = event;
@@ -78,7 +102,7 @@ export function DashboardGrid({ widgets, onLayoutChange }: DashboardGridProps) {
     setActiveId(null);
   };
 
-  const activeWidget = widgets.find((w) => w.id === activeId);
+  const activeWidget = effectiveWidgets.find((w) => w.id === activeId);
 
   return (
     <DndContext
@@ -90,14 +114,16 @@ export function DashboardGrid({ widgets, onLayoutChange }: DashboardGridProps) {
     >
       {/* Griglia principale */}
       <div
-        className="grid gap-4 p-4 border-2 border-dashed border-gray-300 rounded-lg min-h-[500px]"
+        className="grid gap-4 p-4 border-2 border-dashed border-gray-300 rounded-lg"
         style={{
-          gridTemplateColumns: `repeat(${GRID_COLS}, 1fr)`,
-          gridTemplateRows: `repeat(${GRID_ROWS}, minmax(150px, 1fr))`,
+          gridTemplateColumns: `repeat(${isMobile ? 1 : GRID_COLS}, 1fr)`,
+          gridTemplateRows: isMobile
+            ? `repeat(${effectiveWidgets.length || 1}, minmax(150px, auto))`
+            : `repeat(${GRID_ROWS}, minmax(150px, 1fr))`,
         }}
       >
-        {widgets.map((widget) => (
-          <DraggableWidget key={widget.id} widget={widget}>
+        {effectiveWidgets.map((widget) => (
+          <DraggableWidget key={widget.id} widget={widget} disableDrag={isMobile}>
             <WidgetRenderer widget={widget} />
           </DraggableWidget>
         ))}

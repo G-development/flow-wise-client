@@ -53,6 +53,11 @@ export default function Dashboard() {
             Trascina i widget per riorganizzare
           </p>
         </div>
+
+        {/* Nota mobile: editing layout solo da desktop */}
+        <p className="text-xs text-muted-foreground mb-4 md:hidden">
+          Modifiche al layout disponibili solo da desktop.
+        </p>
         
         {widgets.length === 0 ? (
           <div className="text-center text-muted-foreground">
