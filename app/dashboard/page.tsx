@@ -60,10 +60,10 @@ export default function Dashboard() {
           <div className="space-y-1">
             <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
             <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
-              Trascina i widget per riorganizzare
+              Drag widgets to reorganize
             </p>
             <p className="text-xs text-muted-foreground sm:hidden">
-              Modifiche al layout disponibili solo da desktop.
+              Layout changes available on desktop only.
             </p>
           </div>
           <div className="w-full sm:w-auto">
@@ -73,7 +73,7 @@ export default function Dashboard() {
         
         {widgets.length === 0 ? (
           <div className="text-center text-muted-foreground">
-            Nessun widget disponibile
+            No widgets available
           </div>
         ) : (
           <DashboardGrid

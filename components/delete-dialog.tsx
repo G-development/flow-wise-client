@@ -12,7 +12,7 @@ import { useDeleteTransaction } from "@/lib/hooks/useQueries";
 
 interface DeleteDialogProps {
   isOpen: boolean;
-  id: string | number;
+  id?: string | number | null;
   onClose: () => void;
   onSuccess?: () => void;
 }

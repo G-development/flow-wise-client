@@ -82,16 +82,31 @@ export default function Expenses() {
   return (
     <>
       <Navbar />
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between space-y-2 lg:space-y-0 gap-4">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Expenses</h1>
-          <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Expenses</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Record and analyze your expenses
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
             <NewTransaction onSuccess={() => refetch()} />
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center h-40">
+            <p className="text-muted-foreground">Loading transactions...</p>
+          </div>
+        )}
+
+        {/* Table */}
+        {!isLoading && (
+          <div className="overflow-x-auto rounded-lg border">
           <DynamicTable
             data={rows}
             caption={`Expense transactions shown from ${dateRange?.from?.toDateString()} to ${dateRange?.to?.toDateString()}`}
@@ -125,7 +140,8 @@ export default function Expenses() {
               </div>
             )}
         />
-        </div>
+          </div>
+        )}
 
         {selectedId !== null && (
           <>
