@@ -15,7 +15,7 @@ export interface Widget {
   config?: WidgetConfig; // Configurazione opzionale specifica per tipo
 }
 
-export type WidgetType = "total-balance" | "period-incomes";
+export type WidgetType = "total-balance" | "period-incomes" | "period-expenses";
 
 export interface WidgetConfig {
   // Total Balance: nessuna config necessaria

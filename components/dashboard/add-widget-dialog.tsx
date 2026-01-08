@@ -33,6 +33,11 @@ const AVAILABLE_WIDGETS: Array<{
     label: "Period Incomes",
     description: "Show your income for a selected period",
   },
+  {
+    type: "period-expenses",
+    label: "Period Expenses",
+    description: "Show your expenses for a selected period",
+  },
 ];
 
 export function AddWidgetDialog({
