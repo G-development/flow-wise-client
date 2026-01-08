@@ -32,18 +32,18 @@ export function PeriodIncomesWidget({ config }: PeriodIncomesWidgetProps) {
   return (
     <Card className="h-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">Entrate del Periodo</CardTitle>
-        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+        <CardTitle className="text-xs sm:text-sm font-medium truncate">Entrate del Periodo</CardTitle>
+        <TrendingUp className="h-4 w-4 text-muted-foreground flex-shrink-0" />
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="text-2xl font-bold text-muted-foreground">...</div>
+          <div className="text-xl sm:text-2xl font-bold text-muted-foreground">...</div>
         ) : (
-          <div className="text-2xl font-bold text-green-600">
+          <div className="text-xl sm:text-2xl font-bold text-green-600 truncate">
             +€{totalIncomes.toFixed(2)}
           </div>
         )}
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-xs text-muted-foreground mt-1 truncate">
           {incomes.length} transazioni • Ultimi 30 giorni
         </p>
       </CardContent>

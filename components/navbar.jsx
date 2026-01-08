@@ -5,7 +5,7 @@
  */
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 import Image from "next/image";
@@ -37,9 +37,12 @@ import { NavUser } from "./nav-user";
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
+
+  const isActive = (path) => pathname === path;
 
   return (
-    <header className="flex h-16 w-full shrink-0 items-center px-4 md:px-6 border-b">
+    <header className="flex h-16 w-full shrink-0 items-center px-4 md:px-6 border-b sticky top-0 bg-white z-50">
       {/* THIS IS THE MOBILE NAV */}
       <Sheet>
         <SheetTrigger asChild>
@@ -49,9 +52,13 @@ export default function Navbar() {
           </Button>
         </SheetTrigger>
 
-        <div className="lg:hidden flex items-center w-full text-center justify-center">
-          <Image src={Logo} width={50} alt="Flow-wise-logo" />
-          <h1>Flow wise </h1>
+        <div className="lg:hidden flex items-center gap-2 flex-1 justify-center">
+          <Image src={Logo} width={40} alt="Flow-wise-logo" />
+          <span className="font-semibold text-lg">Flow wise</span>
+        </div>
+
+        <div className="lg:hidden">
+          <NavUser />
         </div>
 
         <SheetContent side="left">
@@ -169,42 +176,54 @@ export default function Navbar() {
       <nav className="ml-auto hidden lg:flex gap-6">
         <Link
           href="/dashboard"
-          className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
+            isActive('/dashboard') ? 'bg-gray-100 font-semibold' : 'bg-white'
+          }`}
           prefetch={false}
         >
           Dashboard
         </Link>
         <Link
           href="/incomes"
-          className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
+            isActive('/incomes') ? 'bg-gray-100 font-semibold' : 'bg-white'
+          }`}
           prefetch={false}
         >
           Incomes
         </Link>
         <Link
           href="/expenses"
-          className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
+            isActive('/expenses') ? 'bg-gray-100 font-semibold' : 'bg-white'
+          }`}
           prefetch={false}
         >
           Expenses
         </Link>
         <Link
           href="/budgets"
-          className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
+            isActive('/budgets') ? 'bg-gray-100 font-semibold' : 'bg-white'
+          }`}
           prefetch={false}
         >
           Budgets
         </Link>
         <Link
           href="/wallets"
-          className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
+            isActive('/wallets') ? 'bg-gray-100 font-semibold' : 'bg-white'
+          }`}
           prefetch={false}
         >
           Wallets
         </Link>
         <Link
           href="/category"
-          className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
+            isActive('/category') ? 'bg-gray-100 font-semibold' : 'bg-white'
+          }`}
           prefetch={false}
         >
           Categories

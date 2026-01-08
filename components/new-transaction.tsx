@@ -96,8 +96,8 @@ export default function NewTransaction({ onSuccess }: NewTransactionProps) {
       <DrawerTrigger asChild>
         <Button>Add Transaction</Button>
       </DrawerTrigger>
-      <DrawerContent className="max-h-[90%] p-4 lg:px-[25%]">
-        <DrawerHeader>
+      <DrawerContent className="max-h-[90%] p-4 sm:p-6 lg:px-[25%]">
+        <DrawerHeader className="px-0">
           <DrawerTitle>New Transaction</DrawerTitle>
           <DrawerDescription>Fill in the details below</DrawerDescription>
           <DrawerClose />

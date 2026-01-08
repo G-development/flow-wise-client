@@ -46,10 +46,10 @@ export default function Dashboard() {
   return (
     <>
       <Navbar />
-      <div className="container mx-auto py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
+      <div className="container mx-auto py-4 md:py-8 px-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
             Trascina i widget per riorganizzare
           </p>
         </div>

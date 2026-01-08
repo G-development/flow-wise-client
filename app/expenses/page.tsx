@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { DateRange } from "react-day-picker";
-import { useExpenses } from "@/lib/hooks/useQueries";
+import { useExpenses, useWallets, useCategories } from "@/lib/hooks/useQueries";
 import DatePickerWithRange from "@/components/date-picker";
 import { DynamicTable } from "@/components/dynamic-table";
 import Navbar from "@/components/navbar";
@@ -27,47 +27,105 @@ export default function Expenses() {
     dateRange?.to?.toISOString().split("T")[0]
   );
 
+  const { data: wallets = [] } = useWallets();
+  const { data: categories = [] } = useCategories();
+
+  const rows = useMemo(() => {
+    const walletMap = new Map(wallets.map((w) => [String(w.id), w.name]));
+    const categoryMap = new Map(
+      categories.map((c) => [String(c.id), { name: c.name, type: c.type }])
+    );
+
+    const formatAmount = new Intl.NumberFormat("it-IT", {
+      style: "currency",
+      currency: "EUR",
+    });
+
+    const getField = (obj: Record<string, unknown>, key: string) => {
+      const val = obj[key];
+      if (typeof val === "string" || typeof val === "number") return String(val);
+      return "";
+    };
+
+    return transactions.map((tx) => {
+      const txObj = tx as Record<string, unknown>;
+      const walletId = getField(txObj, "wallet_id") || getField(txObj, "walletid");
+      const categoryId = getField(txObj, "category_id") || getField(txObj, "category");
+      const walletName = walletMap.get(walletId) ?? "-";
+      const categoryInfo = categoryMap.get(categoryId);
+      const categoryName = categoryInfo?.name ?? "-";
+      const categoryType = categoryInfo?.type;
+      const badgeClass = categoryType === "income"
+        ? "bg-emerald-100 text-emerald-800"
+        : categoryType === "expense"
+          ? "bg-rose-100 text-rose-800"
+          : "bg-muted text-foreground";
+
+      const dateStr = tx.date ? new Date(tx.date).toLocaleDateString("it-IT") : "-";
+      const amountStr = formatAmount.format(Number(tx.amount ?? 0));
+
+      return {
+        Id: tx.id,
+        Date: dateStr,
+        Description: tx.description ?? "-",
+        Amount: amountStr,
+        Wallet: walletName,
+        Category: (
+          <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${badgeClass}`}>
+            {categoryName}
+          </span>
+        ),
+      } as Record<string, unknown>;
+    });
+  }, [transactions, wallets, categories]);
+
   return (
     <>
       <Navbar />
-      <div className="flex-1 space-y-4 p-8 pt-6">
-        <div className="flex flex-col lg:flex-row items-center justify-between space-y-2 lg:space-y-0">
-          <h1 className="text-3xl font-bold tracking-tight">Expenses</h1>
-          <div className="flex gap-2">
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between space-y-2 lg:space-y-0 gap-4">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Expenses</h1>
+          <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
             <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
             <NewTransaction onSuccess={() => refetch()} />
           </div>
         </div>
 
-        <DynamicTable
-          data={transactions}
-          caption={`Expense transactions shown from ${dateRange?.from?.toDateString()} to ${dateRange?.to?.toDateString()}`}
-          isLoading={isLoading}
-          renderActions={(row) => (
-            <div className="text-right">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setSelectedId(row.id as number);
-                  setEditOpen(true);
-                }}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => {
-                  setSelectedId(row.id as number);
-                  setDeleteOpen(true);
-                }}
-              >
-                <Trash className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
+        <div className="overflow-x-auto">
+          <DynamicTable
+            data={rows}
+            caption={`Expense transactions shown from ${dateRange?.from?.toDateString()} to ${dateRange?.to?.toDateString()}`}
+            isLoading={isLoading}
+            renderActions={(row) => (
+              <div className="flex justify-end gap-2">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8"
+                  onClick={() => {
+                    setSelectedId(row.Id as number);
+                    setEditOpen(true);
+                  }}
+                >
+                  <Pencil className="h-4 w-4" />
+                  <span className="sr-only">Modifica</span>
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => {
+                    setSelectedId(row.Id as number);
+                    setDeleteOpen(true);
+                  }}
+                >
+                  <Trash className="h-4 w-4" />
+                  <span className="sr-only">Elimina</span>
+                </Button>
+              </div>
+            )}
         />
+        </div>
 
         {selectedId !== null && (
           <>

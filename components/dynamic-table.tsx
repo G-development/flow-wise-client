@@ -46,7 +46,7 @@ export function DynamicTable({
 
   return (
     <>
-      <Table>
+      <Table className="min-w-[600px]">
         <TableCaption>{caption}</TableCaption>
         <TableHeader>
           <TableRow>

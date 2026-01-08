@@ -4,13 +4,11 @@ import {
   DndContext, 
   DragEndEvent, 
   DragStartEvent,
-  DragOverEvent,
   closestCenter, 
   DragOverlay, 
   useSensor, 
   useSensors, 
   PointerSensor,
-  useDroppable 
 } from "@dnd-kit/core";
 import { useEffect, useMemo, useState } from "react";
 import { Widget, GRID_COLS, GRID_ROWS, isValidPosition } from "@/lib/types/dashboard";
@@ -158,7 +156,7 @@ export function DashboardGrid({ widgets, onLayoutChange }: DashboardGridProps) {
       {/* Griglia principale */}
       <div
         ref={setGridRef}
-        className="grid gap-4 p-4 border-2 border-dashed border-gray-300 rounded-lg"
+        className="grid gap-2 md:gap-4 p-2 md:p-4 border-2 border-dashed border-gray-300 rounded-lg"
         style={{
           gridTemplateColumns: `repeat(${isMobile ? 1 : GRID_COLS}, 1fr)`,
           gridTemplateRows: isMobile

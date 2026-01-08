@@ -33,6 +33,13 @@ export default function Settings() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  const initials = (name || "FW")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
@@ -124,111 +131,149 @@ export default function Settings() {
     setLoading(false);
   };
 
+  const resetForm = () => {
+    if (!profile) return;
+    setName(profile.name);
+    setUsername(profile.username);
+    setCurrency(profile.currency);
+    setNotifications(profile.settings?.notifications || false);
+    setMessage("");
+  };
+
   if (loading && !profile) return <div>Loading...</div>;
   if (!profile) return <div>Error loading profile.</div>;
 
   return (
     <>
       <Navbar />
-      <div className="flex-1 space-y-4 p-8 pt-6">
-        <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Account Settings</h1>
+            <p className="text-sm text-muted-foreground">Gestisci profilo, notifiche e preferenze</p>
+          </div>
+        </div>
 
-        <div className="max-w-lg mx-auto p-8 border rounded-xl shadow-md space-y-4">
-          <Avatar
-            className="h-20 w-20 rounded-lg cursor-pointer"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {profile.avatar_url ? (
-              <AvatarImage src={profile.avatar_url} alt={profile.name} />
-            ) : (
-              <AvatarFallback className="rounded-lg">FW</AvatarFallback>
+        <div className="grid gap-6 lg:grid-cols-[320px,1fr]">
+          {/* Card avatar / info */}
+          <div className="border rounded-xl shadow-sm bg-white p-4 md:p-6 space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="relative inline-block">
+                <Avatar className="h-20 w-20 rounded-lg">
+                  {profile.avatar_url ? (
+                    <AvatarImage src={profile.avatar_url} alt={profile.name} />
+                  ) : (
+                    <AvatarFallback className="rounded-lg text-lg font-semibold">
+                      {initials}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute inset-0 rounded-lg bg-black/60 text-white text-xs font-medium opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center"
+                >
+                  Cambia foto
+                </button>
+              </div>
+
+              <div className="space-y-1">
+                <h2 className="text-lg font-semibold">{profile.name}</h2>
+                <p className="text-sm text-muted-foreground">{profile.email ?? ""}</p>
+                <p className="text-xs text-muted-foreground">@{username || profile.username}</p>
+              </div>
+            </div>
+
+            <Input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p>
+                Member since: {profile.created_at && new Date(profile.created_at).toLocaleDateString()}
+              </p>
+              <p>
+                Last updated: {profile.updated_at && new Date(profile.updated_at).toLocaleString()}
+              </p>
+            </div>
+          </div>
+
+          {/* Card form */}
+          <div className="border rounded-xl shadow-sm bg-white p-4 md:p-6 space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <User width={18} /> Name
+                </Label>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Sparkle width={18} /> Username
+                </Label>
+                <Input
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Your username"
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Send width={18} /> E-mail
+                </Label>
+                <Input value={profile.email ?? ""} disabled />
+              </div>
+
+              <div className="flex items-center gap-3 md:col-span-2">
+                <div className="flex items-center gap-2">
+                  <BellRing width={18} />
+                  <Label className="text-sm font-medium text-gray-700">Notifications</Label>
+                </div>
+                <Checkbox
+                  id="notifications"
+                  checked={notifications}
+                  onCheckedChange={(val) => setNotifications(!!val)}
+                />
+                <span className="text-xs text-muted-foreground">Email alerts e promemoria</span>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <HandCoins width={18} /> Currency
+                </Label>
+                <Input
+                  disabled
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  placeholder="Your currency"
+                />
+              </div>
+            </div>
+
+            {message && (
+              <p className="text-sm text-green-600 bg-green-50 border border-green-100 rounded-md px-3 py-2">
+                {message}
+              </p>
             )}
-          </Avatar>
-          <Input
-            type="file"
-            accept="image/*"
-            ref={fileInputRef}
-            className="hidden"
-            onChange={handleAvatarChange}
-          />
 
-          <h2 className="text-2xl font-semibold">{profile.name}&apos s Profile</h2>
-
-          <div>
-            <Label className="text-sm font-medium text-gray-700">
-              <User className="inline mr-2" width={20} /> Name
-            </Label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
-            />
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium text-gray-700">
-              <Sparkle className="inline mr-2" width={20} /> Username
-            </Label>
-            <Input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Your username"
-            />
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium text-gray-700">
-              <Send className="inline mr-2" width={20} /> E-mail
-            </Label>
-            <Input value={profile.email ?? ""} disabled />
-          </div>
-
-          <div className="flex items-center">
-            <BellRing className="mr-2" width={20} />
-            <Label className="text-sm font-medium text-gray-700">
-              Notifications
-            </Label>
-            <Checkbox
-              id="notifications"
-              className="ml-2"
-              checked={notifications}
-              onCheckedChange={(val) => setNotifications(!!val)}
-            />
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium text-gray-700">
-              <HandCoins className="inline mr-2" width={20} /> Currency
-            </Label>
-            <Input
-              disabled
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              placeholder="Your currency"
-            />
-          </div>
-
-          <div className="text-xs text-gray-500 text-right">
-            <p>
-              Member since:{" "}
-              {profile.created_at &&
-                new Date(profile.created_at).toLocaleString()}
-            </p>
-            <p>
-              Last updated:{" "}
-              {profile.updated_at &&
-                new Date(profile.updated_at).toLocaleString()}
-            </p>
-          </div>
-
-          {message && (
-            <p className="text-center text-sm text-green-600">{message}</p>
-          )}
-
-          <div className="flex justify-center mt-4">
-            <Button onClick={handleSubmit} disabled={loading}>
-              Update Profile
-            </Button>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={resetForm} disabled={loading}>
+                Annulla
+              </Button>
+              <Button onClick={handleSubmit} disabled={loading}>
+                Aggiorna profilo
+              </Button>
+            </div>
           </div>
         </div>
       </div>

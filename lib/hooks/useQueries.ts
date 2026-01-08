@@ -50,7 +50,7 @@ export interface Wallet extends Record<string, unknown> {
   name: string;
   balance: number;
   currency: string;
-  isdefault: boolean;
+  is_default: boolean;
   created_at?: string;
   updated_at?: string;
 }

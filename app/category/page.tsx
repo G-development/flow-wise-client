@@ -2,6 +2,7 @@
 
 import { DynamicTable } from "@/components/dynamic-table";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/navbar";
 import { useCategories, useUpdateCategory } from "@/lib/hooks/useQueries";
 import { toast } from "sonner";
@@ -35,9 +36,9 @@ export default function Categories() {
   return (
     <>
       <Navbar />
-      <div className="flex-1 space-y-4 p-8 pt-6">
-        <div className="flex flex-col lg:flex-row items-center justify-between space-y-2 lg:space-y-0">
-          <h1 className="text-3xl font-bold tracking-tight">Categories</h1>
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 max-w-7xl mx-auto">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between space-y-2 lg:space-y-0 gap-4">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Categories</h1>
         </div>
 
         {isLoading && <p>Loading categories...</p>}
@@ -48,19 +49,30 @@ export default function Categories() {
         )}
 
         {!isLoading && categories.length > 0 && (
-          <DynamicTable
-            data={categories.map((c) => ({
-              Name: c.name,
-              Type: c.type,
-              Active: (
-                <Switch
-                  checked={c.active}
-                  onCheckedChange={() => toggleActive(c)}
-                />
-              ),
-            }))}
-            caption={`You currently have ${categories.length} categories.`}
-          />
+          <div className="overflow-x-auto">
+            <DynamicTable
+              data={categories.map((c) => {
+                const type = c.type?.toLowerCase();
+                const isIncome = type === "income" || type === "i";
+                const label = isIncome ? "Income" : "Expense";
+                const badgeClass = isIncome
+                  ? "bg-emerald-100 text-emerald-800"
+                  : "bg-rose-100 text-rose-800";
+
+                return {
+                  Name: c.name,
+                  Type: <Badge className={`${badgeClass} font-medium`}>{label}</Badge>,
+                  Active: (
+                    <Switch
+                      checked={c.active}
+                      onCheckedChange={() => toggleActive(c)}
+                    />
+                  ),
+                };
+              })}
+              caption={`You currently have ${categories.length} categories.`}
+            />
+          </div>
         )}
       </div>
     </>
