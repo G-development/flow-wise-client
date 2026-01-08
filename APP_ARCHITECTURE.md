@@ -56,9 +56,11 @@ Entrambi deployati su **Vercel** con variabili d'ambiente gestite nel dashboard 
 - `app/expenses/page.tsx`: Lista spese con filtri data + CRUD
 - `app/wallets/page.tsx`: Gestione portafogli, toggle default
 - `app/category/page.tsx`: Gestione categorie, toggle active
-- `app/dashboard/page.tsx`: Dashboard (da implementare con DnD widgets)
+- `app/dashboard/page.tsx`: Dashboard con drag & drop, modalità edit/view, pulsante "+" per aggiungere widget e salvataggio layout
 - `app/settings/yourbank/page.tsx`: Integrazione banche (GoCardless-like)
 - `app/settings/import/page.tsx`: Import transazioni
+
+Widget dashboard disponibili: saldo totale, entrate periodo, spese periodo, income vs expenses, breakdown spese per categoria (vedi [DASHBOARD_STRUCTURE.md](DASHBOARD_STRUCTURE.md)).
 
 ### Autenticazione e Fetch Centralizzato
 

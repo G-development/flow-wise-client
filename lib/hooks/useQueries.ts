@@ -15,6 +15,7 @@ export const queryKeys = {
   },
   categories: {
     all: ["categories"] as const,
+    active: ["categories", "active"] as const,
   },
   incomes: {
     all: ["incomes"] as const,
@@ -36,10 +37,12 @@ export interface Transaction extends Record<string, unknown> {
   id: string;
   userid: string;
   amount: number;
-  category: string;
   description: string;
+  note?: string | null;
   date: string;
-  walletid: string;
+  type: "I" | "E";
+  wallet_id: number;
+  category_id: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -237,6 +240,17 @@ export function useCategories() {
   });
 }
 
+export function useActiveCategories() {
+  return useQuery({
+    queryKey: queryKeys.categories.active,
+    queryFn: async () => {
+      const res = await apiFetch("/category/active");
+      if (!res.ok) throw new Error("Failed to fetch active categories");
+      return res.json() as Promise<Category[]>;
+    },
+  });
+}
+
 export function useCreateCategory() {
   const queryClient = useQueryClient();
   
@@ -352,10 +366,10 @@ export function useSaveDashboardLayout() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboardLayout.current });
-      toast.success("Layout salvato");
+      toast.success("Layout saved");
     },
     onError: () => {
-      toast.error("Errore nel salvataggio del layout");
+      toast.error("Error saving layout");
     },
   });
 }

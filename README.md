@@ -11,6 +11,13 @@ Created with React + Next.js
 - **Sonner** 
 - **ShadCN/UI** 
 
+## Features
+- Dashboard con drag & drop, modalità edit/view e salvataggio layout per utente
+- Widget pronti: saldo totale, entrate periodo, spese periodo, income vs expenses, breakdown spese per categoria
+- Tabelle entrate/spese con filtri per data, badge categoria/portafoglio e azioni inline
+- Gestione wallet con default singolo e formattazione EUR
+- Autenticazione Supabase, toast di stato e layout responsive mobile-first
+
 ## Structure
 
 ```

@@ -10,7 +10,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { BarChart3, PieChart, Plus, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { Widget, WidgetType, GRID_COLS, GRID_ROWS } from "@/lib/types/dashboard";
 
 interface AddWidgetDialogProps {
@@ -50,6 +51,14 @@ const AVAILABLE_WIDGETS: Array<{
   },
 ];
 
+const WIDGET_ICONS: Record<WidgetType, LucideIcon> = {
+  "total-balance": Wallet,
+  "period-incomes": TrendingUp,
+  "period-expenses": TrendingDown,
+  "income-vs-expenses": BarChart3,
+  "expense-breakdown": PieChart,
+};
+
 export function AddWidgetDialog({
   existingWidgets,
   onAddWidget,
@@ -83,24 +92,35 @@ export function AddWidgetDialog({
           <span className="sr-only">Add widget</span>
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-md sm:max-w-xl max-h-[80vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Add Widget</DialogTitle>
           <DialogDescription>
             Select a widget to add to your dashboard
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4">
+        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
           {AVAILABLE_WIDGETS.map((widget) => (
+            // Small visual cue per widget type
             <button
               key={widget.type}
               onClick={() => handleAddWidget(widget.type)}
-              className="text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full text-left p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              <h3 className="font-semibold text-sm">{widget.label}</h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                {widget.description}
-              </p>
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                  {(() => {
+                    const Icon = WIDGET_ICONS[widget.type];
+                    return <Icon className="h-5 w-5" aria-hidden />;
+                  })()}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm">{widget.label}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {widget.description}
+                  </p>
+                </div>
+              </div>
             </button>
           ))}
         </div>

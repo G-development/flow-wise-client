@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useExpenses, useCategories } from "@/lib/hooks/useQueries";
+import { useExpenses, useCategories, type Transaction, type Category } from "@/lib/hooks/useQueries";
 import { WidgetConfig } from "@/lib/types/dashboard";
 import { useMemo } from "react";
 import {
@@ -9,6 +9,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Pie, PieChart } from "recharts";
 
 interface ExpenseBreakdownWidgetProps {
@@ -52,8 +53,8 @@ export function ExpenseBreakdownWidget({
   // Create a map of category_id to category name
   const categoryMap = useMemo(() => {
     const map: { [key: string]: string } = {};
-    categories.forEach((cat: { id: string; name: string }) => {
-      map[cat.id] = cat.name;
+    categories.forEach((cat: Category) => {
+      map[String(cat.id)] = cat.name;
     });
     return map;
   }, [categories]);
@@ -62,8 +63,9 @@ export function ExpenseBreakdownWidget({
   const expensesByCategory = useMemo(() => {
     const grouped: { [key: string]: number } = {};
 
-    expenses.forEach((expense) => {
-      const categoryName = categoryMap[expense.category_id as string] || "Unknown";
+    expenses.forEach((expense: Transaction) => {
+      const categoryKey = String(expense.category_id);
+      const categoryName = categoryMap[categoryKey] || "Uncategorized";
       const amount = typeof expense.amount === "number" ? expense.amount : 0;
       grouped[categoryName] = (grouped[categoryName] || 0) + amount;
     });
@@ -125,8 +127,17 @@ export function ExpenseBreakdownWidget({
                   cursor={false}
                   content={
                     <ChartTooltipContent
-                      formatter={(value) => formatCurrency.format(Number(value))}
                       hideLabel
+                      formatter={(value, name, item, _index, payload) => (
+                        <div className="flex w-full justify-between">
+                          <span className="text-muted-foreground mr-3">
+                            {(payload as { category?: string })?.category || name}
+                          </span>
+                          <span className="font-mono font-medium tabular-nums text-foreground">
+                            {formatCurrency.format(Number(value))}
+                          </span>
+                        </div>
+                      )}
                     />
                   }
                 />
@@ -141,23 +152,25 @@ export function ExpenseBreakdownWidget({
               </PieChart>
             </ChartContainer>
 
-            {/* Legend */}
-            <div className="space-y-1 text-xs">
-              {chartData.map((item) => (
-                <div key={item.category} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: item.fill }}
-                    />
-                    <span className="truncate">{item.category}</span>
+            {/* Legend (scrollable to avoid oversized widget) */}
+            <ScrollArea className="h-36 w-full">
+              <div className="space-y-1 text-xs pr-2">
+                {chartData.map((item) => (
+                  <div key={item.category} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: item.fill }}
+                      />
+                      <span className="truncate">{item.category}</span>
+                    </div>
+                    <span className="font-semibold">
+                      {formatCurrency.format(item.value)}
+                    </span>
                   </div>
-                  <span className="font-semibold">
-                    {formatCurrency.format(item.value)}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </ScrollArea>
 
             {/* Total */}
             <div className="pt-2 border-t flex items-center justify-between">

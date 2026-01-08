@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { DateRange } from "react-day-picker";
 import { useIncomes, useWallets, useCategories } from "@/lib/hooks/useQueries";
 import DatePickerWithRange from "@/components/date-picker";
 import { DynamicTable } from "@/components/dynamic-table";
@@ -11,16 +10,14 @@ import { Button } from "@/components/ui/button";
 import EditDialog from "@/components/edit-dialog";
 import DeleteDialog from "@/components/delete-dialog";
 import { Pencil, Trash } from "lucide-react";
+import { useDateRange } from "@/lib/providers/DateRangeProvider";
 
 export default function Incomes() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    to: new Date(),
-  });
+  const { dateRange, setDateRange } = useDateRange();
 
   const { data: transactions = [], isLoading, refetch } = useIncomes(
     dateRange?.from?.toISOString().split("T")[0],

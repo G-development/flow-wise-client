@@ -8,7 +8,7 @@ import { DEFAULT_LAYOUT, Widget } from "@/lib/types/dashboard";
 import { useEffect, useState } from "react";
 import LoadingSpinner from "@/components/loading-spinner";
 import DatePickerWithRange from "@/components/date-picker";
-import { DateRange } from "react-day-picker";
+import { useDateRange } from "@/lib/providers/DateRangeProvider";
 import { Button } from "@/components/ui/button";
 import { Edit2, Check } from "lucide-react";
 
@@ -18,10 +18,7 @@ export default function Dashboard() {
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [initialized, setInitialized] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    to: new Date(),
-  });
+  const { dateRange, setDateRange } = useDateRange();
 
   const startDateStr = dateRange?.from?.toISOString().split("T")[0];
   const endDateStr = dateRange?.to?.toISOString().split("T")[0];
@@ -81,7 +78,7 @@ export default function Dashboard() {
           <div className="space-y-1">
             <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
             <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
-              {isEditMode ? "Edit mode: drag to reorganize, click remove to delete widgets" : "Drag widgets to reorganize"}
+              {isEditMode ? "Edit mode: drag to reorganize, click remove to delete widgets" : "Click Edit to customize your dashboard layout."}
             </p>
             <p className="text-xs text-muted-foreground sm:hidden">
               {isEditMode ? "Edit mode enabled" : "Layout changes available on desktop only."}

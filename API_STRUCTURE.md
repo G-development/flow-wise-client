@@ -18,6 +18,21 @@ Questo documento spiega in dettaglio come l'applicazione gestisce centralizzatam
 
 ---
 
+## Modello dati: Transaction (frontend/backend)
+
+- Campi attesi (snake_case) usati da client e server:
+  - `id: string`
+  - `userid: string`
+  - `amount: number`
+  - `description: string`
+  - `note?: string | null`
+  - `date: string` (ISO)
+  - `type: "I" | "E"` (Income/Expense)
+  - `wallet_id: number`
+  - `category_id: number`
+  - `created_at?`, `updated_at?`
+- Gli hook React Query (`useIncomes`, `useExpenses`, `useTransactions`) e i widget della dashboard assumono questa forma; evitare campi misti `walletid`/`category` per ridurre cast e collisioni.
+
 ## Gestione Centralizzata delle API
 
 ### 1. Costanti Centralizzate (`lib/constants.ts`)
