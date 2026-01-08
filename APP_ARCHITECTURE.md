@@ -1,3 +1,4 @@
+> ⚠️ **Generato con IA** - Questo documento è stato generato utilizzando GitHub Copilot
 
 # Flow-Wise: Architettura Tecnica Dettagliata
 
@@ -51,7 +52,7 @@ Entrambi deployati su **Vercel** con variabili d'ambiente gestite nel dashboard 
 ### Pagine Principali
 - `app/login/page.tsx`: Form login con Supabase
 - `app/register/page.tsx`: Form registrazione con validazione
-- `app/incomes/page.tsx`: Lista incomi con filtri data + CRUD
+- `app/incomes/page.tsx`: Lista Entrate con filtri data + CRUD
 - `app/expenses/page.tsx`: Lista spese con filtri data + CRUD
 - `app/wallets/page.tsx`: Gestione portafogli, toggle default
 - `app/category/page.tsx`: Gestione categorie, toggle active
@@ -324,7 +325,7 @@ RATE_LIMIT_MAX_REQUESTS=5
    # API_URL punta a http://localhost:5030
    ```
 
-3. **User registra/loga**
+3. **User registra/logga**
    - Form invia dati a `http://localhost:5030/users/register` o `/users/login`.
    - Supabase ritorna JWT.
    - Client lo salva in sessione Supabase (mempool storage).
@@ -383,7 +384,7 @@ RATE_LIMIT_MAX_REQUESTS=5
    - Browser visita `https://flow-wise-client.vercel.app`.
    - Vercel serve Next.js statico (HTML, CSS, JS).
    - Client JavaScript carica.
-   - User loga via Supabase.
+   - User logga via Supabase.
    - Fetch di `/income/all?startDate=...&endDate=...` va a `https://flow-wise-server.vercel.app`.
 
 5. **Preflight CORS**
