@@ -38,6 +38,11 @@ const AVAILABLE_WIDGETS: Array<{
     label: "Period Expenses",
     description: "Show your expenses for a selected period",
   },
+  {
+    type: "income-vs-expenses",
+    label: "Income vs Expenses",
+    description: "Visual comparison between income and expenses",
+  },
 ];
 
 export function AddWidgetDialog({
