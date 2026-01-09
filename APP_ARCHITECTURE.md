@@ -46,8 +46,8 @@ Entrambi deployati su **Vercel** con variabili d'ambiente gestite nel dashboard 
 ## Architettura Client (Frontend)
 
 ### Entry Point e Layout
-- `app/layout.tsx`: Root layout che wrappa tutto con `QueryProvider` (React Query).
-- Navbar globale con logout che usa `supabase.auth.signOut()`.
+- `app/layout.tsx`: Root layout che wrappa tutto con `DateRangeProvider` (condiviso tra pagine) + `QueryProvider` (React Query).
+- Navbar globale: top app bar e, su mobile, bottom navigation coerente con lo stile dell’app; logout via `supabase.auth.signOut()`.
 
 ### Pagine Principali
 - `app/login/page.tsx`: Form login con Supabase
@@ -56,9 +56,11 @@ Entrambi deployati su **Vercel** con variabili d'ambiente gestite nel dashboard 
 - `app/expenses/page.tsx`: Lista spese con filtri data + CRUD
 - `app/wallets/page.tsx`: Gestione portafogli, toggle default
 - `app/category/page.tsx`: Gestione categorie, toggle active
-- `app/dashboard/page.tsx`: Dashboard (da implementare con DnD widgets)
+- `app/dashboard/page.tsx`: Dashboard con drag & drop, modalità edit/view, pulsante "+" per aggiungere widget e salvataggio layout
 - `app/settings/yourbank/page.tsx`: Integrazione banche (GoCardless-like)
 - `app/settings/import/page.tsx`: Import transazioni
+
+Widget dashboard disponibili: saldo totale, entrate periodo, spese periodo, income vs expenses, breakdown spese per categoria (vedi [DASHBOARD_STRUCTURE.md](DASHBOARD_STRUCTURE.md)).
 
 ### Autenticazione e Fetch Centralizzato
 
@@ -106,6 +108,7 @@ Fornisce hook per ogni risorsa:
 
 **Categories**
 - `useCategories()` → GET `/category`
+- `useActiveCategories()` → GET `/category/active` (solo attive)
 - `useCreateCategory()` → POST `/category`
 - `useUpdateCategory()` → PUT `/category/:id`
 - `useDeleteCategory()` → DELETE `/category/:id`
@@ -134,8 +137,9 @@ refetchOnWindowFocus: false    // non refetch al focus
 - Mostra loading state se `isLoading=true`.
 
 **`components/new-transaction.tsx`**
-- Drawer con form (description, amount, type I/E, wallet, category, date).
-- Carica wallets e categories da React Query al mount.
+- Drawer con form (description, amount, type I/E, wallet, category, date) e layout scrollabile su mobile.
+- Toggle tipo con icone (Income/Expense) e categorie filtrate per tipo, solo attive.
+- Refetch categorie all’apertura drawer/select per gestire timing auth.
 - Chiama `useCreateTransaction().mutate()` e invalida cache.
 
 **`components/edit-dialog.tsx`**

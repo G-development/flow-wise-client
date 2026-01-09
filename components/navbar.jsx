@@ -5,7 +5,7 @@
  */
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 import Image from "next/image";
@@ -37,174 +37,136 @@ import { NavUser } from "./nav-user";
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
+
+  const isActive = (path) => pathname === path;
 
   return (
-    <header className="flex h-16 w-full shrink-0 items-center px-4 md:px-6 border-b">
-      {/* THIS IS THE MOBILE NAV */}
+    <>
+    <header className="flex h-14 w-full shrink-0 items-center px-3 md:px-6 border-b sticky top-0 bg-background z-50">
+      {/* Mobile App Bar */}
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="lg:hidden">
-            <MenuIcon className="h-6 w-6" />
+          <Button variant="outline" size="icon" className="lg:hidden" aria-label="Open menu">
+            <MenuIcon className="h-5 w-5" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
 
-        <div className="lg:hidden flex items-center w-full text-center justify-center">
-          <Image src={Logo} width={50} alt="Flow-wise-logo" />
-          <h1>Flow wise </h1>
+        <div className="lg:hidden flex items-center gap-2 flex-1 justify-center">
+          <Image src={Logo} width={36} alt="Flow wise logo" />
+          <span className="font-semibold text-base">Flow Wise</span>
         </div>
 
-        <SheetContent side="left">
-          <SheetTitle>where you flowing? 💸</SheetTitle>
-          <Link href="#" className="mr-6 hidden lg:flex" prefetch={false}>
-            {/* <MountainIcon className="h-6 w-6" /> */}
-            <Image src={Logo} width={60} height={60} alt="Flow-wise-logo" />
-            <span className="sr-only">Flow wise</span>
-          </Link>
-          <div className="grid gap-2 py-6">
-            <Link
-              href="/dashboard"
-              className="flex w-full items-center py-2 text-lg font-semibold"
-              prefetch={false}
-            >
-              <ChartNoAxesCombined className="mr-2" />
-              Dashboard
-            </Link>
+        <div className="lg:hidden">
+          <NavUser />
+        </div>
 
-            <Separator className="my-4" />
-
-            <Link
-              href="/incomes"
-              className="flex w-full items-center py-2 text-lg font-semibold"
-              prefetch={false}
-            >
-              <Plus className="mr-2" />
-              Incomes
+        <SheetContent side="left" className="p-0">
+          <div className="px-4 py-3 border-b flex items-center gap-2">
+            <Image src={Logo} width={32} height={32} alt="Flow wise" />
+            <SheetTitle className="text-base">Flow Wise</SheetTitle>
+          </div>
+          <nav className="grid gap-1 p-4">
+            <Link href="/dashboard" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted" prefetch={false}>
+              <ChartNoAxesCombined className="h-4 w-4" /> Dashboard
             </Link>
-            <Link
-              href="/expenses"
-              className="flex w-full items-center py-2 text-lg font-semibold"
-              prefetch={false}
-            >
-              <Minus className="mr-2" />
-              Expenses
+            <Link href="/incomes" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted" prefetch={false}>
+              <Plus className="h-4 w-4" /> Incomes
             </Link>
-
-            <Separator className="my-4" />
-
-            <Link
-              href="/budgets"
-              className="flex w-full items-center py-2 text-lg font-semibold"
-              prefetch={false}
-            >
-              <HandCoins className="mr-2" />
-              Budgets
+            <Link href="/expenses" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted" prefetch={false}>
+              <Minus className="h-4 w-4" /> Expenses
             </Link>
-
-            <Link
-              href="/wallets"
-              className="flex w-full items-center py-2 text-lg font-semibold"
-              prefetch={false}
-            >
-              <Wallet className="mr-2" />
-              Wallets
+            <Separator className="my-2" />
+            <Link href="/budgets" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted" prefetch={false}>
+              <HandCoins className="h-4 w-4" /> Budgets
             </Link>
-
-            <Link
-              href="/category"
-              className="flex w-full items-center py-2 text-lg font-semibold"
-              prefetch={false}
-            >
-              <Boxes className="mr-2" />
-              Categories
+            <Link href="/wallets" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted" prefetch={false}>
+              <Wallet className="h-4 w-4" /> Wallets
             </Link>
-
-            <Separator className="my-4" />
-
-            <Link
-              href="/settings"
-              className="flex w-full items-center py-2 text-lg font-semibold"
-              prefetch={false}
-            >
-              <User className="mr-2" />
-              Account
+            <Link href="/category" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted" prefetch={false}>
+              <Boxes className="h-4 w-4" /> Categories
             </Link>
-            <Link
-              href="/settings/import"
-              className="flex w-full items-center py-1 text-base font-normal pl-6"
-              prefetch={false}
-            >
-              <Upload className="mr-2 h-5 w-5" />
-              Import
+            <Separator className="my-2" />
+            <Link href="/settings" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted" prefetch={false}>
+              <User className="h-4 w-4" /> Account
             </Link>
-
-            <Link
-              href="/settings/yourbank"
-              className="flex w-full items-center py-1 text-base font-normal pl-6"
-              prefetch={false}
-            >
-              <Banknote className="mr-2 h-5 w-5" />
-              Your Bank
+            <Link href="/settings/import" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted" prefetch={false}>
+              <Upload className="h-4 w-4" /> Import
             </Link>
-            <div
-              className="flex gap-2 absolute bottom-8 right-8 cursor-pointer"
+            <Link href="/settings/yourbank" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted" prefetch={false}>
+              <Banknote className="h-4 w-4" /> Your Bank
+            </Link>
+            <Button
+              variant="outline"
+              className="mt-2 justify-start gap-2"
               onClick={async () => {
                 await supabase.auth.signOut();
                 router.push("/login");
               }}
             >
-              Logout
-              <LogOut />
-            </div>
-          </div>
+              <LogOut className="h-4 w-4" /> Logout
+            </Button>
+          </nav>
         </SheetContent>
       </Sheet>
 
-      {/* THIS IS THE DESKTOP NAV */}
+      {/* Desktop Nav */}
       <Link href="/dashboard" className="mr-6 hidden lg:flex" prefetch={false}>
-        {/* <MountainIcon className="h-6 w-6" /> */}
-        <Image src={Logo} width={60} height={60} alt="Flow-wise-logo" />
+        <Image src={Logo} width={60} height={60} alt="Flow wise logo" />
         <span className="sr-only">Flow Wise</span>
       </Link>
       <nav className="ml-auto hidden lg:flex gap-6">
         <Link
           href="/dashboard"
-          className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
+            isActive('/dashboard') ? 'bg-gray-100 font-semibold' : 'bg-white'
+          }`}
           prefetch={false}
         >
           Dashboard
         </Link>
         <Link
           href="/incomes"
-          className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
+            isActive('/incomes') ? 'bg-gray-100 font-semibold' : 'bg-white'
+          }`}
           prefetch={false}
         >
           Incomes
         </Link>
         <Link
           href="/expenses"
-          className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
+            isActive('/expenses') ? 'bg-gray-100 font-semibold' : 'bg-white'
+          }`}
           prefetch={false}
         >
           Expenses
         </Link>
         <Link
           href="/budgets"
-          className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
+            isActive('/budgets') ? 'bg-gray-100 font-semibold' : 'bg-white'
+          }`}
           prefetch={false}
         >
           Budgets
         </Link>
         <Link
           href="/wallets"
-          className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
+            isActive('/wallets') ? 'bg-gray-100 font-semibold' : 'bg-white'
+          }`}
           prefetch={false}
         >
           Wallets
         </Link>
         <Link
           href="/category"
-          className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
+            isActive('/category') ? 'bg-gray-100 font-semibold' : 'bg-white'
+          }`}
           prefetch={false}
         >
           Categories
@@ -212,6 +174,57 @@ export default function Navbar() {
         <NavUser />
       </nav>
     </header>
+    {/* Bottom Navigation (Mobile) */}
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background lg:hidden pb-safe">
+      <div className="grid grid-cols-5">
+        <Link
+          href="/dashboard"
+          prefetch={false}
+          className={`flex flex-col items-center justify-center py-3 gap-1 text-[11px] ${isActive('/dashboard') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+          aria-label="Dashboard"
+        >
+          <ChartNoAxesCombined className="h-5 w-5" />
+          <span>Dashboard</span>
+        </Link>
+        <Link
+          href="/incomes"
+          prefetch={false}
+          className={`flex flex-col items-center justify-center py-3 gap-1 text-[11px] ${isActive('/incomes') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+          aria-label="Incomes"
+        >
+          <Plus className="h-5 w-5" />
+          <span>Incomes</span>
+        </Link>
+        <Link
+          href="/expenses"
+          prefetch={false}
+          className={`flex flex-col items-center justify-center py-3 gap-1 text-[11px] ${isActive('/expenses') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+          aria-label="Expenses"
+        >
+          <Minus className="h-5 w-5" />
+          <span>Expenses</span>
+        </Link>
+        <Link
+          href="/wallets"
+          prefetch={false}
+          className={`flex flex-col items-center justify-center py-3 gap-1 text-[11px] ${isActive('/wallets') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+          aria-label="Wallets"
+        >
+          <Wallet className="h-5 w-5" />
+          <span>Wallets</span>
+        </Link>
+        <Link
+          href="/settings"
+          prefetch={false}
+          className={`flex flex-col items-center justify-center py-3 gap-1 text-[11px] ${isActive('/settings') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+          aria-label="Settings"
+        >
+          <User className="h-5 w-5" />
+          <span>Settings</span>
+        </Link>
+      </div>
+    </nav>
+    </>
   );
 }
 

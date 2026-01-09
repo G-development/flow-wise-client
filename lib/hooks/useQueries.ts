@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, buildQuery } from "@/lib/api";
 import { toast } from "sonner";
+import { DashboardLayout, Widget } from "@/lib/types/dashboard";
 
 // Query Keys
 export const queryKeys = {
@@ -14,6 +15,7 @@ export const queryKeys = {
   },
   categories: {
     all: ["categories"] as const,
+    active: ["categories", "active"] as const,
   },
   incomes: {
     all: ["incomes"] as const,
@@ -25,6 +27,9 @@ export const queryKeys = {
     byDateRange: (start?: string, end?: string) => 
       ["expenses", { start, end }] as const,
   },
+  dashboardLayout: {
+    current: ["dashboard-layout"] as const,
+  },
 };
 
 // Types
@@ -32,10 +37,12 @@ export interface Transaction extends Record<string, unknown> {
   id: string;
   userid: string;
   amount: number;
-  category: string;
   description: string;
+  note?: string | null;
   date: string;
-  walletid: string;
+  type: "I" | "E";
+  wallet_id: number;
+  category_id: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -46,7 +53,7 @@ export interface Wallet extends Record<string, unknown> {
   name: string;
   balance: number;
   currency: string;
-  isdefault: boolean;
+  is_default: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -233,6 +240,17 @@ export function useCategories() {
   });
 }
 
+export function useActiveCategories() {
+  return useQuery({
+    queryKey: queryKeys.categories.active,
+    queryFn: async () => {
+      const res = await apiFetch("/category/active");
+      if (!res.ok) throw new Error("Failed to fetch active categories");
+      return res.json() as Promise<Category[]>;
+    },
+  });
+}
+
 export function useCreateCategory() {
   const queryClient = useQueryClient();
   
@@ -317,6 +335,41 @@ export function useExpenses(startDate?: string, endDate?: string) {
       const res = await apiFetch(`/expense/all${query}`);
       if (!res.ok) throw new Error("Failed to fetch expenses");
       return res.json() as Promise<Transaction[]>;
+    },
+  });
+}
+
+// ============= Dashboard Layout Hooks =============
+
+export function useDashboardLayout() {
+  return useQuery({
+    queryKey: queryKeys.dashboardLayout.current,
+    queryFn: async () => {
+      const res = await apiFetch("/dashboard-layout");
+      if (!res.ok) throw new Error("Failed to fetch dashboard layout");
+      return res.json() as Promise<DashboardLayout>;
+    },
+  });
+}
+
+export function useSaveDashboardLayout() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (widgets: Widget[]) => {
+      const res = await apiFetch("/dashboard-layout", {
+        method: "PUT",
+        body: JSON.stringify({ widgets }),
+      });
+      if (!res.ok) throw new Error("Failed to save dashboard layout");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardLayout.current });
+      toast.success("Layout saved");
+    },
+    onError: () => {
+      toast.error("Error saving layout");
     },
   });
 }

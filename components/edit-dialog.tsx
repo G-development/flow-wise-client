@@ -118,8 +118,8 @@ const EditDialog: React.FC<EditDialogProps> = ({
       {
         id: String(id),
         data: {
-          wallet_id: formData.wallet_id,
-          category_id: formData.category_id,
+          wallet_id: Number(formData.wallet_id),
+          category_id: Number(formData.category_id),
           amount: parseFloat(formData.amount),
           date: formData.date,
         },
