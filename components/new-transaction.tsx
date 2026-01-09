@@ -109,7 +109,7 @@ export default function NewTransaction({ onSuccess }: NewTransactionProps) {
       <DrawerTrigger asChild>
         <Button>Add Transaction</Button>
       </DrawerTrigger>
-      <DrawerContent className="max-h-[90vh] px-3 sm:px-6 py-4 sm:py-6 lg:px-[22%]">
+      <DrawerContent className="h-[85vh] px-3 sm:px-6 py-4 sm:py-6 lg:px-[22%]">
         <DrawerHeader className="px-0 relative">
           <DrawerTitle className="text-lg sm:text-xl">Add transaction</DrawerTitle>
           <DrawerDescription className="text-sm text-muted-foreground">
@@ -127,7 +127,7 @@ export default function NewTransaction({ onSuccess }: NewTransactionProps) {
           </DrawerClose>
         </DrawerHeader>
 
-        <div className="space-y-6 mt-2">
+        <div className="flex-1 overflow-y-auto space-y-6 mt-2 pr-1 sm:pr-2 overscroll-contain">
           <div className="grid gap-3">
             <Label className="text-sm font-medium">Details</Label>
             <div className="grid gap-3 sm:grid-cols-2">
