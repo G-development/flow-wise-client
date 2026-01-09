@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { toast } from "sonner";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -107,28 +108,63 @@ export default function Settings() {
     const file = event.target.files?.[0];
     if (!file || !profile) return;
 
-    setLoading(true);
-    try {
-      // const filePath = `${profile.id}/${file.name}`;
-      // const { data: uploadData, error: uploadError } = await supabase.storage
-      //   .from("avatars")
-      //   .upload(filePath, file, { upsert: true });
-
-      // if (uploadError) throw uploadError;
-
-      // const { data: publicUrlData } = supabase.storage
-      //   .from("avatars")
-      //   .getPublicUrl(filePath);
-
-      // setProfile(
-      //   (prev) => prev && { ...prev, avatar_url: publicUrlData.publicUrl }
-      // );
-      // setMessage("Avatar updated!");
-    } catch (err) {
-      console.error("Error uploading avatar:", err);
-      setMessage("Failed to upload avatar.");
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file');
+      return;
     }
-    setLoading(false);
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+
+    setLoading(true);
+    const loadingToast = toast.loading('Uploading avatar...');
+    
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      if (!token) {
+        throw new Error('Not authenticated');
+      }
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5030';
+      const response = await fetch(`${apiUrl}/users/profile/photo`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to upload avatar');
+      }
+
+      const data = await response.json();
+      
+      setProfile((prev) => prev ? { ...prev, avatar_url: data.avatar_url } : prev);
+      toast.success('Avatar updated successfully!', { id: loadingToast });
+      setMessage('Avatar updated successfully!');
+    } catch (err) {
+      console.error('Error uploading avatar:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to upload avatar';
+      toast.error(errorMessage, { id: loadingToast });
+      setMessage(`Failed to upload avatar: ${errorMessage}`);
+    } finally {
+      setLoading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   const resetForm = () => {
