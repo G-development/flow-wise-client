@@ -109,7 +109,7 @@ export default function NewTransaction({ onSuccess }: NewTransactionProps) {
       <DrawerTrigger asChild>
         <Button>Add Transaction</Button>
       </DrawerTrigger>
-      <DrawerContent className="h-[85vh] px-3 sm:px-6 py-4 sm:py-6 lg:px-[22%]">
+      <DrawerContent className="h-[85vh] px-3 sm:px-6 py-4 sm:py-6 lg:px-[22%] max-w-full overflow-x-hidden">
         <DrawerHeader className="px-0 relative">
           <DrawerTitle className="text-lg sm:text-xl">Add transaction</DrawerTitle>
           <DrawerDescription className="text-sm text-muted-foreground">
@@ -165,7 +165,7 @@ export default function NewTransaction({ onSuccess }: NewTransactionProps) {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
+            <div className="grid gap-2 min-w-0">
               <Label htmlFor="amount" className="text-sm font-medium">
                 Amount
               </Label>
@@ -183,7 +183,7 @@ export default function NewTransaction({ onSuccess }: NewTransactionProps) {
               />
             </div>
 
-            <div className="grid gap-2">
+            <div className="grid gap-2 min-w-0">
               <Label htmlFor="date" className="text-sm font-medium flex items-center gap-2">
                 <Calendar className="h-4 w-4" /> Date
               </Label>
@@ -191,15 +191,14 @@ export default function NewTransaction({ onSuccess }: NewTransactionProps) {
                 id="date"
                 type="date"
                 value={formData.date ?? ""}
-                placeholder="YYYY-MM-DD"
-                className="bg-background"
+                className="bg-background max-w-full"
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
               />
             </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
+            <div className="grid gap-2 min-w-0">
               <Label className="text-sm font-medium flex items-center gap-2">
                 <WalletIcon className="h-4 w-4" /> Wallet
               </Label>
@@ -222,7 +221,7 @@ export default function NewTransaction({ onSuccess }: NewTransactionProps) {
               </Select>
             </div>
 
-            <div className="grid gap-2">
+            <div className="grid gap-2 min-w-0">
               <Label className="text-sm font-medium flex items-center gap-2">
                 <Tag className="h-4 w-4" /> Category
               </Label>

@@ -107,3 +107,10 @@ html {
     @apply bg-background text-foreground;
   }
 }
+
+/* Add bottom padding on mobile to prevent content from being hidden behind fixed bottom nav */
+@media (max-width: 1023px) {
+  body {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+}

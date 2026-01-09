@@ -175,12 +175,12 @@ export default function Navbar() {
       </nav>
     </header>
     {/* Bottom Navigation (Mobile) */}
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background lg:hidden pb-safe">
       <div className="grid grid-cols-5">
         <Link
           href="/dashboard"
           prefetch={false}
-          className={`flex flex-col items-center justify-center py-2 text-[11px] ${isActive('/dashboard') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+          className={`flex flex-col items-center justify-center py-3 gap-1 text-[11px] ${isActive('/dashboard') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
           aria-label="Dashboard"
         >
           <ChartNoAxesCombined className="h-5 w-5" />
@@ -189,7 +189,7 @@ export default function Navbar() {
         <Link
           href="/incomes"
           prefetch={false}
-          className={`flex flex-col items-center justify-center py-2 text-[11px] ${isActive('/incomes') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+          className={`flex flex-col items-center justify-center py-3 gap-1 text-[11px] ${isActive('/incomes') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
           aria-label="Incomes"
         >
           <Plus className="h-5 w-5" />
@@ -198,7 +198,7 @@ export default function Navbar() {
         <Link
           href="/expenses"
           prefetch={false}
-          className={`flex flex-col items-center justify-center py-2 text-[11px] ${isActive('/expenses') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+          className={`flex flex-col items-center justify-center py-3 gap-1 text-[11px] ${isActive('/expenses') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
           aria-label="Expenses"
         >
           <Minus className="h-5 w-5" />
@@ -207,7 +207,7 @@ export default function Navbar() {
         <Link
           href="/wallets"
           prefetch={false}
-          className={`flex flex-col items-center justify-center py-2 text-[11px] ${isActive('/wallets') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+          className={`flex flex-col items-center justify-center py-3 gap-1 text-[11px] ${isActive('/wallets') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
           aria-label="Wallets"
         >
           <Wallet className="h-5 w-5" />
@@ -216,7 +216,7 @@ export default function Navbar() {
         <Link
           href="/settings"
           prefetch={false}
-          className={`flex flex-col items-center justify-center py-2 text-[11px] ${isActive('/settings') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+          className={`flex flex-col items-center justify-center py-3 gap-1 text-[11px] ${isActive('/settings') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
           aria-label="Settings"
         >
           <User className="h-5 w-5" />
