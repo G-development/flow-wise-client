@@ -14,9 +14,13 @@ Created with React + Next.js
 ## Features
 - Dashboard con drag & drop, modalità edit/view e salvataggio layout per utente
 - Widget pronti: saldo totale, entrate periodo, spese periodo, income vs expenses, breakdown spese per categoria
+- Legenda widget “Spese per categoria” scrollabile + tooltip con nome categoria e importo
 - Tabelle entrate/spese con filtri per data, badge categoria/portafoglio e azioni inline
 - Gestione wallet con default singolo e formattazione EUR
 - Autenticazione Supabase, toast di stato e layout responsive mobile-first
+- Navbar mobile modernizzata (app bar + bottom nav) coerente con lo stile
+- Date range condiviso tra Dashboard/Incomes/Expenses (ripristino al mese corrente al reload)
+- Drawer “New Transaction” migliorato: selettore tipo con icone, scrollabile su mobile, categorie attive
 
 ## Structure
 

@@ -15,7 +15,13 @@ Questo documento riassume l'implementazione della dashboard drag & drop basata s
   - Entrate periodo: [components/dashboard/widgets/period-incomes-widget.tsx](components/dashboard/widgets/period-incomes-widget.tsx) (range date o ultimi 30 giorni via `useIncomes`).
   - Spese periodo: [components/dashboard/widgets/period-expenses-widget.tsx](components/dashboard/widgets/period-expenses-widget.tsx) (range date o ultimi 30 giorni via `useExpenses`).
   - Income vs Expenses: [components/dashboard/widgets/income-vs-expenses-widget.tsx](components/dashboard/widgets/income-vs-expenses-widget.tsx) (barre proporzionali e bilancio).
-  - Expense Breakdown: [components/dashboard/widgets/expense-breakdown-widget.tsx](components/dashboard/widgets/expense-breakdown-widget.tsx) (torta per categoria con legenda e totale).
+  - Expense Breakdown: [components/dashboard/widgets/expense-breakdown-widget.tsx](components/dashboard/widgets/expense-breakdown-widget.tsx) (torta per categoria con legenda e totale, tooltip con categoria+importo, legenda scrollabile).
+
+### Aggiornamenti UI recenti
+- Dialog “Add Widget” con icone per tipo e layout responsivo su mobile.
+- Legenda del widget “Spese per categoria” scrollabile per evitare overflow.
+- Tooltip del widget mostra categoria e importo formattato.
+- Date range condiviso via provider tra le pagine principali.
 
 ## API & Persistenza Layout
 - Endpoint backend: [flow-wise-server/routes/dashboard-layout.js](../flow-wise-server/routes/dashboard-layout.js)

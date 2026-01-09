@@ -400,6 +400,7 @@ export const queryKeys = {
   },
   categories: {
     all: ["categories"] as const,
+    active: ["categories", "active"] as const,
   },
   incomes: {
     all: ["incomes"] as const,
