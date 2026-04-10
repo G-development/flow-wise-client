@@ -45,6 +45,9 @@ const EditDialog: React.FC<EditDialogProps> = ({
     category_id: "",
     amount: "",
     date: "",
+    description: "",
+    note: "",
+    type: "E",
   });
 
   useEffect(() => {
@@ -77,6 +80,9 @@ const EditDialog: React.FC<EditDialogProps> = ({
             date: transaction.date
               ? format(new Date(transaction.date), "yyyy-MM-dd")
               : "",
+            description: transaction.description || "",
+            note: transaction.note || "",
+            type: transaction.type || "E",
           });
 
           setWallets(walletData);
@@ -122,6 +128,9 @@ const EditDialog: React.FC<EditDialogProps> = ({
           category_id: Number(formData.category_id),
           amount: parseFloat(formData.amount),
           date: formData.date,
+          description: formData.description,
+          note: formData.note,
+          type: formData.type as "I" | "E",
         },
       },
       {

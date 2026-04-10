@@ -10,7 +10,8 @@ import LoadingSpinner from "@/components/loading-spinner";
 import DatePickerWithRange from "@/components/date-picker";
 import { useDateRange } from "@/lib/providers/DateRangeProvider";
 import { Button } from "@/components/ui/button";
-import { Edit2, Check } from "lucide-react";
+import NewTransaction from "@/components/new-transaction";
+import { Edit2, Check, Plus } from "lucide-react";
 
 export default function Dashboard() {
   const { data: layoutData, isLoading } = useDashboardLayout();
@@ -81,8 +82,22 @@ export default function Dashboard() {
               {isEditMode ? "Edit mode: drag to reorganize, click remove to delete widgets" : "Click Edit to customize your dashboard layout."}
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-center">
             <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
+            {!isEditMode && (
+              <NewTransaction
+                trigger={
+                  <Button
+                    variant="default"
+                    className="bg-black text-white hover:bg-black/90 border-black"
+                    aria-label="Add transaction"
+                  >
+                    <Plus className="hidden sm:inline h-4 w-4" />
+                    <span className="sm:hidden">Add</span>
+                  </Button>
+                }
+              />
+            )}
             {isEditMode && <AddWidgetDialog existingWidgets={widgets} onAddWidget={handleAddWidget} />}
             <Button
               onClick={() => isEditMode ? handleSaveEdit() : setIsEditMode(true)}

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import type { LucideIcon } from "lucide-react";
-import { BarChart3, PieChart, Plus, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { BarChart3, PieChart, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { Widget, WidgetType, GRID_COLS, GRID_ROWS } from "@/lib/types/dashboard";
 
 interface AddWidgetDialogProps {
@@ -87,9 +87,11 @@ export function AddWidgetDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon" className="h-10 w-10">
-          <Plus className="h-4 w-4" />
-          <span className="sr-only">Add widget</span>
+        <Button
+          variant="default"
+          className="h-10 px-4 bg-emerald-600 text-white hover:bg-emerald-700 border-emerald-600"
+        >
+          Add widget
         </Button>
       </DialogTrigger>
       <DialogContent className="w-[calc(100vw-2rem)] max-w-md sm:max-w-xl max-h-[80vh] overflow-y-auto p-4 sm:p-6">

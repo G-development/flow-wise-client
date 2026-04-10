@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { ReactNode, useEffect } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,9 +38,10 @@ type FormData = {
 
 type NewTransactionProps = {
   onSuccess?: () => void;
+  trigger?: ReactNode;
 };
 
-export default function NewTransaction({ onSuccess }: NewTransactionProps) {
+export default function NewTransaction({ onSuccess, trigger }: NewTransactionProps) {
   const [open, setOpen] = useState(false);
   const { data: wallets = [] } = useWallets();
   const {
@@ -59,6 +60,29 @@ export default function NewTransaction({ onSuccess }: NewTransactionProps) {
     category_id: null,
     date: null,
   });
+
+  const defaultWallet = wallets.find((wallet) => wallet.is_default);
+  const today = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    if (!open) return;
+
+    setFormData((current) => {
+      const updatedDate = current.date ?? today;
+      const defaultWalletId = defaultWallet ? Number(defaultWallet.id) : null;
+      const updatedWalletId = current.wallet_id ?? defaultWalletId;
+
+      if (updatedDate === current.date && updatedWalletId === current.wallet_id) {
+        return current;
+      }
+
+      return {
+        ...current,
+        date: updatedDate,
+        wallet_id: updatedWalletId,
+      };
+    });
+  }, [open, defaultWallet, today]);
 
   const filteredCategories = categories.filter((cat) => {
     const typeLower = typeof cat.type === "string" ? cat.type.toLowerCase() : "";
@@ -107,7 +131,7 @@ export default function NewTransaction({ onSuccess }: NewTransactionProps) {
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button>Add Transaction</Button>
+        {trigger ?? <Button>Add Transaction</Button>}
       </DrawerTrigger>
       <DrawerContent className="h-[85vh] px-3 sm:px-6 py-4 sm:py-6 lg:px-[22%] max-w-full overflow-x-hidden">
         <DrawerHeader className="px-0 relative">

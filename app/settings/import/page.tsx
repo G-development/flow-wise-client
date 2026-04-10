@@ -17,15 +17,15 @@ interface csvRow {
   Amount: string;
   Date: string;
   Category: string;
+  Description: string;
 }
 
 export default function Import() {
   const [isLoading, setIsLoading] = useState(false);
   const [importResult, setImportResult] = useState<{
     success: boolean;
-    incomeCount: number;
-    expenseCount: number;
-    totalProcessed: number;
+    importedCount: number;
+    totalRows: number;
     errors: string[];
   } | null>(null);
 
@@ -45,128 +45,147 @@ export default function Import() {
     const loadingToast = toast.loading('Processing CSV file...');
 
     try {
-      Papa.parse(file, {
+      const fileText = await file.text();
+      const firstLine = fileText.split(/\r?\n/)[0] ?? "";
+      const delimiterCandidates = [",", ";", "\t", "|"];
+      const detectedDelimiter = delimiterCandidates.find((delimiter) => firstLine.includes(delimiter)) ?? ",";
+      const normalizeHeader = (header: string | undefined) =>
+        header?.replace(/^\uFEFF/, "").trim() ?? "";
+
+      let results = Papa.parse<csvRow>(fileText, {
         header: true,
         skipEmptyLines: true,
-        complete: async (results: Papa.ParseResult<csvRow>) => {
-          const rows = results.data;
-          const errors: string[] = [];
-
-          // Validate headers
-          const requiredHeaders = ['Type', 'Amount', 'Date', 'Category'];
-          const headers = results.meta.fields || [];
-          const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
-
-          if (missingHeaders.length > 0) {
-            errors.push(`Missing required columns: ${missingHeaders.join(', ')}`);
-            toast.error('Invalid CSV format', { id: loadingToast });
-            setImportResult({ success: false, incomeCount: 0, expenseCount: 0, totalProcessed: rows.length, errors });
-            setIsLoading(false);
-            return;
-          }
-
-          // Validate and filter data
-          const valid = rows.filter((r, index) => {
-            const rowNum = index + 2; // +2 because of 0-index and header row
-
-            if (!["I", "E"].includes(r.Type?.trim())) {
-              errors.push(`Row ${rowNum}: Invalid Type "${r.Type}". Must be "I" or "E"`);
-              return false;
-            }
-
-            if (isNaN(parseFloat(r.Amount?.replace(',', '.')))) {
-              errors.push(`Row ${rowNum}: Invalid Amount "${r.Amount}"`);
-              return false;
-            }
-
-            try {
-              parse(r.Date, "dd/MM/yyyy", new Date());
-            } catch {
-              errors.push(`Row ${rowNum}: Invalid Date "${r.Date}". Expected format: dd/MM/yyyy`);
-              return false;
-            }
-
-            if (!r.Category?.trim()) {
-              errors.push(`Row ${rowNum}: Missing Category`);
-              return false;
-            }
-
-            return true;
-          });
-
-          if (valid.length === 0) {
-            toast.error('No valid transactions found', { id: loadingToast });
-            setImportResult({ success: false, incomeCount: 0, expenseCount: 0, totalProcessed: rows.length, errors });
-            setIsLoading(false);
-            return;
-          }
-
-          // Process valid data
-          const income = valid
-            .filter((r) => r.Type === "I")
-            .map((r) => ({
-              amount: parseFloat(r.Amount.replace(",", ".")),
-              date: parse(r.Date, "dd/MM/yyyy", new Date()),
-              category: r.Category.trim(),
-            }));
-
-          const expense = valid
-            .filter((r) => r.Type === "E")
-            .map((r) => ({
-              amount: parseFloat(r.Amount.replace(",", ".")),
-              date: new Date(r.Date),
-              category: r.Category.trim(),
-            }));
-
-          toast.loading('Importing transactions...', { id: loadingToast });
-
-          // Send to API
-          const res = await apiFetch("/import", {
-            method: "POST",
-            body: JSON.stringify({ income, expense }),
-          });
-
-          if (res.ok) {
-            toast.success(`Successfully imported ${income.length + expense.length} transactions!`, { id: loadingToast });
-            setImportResult({
-              success: true,
-              incomeCount: income.length,
-              expenseCount: expense.length,
-              totalProcessed: rows.length,
-              errors
-            });
-          } else {
-            const errorData = await res.json().catch(() => ({ message: 'Import failed' }));
-            toast.error(errorData.message || 'Import failed', { id: loadingToast });
-            setImportResult({
-              success: false,
-              incomeCount: income.length,
-              expenseCount: expense.length,
-              totalProcessed: rows.length,
-              errors: [...errors, errorData.message || 'Import failed']
-            });
-          }
-        },
-        error: (parseError) => {
-          toast.error('Failed to parse CSV file', { id: loadingToast });
-          setImportResult({
-            success: false,
-            incomeCount: 0,
-            expenseCount: 0,
-            totalProcessed: 0,
-            errors: [`CSV parsing error: ${parseError.message}`]
-          });
-        }
+        transformHeader: normalizeHeader,
+        delimiter: detectedDelimiter,
       });
+
+      const requiredHeaders = ['Type', 'Amount', 'Date', 'Category', 'Description'];
+      let headers = results.meta.fields || [];
+      let missingHeaders = requiredHeaders.filter((h) => !headers.includes(h));
+
+      if (missingHeaders.length > 0 && fileText.includes(';')) {
+        results = Papa.parse<csvRow>(fileText, {
+          header: true,
+          skipEmptyLines: true,
+          transformHeader: normalizeHeader,
+          delimiter: ';',
+        });
+        headers = results.meta.fields || [];
+        missingHeaders = requiredHeaders.filter((h) => !headers.includes(h));
+      }
+
+      const rows = results.data;
+      const errors: string[] = [];
+
+      if (results.errors.length > 0) {
+        results.errors.forEach((parseError) => {
+          const rowNumber = typeof parseError.row === 'number' ? parseError.row + 1 : 'unknown';
+          errors.push(`CSV parse error on row ${rowNumber}: ${parseError.message || 'Unknown parse error'}`);
+        });
+      }
+
+      if (missingHeaders.length > 0) {
+        errors.push(`Missing required columns: ${missingHeaders.join(', ')}`);
+        toast.error('Invalid CSV format', { id: loadingToast });
+        setImportResult({
+          success: false,
+          importedCount: 0,
+          totalRows: rows.length,
+          errors,
+        });
+        return;
+      }
+
+      const validRows = rows.filter((r, index) => {
+        const rowNum = index + 2;
+        const type = r.Type?.trim();
+        const amount = parseFloat(r.Amount?.replace(',', '.') ?? '');
+        const dateString = r.Date?.trim();
+        const category = r.Category?.trim();
+        const description = r.Description?.trim();
+
+        if (!['I', 'E'].includes(type)) {
+          errors.push(`Row ${rowNum}: Invalid Type "${r.Type}". Must be "I" or "E"`);
+          return false;
+        }
+
+        if (Number.isNaN(amount)) {
+          errors.push(`Row ${rowNum}: Invalid Amount "${r.Amount}"`);
+          return false;
+        }
+
+        const parsedDate = parse(dateString ?? '', 'dd/MM/yyyy', new Date());
+        if (Number.isNaN(parsedDate.getTime())) {
+          errors.push(`Row ${rowNum}: Invalid Date "${r.Date}". Expected format: dd/MM/yyyy`);
+          return false;
+        }
+
+        if (!category) {
+          errors.push(`Row ${rowNum}: Missing Category`);
+          return false;
+        }
+
+        if (!description) {
+          errors.push(`Row ${rowNum}: Missing Description`);
+          return false;
+        }
+
+        return true;
+      });
+
+      if (validRows.length === 0) {
+        toast.error('No valid transactions found', { id: loadingToast });
+        setImportResult({
+          success: false,
+          importedCount: 0,
+          totalRows: rows.length,
+          errors,
+        });
+        return;
+      }
+
+      toast.loading('Importing transactions...', { id: loadingToast });
+
+      const res = await apiFetch('/import/csv', {
+        method: 'POST',
+        body: JSON.stringify({ csv: fileText }),
+      });
+
+      const responseData = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        toast.success(`Imported ${responseData.importedCount ?? validRows.length} transactions`, { id: loadingToast });
+        setImportResult({
+          success: true,
+          importedCount: responseData.importedCount ?? validRows.length,
+          totalRows: rows.length,
+          errors: responseData.errors || errors,
+        });
+      } else {
+        const responseErrors = Array.isArray(responseData.details)
+          ? responseData.details
+          : responseData.details
+          ? [responseData.details]
+          : responseData.error
+          ? [responseData.error]
+          : ['Import failed'];
+
+        toast.error(responseErrors.join(' '), { id: loadingToast });
+        setImportResult({
+          success: false,
+          importedCount: responseData.importedCount ?? 0,
+          totalRows: rows.length,
+          errors: [...errors, ...responseErrors],
+        });
+      }
     } catch (catchError) {
       const message = catchError instanceof Error ? catchError.message : 'Unexpected error occurred';
       toast.error(`Unexpected error during import: ${message}`, { id: loadingToast });
       setImportResult({
         success: false,
-        incomeCount: 0,
-        expenseCount: 0,
-        totalProcessed: 0,
-        errors: [message]
+        importedCount: 0,
+        totalRows: 0,
+        errors: [message],
       });
     } finally {
       setIsLoading(false);
@@ -244,7 +263,7 @@ export default function Import() {
               <Alert>
                 <Info className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Required columns:</strong> Type, Amount, Date, Category
+                  <strong>Required columns:</strong> Type, Amount, Date, Category, Description
                 </AlertDescription>
               </Alert>
 
@@ -252,10 +271,10 @@ export default function Import() {
                 <p className="text-sm font-medium">Example CSV content:</p>
                 <div className="bg-muted p-3 rounded-md">
                   <pre className="text-xs font-mono whitespace-pre-wrap">
-{`Type,Amount,Date,Category
-I,261.88,02/04/2025,Salary
-E,721.68,04/04/2025,Rent
-I,102.50,07/04/2025,Freelance`}
+{`Type,Amount,Date,Category,Description
+I,261.88,02/04/2025,Salary,April salary
+E,721.68,04/04/2025,Rent,Monthly rent
+I,102.50,07/04/2025,Freelance,Client project`}
                   </pre>
                 </div>
               </div>
@@ -300,19 +319,11 @@ I,102.50,07/04/2025,Freelance`}
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{importResult.incomeCount}</div>
-                  <div className="text-sm text-muted-foreground">Income</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">{importResult.expenseCount}</div>
-                  <div className="text-sm text-muted-foreground">Expenses</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{importResult.incomeCount + importResult.expenseCount}</div>
+                  <div className="text-2xl font-bold text-blue-600">{importResult.importedCount}</div>
                   <div className="text-sm text-muted-foreground">Imported</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-600">{importResult.totalProcessed}</div>
+                  <div className="text-2xl font-bold text-gray-600">{importResult.totalRows}</div>
                   <div className="text-sm text-muted-foreground">Total Rows</div>
                 </div>
               </div>
