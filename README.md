@@ -1,80 +1,90 @@
-# Flow Wise - Client 
+# Flow Wise - Client
 
 ## Descrizione
-Frontend part of Flow-Wise project - Money tracker.
-Created with React + Next.js
+Frontend di Flow-Wise, un money tracker con dashboard, gestione transazioni, wallet e analisi categorie.
+Realizzato con Next.js 15, Tailwind CSS e Supabase Auth.
 
 ## Tech
 
-- **Next.js** 
-- **Tailwind CSS** 
-- **Sonner** 
-- **ShadCN/UI** 
+- Next.js 15
+- TypeScript
+- Tailwind CSS
+- ShadCN/UI
+- Supabase Auth
+- React Query
+- Recharts
+- Papaparse per import CSV
+- Sonner per notifiche toast
 
-## Features
-- Dashboard con drag & drop, modalità edit/view e salvataggio layout per utente
-- Widget pronti: saldo totale, entrate periodo, spese periodo, income vs expenses, breakdown spese per categoria
-- Legenda widget “Spese per categoria” scrollabile + tooltip con nome categoria e importo
-- Tabelle entrate/spese con filtri per data, badge categoria/portafoglio e azioni inline
-- Gestione wallet con default singolo e formattazione EUR
-- Autenticazione Supabase, toast di stato e layout responsive mobile-first
-- Navbar mobile modernizzata (app bar + bottom nav) coerente con lo stile
-- Date range condiviso tra Dashboard/Incomes/Expenses (ripristino al mese corrente al reload)
-- Drawer “New Transaction” migliorato: selettore tipo con icone, scrollabile su mobile, categorie attive
+## Feature principali
 
-## Structure
+- Dashboard con widget drag & drop e modalita edit/view
+- Layout dashboard salvato per utente
+- Grafici e breakdown spese per categoria
+- Date range condiviso tra Dashboard, Incomes e Expenses
+- Pagine Incomes, Expenses e Wallet con filtri, tabelle e azioni inline
+- Import CSV transazioni con validazione e feedback
+- Autenticazione Supabase e sessione utente
+- Mobile-first responsive design con bottom navigation
+
+## Struttura del progetto
 
 ```
 flow-wise-client/
-├── app/
-	└── dashboard/
-	└── login/
-	└── register/
-├── components/
-	└── ui/
-├── lib/
-├── utils/
-├── public/
-└── styles/
+├── app/               # pagine e layout Next.js
+│   ├── dashboard/
+│   ├── incomes/
+│   ├── expenses/
+│   ├── wallets/
+│   ├── settings/
+│   ├── login/
+│   ├── register/
+│   └── ...
+├── components/        # componenti riutilizzabili e UI primitives
+│   ├── ui/
+│   └── ...
+├── lib/               # client Supabase, hook e utility
+├── styles/            # stili globali
+└── public/            # asset statici
 ```
 
-## Env config
+## Configurazione ambiente
 
-Create a `.env.local` in the project root, in which at least you should have this:
+Crea un file `.env.local` nella root del progetto con almeno queste variabili:
 
-```
-NEXT_PUBLIC_API_URL=http://localhost:5030/
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5030
 NEXT_PUBLIC_SUPABASE_URL=YOUR_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_PUBLISHABLE_ANON_KEY
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 ```
 
-Notes:
-- The client must use the publishable anon key only.
-- The server uses the legacy service_role key (eyJ…) to bypass RLS.
+Note:
+- Il client usa solo la anon key pubblicabile.
+- Il backend deve usare la SUPABASE_SERVICE_ROLE_KEY per bypassare le RLS.
 
-## Quick start
+## Avvio locale
 
 ```bash
-# from flow-wise-client/
+cd flow-wise-client
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000 and ensure the server is reachable at `NEXT_PUBLIC_API_URL`.
+Apri http://localhost:3000 e verifica che il server sia raggiungibile su NEXT_PUBLIC_API_URL.
 
-## Scripts
+## Script disponibili
 
-- `dev`: start Next.js dev server (Turbopack)
-- `build`: production build
-- `start`: run production build
-- `lint`: run ESLint
+- npm run dev — avvia Next.js in sviluppo (Turbopack)
+- npm run build — genera il build di produzione
+- npm run start — esegue il build in produzione
+- npm run lint — esegue ESLint
 
-## Troubleshooting
+## Risoluzione problemi
 
-- CORS error: ensure server `ALLOWED_ORIGINS` includes `http://localhost:3000`.
-- Empty data: verify you are logged in (Supabase session) and the server uses the legacy `service_role` key.
-- 401 Unauthorized: the client attaches `Authorization: Bearer <supabase_access_token>`; ensure the token is valid and time-synced.
+- CORS: verifica che il backend includa http://localhost:3000 in ALLOWED_ORIGINS.
+- Dati non visibili: assicurati di essere autenticato e che il token Supabase sia valido.
+- Import CSV: usa colonne coerenti con il formato del progetto e formato data supportato.
 
 ## Deployment
 
-Deployed using Vercel at [Flow Wise (Client)](https://flow-wise-client.vercel.app/)
+Questa app e pronta per Vercel. Assicurati che NEXT_PUBLIC_API_URL punti al backend di produzione.
