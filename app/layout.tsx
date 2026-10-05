@@ -5,6 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { DateRangeProvider } from "@/lib/providers/DateRangeProvider";
+import { AuthProvider } from "@/lib/providers/AuthProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -52,14 +53,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <DateRangeProvider>
-          <QueryProvider>
-            <Analytics />
-            <SpeedInsights />
-            <Toaster />
-            {children}
-          </QueryProvider>
-        </DateRangeProvider>
+        <AuthProvider>
+          <DateRangeProvider>
+            <QueryProvider>
+              <Analytics />
+              <SpeedInsights />
+              <Toaster />
+              {children}
+            </QueryProvider>
+          </DateRangeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

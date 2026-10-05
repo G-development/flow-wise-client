@@ -47,7 +47,6 @@ export default function NewTransaction({ onSuccess, trigger }: NewTransactionPro
   const {
     data: categories = [],
     isLoading: categoriesLoading,
-    refetch: refetchCategories,
   } = useActiveCategories();
   const createTransaction = useCreateTransaction();
   
@@ -90,12 +89,6 @@ export default function NewTransaction({ onSuccess, trigger }: NewTransactionPro
     return typeLower === targetType || typeLower === formData.type.toLowerCase();
   });
 
-  useEffect(() => {
-    if (open) {
-      // Ensure categories refresh when the drawer opens (handles auth timing)
-      refetchCategories();
-    }
-  }, [open, refetchCategories]);
 
   const handleSubmit = async () => {
     if (!formData.amount || !formData.wallet_id || !formData.category_id) {
@@ -251,7 +244,6 @@ export default function NewTransaction({ onSuccess, trigger }: NewTransactionPro
               </Label>
               <Select
                 value={formData.category_id?.toString() ?? undefined}
-                onOpenChange={(isOpen) => isOpen && refetchCategories()}
                 onValueChange={(value) =>
                   setFormData({ ...formData, category_id: parseInt(value) })
                 }

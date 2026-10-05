@@ -20,6 +20,8 @@ interface csvRow {
   Description: string;
 }
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
 export default function Import() {
   const [isLoading, setIsLoading] = useState(false);
   const [importResult, setImportResult] = useState<{
@@ -36,6 +38,12 @@ export default function Import() {
     // Validate file type
     if (!file.name.toLowerCase().endsWith('.csv')) {
       toast.error('Please select a CSV file');
+      return;
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error(`File too large. Maximum size: ${MAX_FILE_SIZE / 1024 / 1024}MB`);
       return;
     }
 
