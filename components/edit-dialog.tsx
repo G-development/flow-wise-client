@@ -154,7 +154,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
 
         <div className="space-y-4">
           <div>
-            <Label className="block text-sm font-medium text-gray-700">
+            <Label className="block text-sm font-medium text-foreground">
               Category
             </Label>
             <Select
@@ -179,7 +179,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
           </div>
 
           <div>
-            <Label className="block text-sm font-medium text-gray-700">
+            <Label className="block text-sm font-medium text-foreground">
               Amount
             </Label>
             <Input
@@ -192,7 +192,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
           </div>
 
           <div>
-            <Label className="block text-sm font-medium text-gray-700">
+            <Label className="block text-sm font-medium text-foreground">
               Date
             </Label>
             <Input
@@ -206,7 +206,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
           </div>
 
           <div>
-            <Label className="block text-sm font-medium text-gray-700">
+            <Label className="block text-sm font-medium text-foreground">
               Wallet
             </Label>
             <Select
@@ -228,7 +228,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
             </Select>
           </div>
 
-          <p className="text-xs text-gray-500 text-right">
+          <p className="text-xs text-muted-foreground text-right">
             ID transaction: {id}
           </p>
         </div>

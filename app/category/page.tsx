@@ -79,12 +79,12 @@ export default function Categories() {
   return (
     <>
       <Navbar />
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 max-w-7xl mx-auto">
+      <main className="app-page">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="app-page-header">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Categories</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h1 className="page-title">Categories</h1>
+            <p className="page-description">
               Organize your transactions with custom categories
             </p>
           </div>
@@ -131,15 +131,15 @@ export default function Categories() {
 
         {/* Table */}
         {!isLoading && !isError && categories.length > 0 && (
-          <div className="overflow-x-auto rounded-lg border">
+          <div className="overflow-x-auto rounded-xl border border-border/70 bg-card shadow-sm">
             <DynamicTable
               data={categories.map((c) => {
                 const type = c.type?.toLowerCase();
                 const isIncome = type === "income" || type === "i";
                 const label = isIncome ? "Income" : "Expense";
                 const badgeClass = isIncome
-                  ? "bg-emerald-100 text-emerald-800"
-                  : "bg-rose-100 text-rose-800";
+                  ? "border-0 bg-success/10 text-success hover:bg-success/15"
+                  : "border-0 bg-destructive/10 text-destructive hover:bg-destructive/15";
 
                 return {
                   Name: c.name,
@@ -181,7 +181,7 @@ export default function Categories() {
             />
           </div>
         )}
-      </div>
+      </main>
 
       {/* Dialogs */}
       <CategoryDialog

@@ -2,115 +2,172 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  overflow-x: hidden;
+@layer base {
+  :root {
+    color-scheme: light;
+    --background: 220 25% 97%;
+    --foreground: 222 28% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 28% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 28% 14%;
+    --primary: 165 76% 28%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 18% 94%;
+    --secondary-foreground: 222 28% 18%;
+    --muted: 220 18% 94%;
+    --muted-foreground: 220 10% 45%;
+    --accent: 38 92% 92%;
+    --accent-foreground: 28 78% 28%;
+    --success: 151 62% 33%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 28% 14%;
+    --destructive: 4 74% 53%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 16% 88%;
+    --input: 220 16% 88%;
+    --ring: 165 76% 28%;
+    --chart-1: 151 62% 38%;
+    --chart-2: 4 74% 56%;
+    --chart-3: 165 76% 35%;
+    --chart-4: 38 82% 52%;
+    --chart-5: 220 10% 55%;
+    --radius: 0.875rem;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --background: 222 28% 8%;
+    --foreground: 220 20% 94%;
+    --card: 222 25% 11%;
+    --card-foreground: 220 20% 94%;
+    --popover: 222 25% 11%;
+    --popover-foreground: 220 20% 94%;
+    --primary: 158 60% 48%;
+    --primary-foreground: 222 28% 8%;
+    --secondary: 222 20% 16%;
+    --secondary-foreground: 220 20% 92%;
+    --muted: 222 20% 16%;
+    --muted-foreground: 220 12% 66%;
+    --accent: 34 42% 20%;
+    --accent-foreground: 38 90% 75%;
+    --success: 151 58% 48%;
+    --success-foreground: 222 28% 8%;
+    --warning: 38 92% 58%;
+    --warning-foreground: 222 28% 8%;
+    --destructive: 4 68% 57%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 18% 22%;
+    --input: 222 18% 22%;
+    --ring: 158 60% 48%;
+    --chart-1: 151 58% 52%;
+    --chart-2: 4 68% 62%;
+    --chart-3: 158 60% 48%;
+    --chart-4: 38 82% 58%;
+    --chart-5: 220 12% 66%;
+  }
+
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    min-height: 100%;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: "ss01" on;
+    text-rendering: optimizeLegibility;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
 }
 
-* {
-  box-sizing: border-box;
-}
+@layer components {
+  .app-page {
+    @apply mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 sm:py-8 lg:px-8;
+    padding-bottom: 2rem;
+  }
 
-html {
-  overflow-x: hidden;
-}
+  .app-page-header {
+    @apply flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between;
+  }
 
-::-webkit-scrollbar {
-  width: 0.25rem;
-  height: 0.25rem;
-}
-::-webkit-scrollbar-track {
-  background: white;
-}
-::-webkit-scrollbar-thumb {
-  background: #bbbbbb;
-  border-radius: 2rem;
-}
-::-webkit-scrollbar-corner {
-  background: white;
+  .page-title {
+    @apply text-3xl font-semibold tracking-tight sm:text-4xl;
+  }
+
+  .page-description {
+    @apply mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base;
+  }
+
+  .surface-card {
+    @apply rounded-xl border bg-card text-card-foreground shadow-sm;
+  }
+
+  .auth-shell {
+    background:
+      radial-gradient(ellipse at 12% 8%, hsl(var(--primary) / 0.11), transparent 38%),
+      radial-gradient(ellipse at 88% 92%, hsl(var(--accent) / 0.5), transparent 35%),
+      hsl(var(--background));
+  }
 }
 
 ::selection {
-  background: #bbbbbb;
+  background: hsl(var(--primary) / 0.2);
+  color: hsl(var(--foreground));
 }
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-  }
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
+::-webkit-scrollbar {
+  width: 0.4rem;
+  height: 0.4rem;
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: hsl(var(--background));
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: hsl(var(--muted-foreground) / 0.3);
 }
 
-/* Add bottom padding on mobile to prevent content from being hidden behind fixed bottom nav */
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.55);
+}
+
 @media (max-width: 1023px) {
-  body {
-    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  .app-page {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

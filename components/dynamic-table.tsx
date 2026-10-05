@@ -35,7 +35,7 @@ export function DynamicTable({
     return (
       <div className="flex flex-col items-center justify-center text-center py-8">
         <p className="mb-2">No data available</p>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           Try changing the selected date range
         </p>
       </div>
@@ -49,7 +49,7 @@ export function DynamicTable({
       <Table className="min-w-[600px]">
         <TableCaption>{caption}</TableCaption>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-muted/60 hover:bg-muted/60">
             {columns.map((col) => (
               <TableHead key={col} className="capitalize">
                 {col}

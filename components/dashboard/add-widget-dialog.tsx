@@ -89,7 +89,7 @@ export function AddWidgetDialog({
       <DialogTrigger asChild>
         <Button
           variant="default"
-          className="h-10 px-4 bg-emerald-600 text-white hover:bg-emerald-700 border-emerald-600"
+          className="h-10 px-4"
         >
           Add widget
         </Button>

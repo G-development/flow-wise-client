@@ -3,13 +3,11 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { User, Mail, Lock } from "lucide-react";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -32,6 +30,7 @@ export function RegisterForm({
     password: "",
     confirmPassword: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,9 +39,17 @@ export function RegisterForm({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
 
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match!");
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters!");
+      setIsLoading(false);
       return;
     }
 
@@ -60,90 +67,108 @@ export function RegisterForm({
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("Successfully registered!");
-        router.replace("/");
+        toast.success("Account created! Redirecting to login...");
+        router.replace("/login");
       } else {
         toast.error(data.msg || data.error || "Authentication error");
       }
-      // Registration uses custom endpoint, not Supabase SDK directly
     } catch {
       toast.error("Registration error. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">Create an account</CardTitle>
-          <CardDescription>Sign up with your email</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Username</Label>
+      <Card className="border-border/70 bg-card/90 shadow-lg shadow-foreground/[0.04]">
+        <CardContent className="pt-8 pb-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2.5">
+              <Label htmlFor="name" className="text-sm font-medium">Username</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="name"
                   name="name"
-                  type="name"
-                  placeholder="name"
+                  type="text"
+                  placeholder="john_doe"
+                  className="h-11 pl-10 transition-colors focus-visible:ring-2 focus-visible:ring-primary/20"
                   onChange={handleChange}
                   value={formData.name}
                   required
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+            </div>
+
+            <div className="space-y-2.5">
+              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="example@example.com"
+                  placeholder="you@example.com"
+                  className="h-11 pl-10 transition-colors focus-visible:ring-2 focus-visible:ring-primary/20"
                   onChange={handleChange}
                   value={formData.email}
                   required
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
+            </div>
+
+            <div className="space-y-2.5">
+              <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="password"
                   name="password"
                   type="password"
+                  placeholder="••••••••"
+                  className="h-11 pl-10 transition-colors focus-visible:ring-2 focus-visible:ring-primary/20"
                   onChange={handleChange}
                   value={formData.password}
                   required
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+            </div>
+
+            <div className="space-y-2.5">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="confirmPassword"
                   name="confirmPassword"
                   type="password"
+                  placeholder="••••••••"
+                  className="h-11 pl-10 transition-colors focus-visible:ring-2 focus-visible:ring-primary/20"
                   onChange={handleChange}
                   value={formData.confirmPassword}
                   required
                 />
               </div>
-              <Button type="submit" className="w-full">
-                Sign Up
-              </Button>
-
-              <div className="text-center text-sm">
-                Already have an account?{" "}
-                <a href="/login" className="underline underline-offset-4">
-                  Log in
-                </a>
-              </div>
             </div>
+
+            <Button
+              type="submit"
+              className="h-11 w-full font-semibold transition-all hover:-translate-y-0.5 hover:shadow-md"
+              disabled={isLoading}
+            >
+              {isLoading ? "Creating account..." : "Create account"}
+            </Button>
           </form>
         </CardContent>
       </Card>
-      <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary  ">
-        By clicking sign up, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="/privacy">Privacy Policy</a>.
+
+      <div className="text-balance text-center text-xs text-muted-foreground space-y-2">
+        <p>
+          By signing up, you agree to our{" "}
+          <a href="#" className="text-primary hover:underline">Terms of Service</a> and{" "}
+          <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>.
+        </p>
       </div>
     </div>
   );

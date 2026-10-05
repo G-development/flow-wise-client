@@ -210,11 +210,11 @@ export default function Import() {
   return (
     <>
       <Navbar />
-      <div className="container mx-auto py-4 md:py-8 px-4 max-w-4xl">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+      <main className="app-page max-w-5xl">
+        <div className="app-page-header">
           <div className="space-y-1">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Import Transactions</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="page-title">Import Transactions</h1>
+            <p className="page-description">
               Upload a CSV file to bulk import your financial transactions
             </p>
           </div>
@@ -327,11 +327,11 @@ I,102.50,07/04/2025,Freelance,Client project`}
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{importResult.importedCount}</div>
+                  <div className="text-2xl font-semibold text-primary">{importResult.importedCount}</div>
                   <div className="text-sm text-muted-foreground">Imported</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-600">{importResult.totalRows}</div>
+                  <div className="text-2xl font-semibold text-foreground">{importResult.totalRows}</div>
                   <div className="text-sm text-muted-foreground">Total Rows</div>
                 </div>
               </div>
@@ -358,7 +358,7 @@ I,102.50,07/04/2025,Freelance,Client project`}
             </CardContent>
           </Card>
         )}
-      </div>
+      </main>
     </>
   );
 }

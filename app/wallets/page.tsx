@@ -66,12 +66,12 @@ export default function Wallets() {
   return (
     <>
       <Navbar />
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 max-w-7xl mx-auto">
+      <main className="app-page">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="app-page-header">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Wallets</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h1 className="page-title">Wallets</h1>
+            <p className="page-description">
               Manage your wallets and accounts
             </p>
           </div>
@@ -99,14 +99,14 @@ export default function Wallets() {
 
         {/* Table */}
         {!isLoading && !isError && wallets.length > 0 && (
-          <div className="overflow-x-auto rounded-lg border">
+          <div className="overflow-x-auto rounded-xl border border-border/70 bg-card shadow-sm">
             <DynamicTable
               data={rows}
               caption={`You can create up to 3 wallets. You currently have ${wallets.length}.`}
             />
           </div>
         )}
-      </div>
+      </main>
     </>
   );
 }

@@ -12,7 +12,6 @@ interface PeriodIncomesWidgetProps {
 }
 
 export function PeriodIncomesWidget({ config, dateFilter }: PeriodIncomesWidgetProps) {
-  // Default: ultimi 30 giorni
   const defaultEndDate = useMemo(() => new Date().toISOString().split("T")[0], []);
   const defaultStartDate = useMemo(() => {
     const date = new Date();
@@ -30,32 +29,29 @@ export function PeriodIncomesWidget({ config, dateFilter }: PeriodIncomesWidgetP
     return sum + amount;
   }, 0);
 
-  const formatCurrency = new Intl.NumberFormat("it-IT", {
+  const formatCurrency = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "EUR",
   });
 
-  const periodLabel = startDate && endDate
-    ? `Dal ${new Date(startDate).toLocaleDateString("it-IT")}` +
-      ` al ${new Date(endDate).toLocaleDateString("it-IT")}`
-    : "Ultimi 30 giorni";
-
   return (
-    <Card className="h-full">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-xs sm:text-sm font-medium truncate">Entrate del Periodo</CardTitle>
-        <TrendingUp className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+    <Card className="h-full border-border/70 shadow-sm transition-shadow hover:shadow-md">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+        <CardTitle className="text-sm font-semibold">Period Incomes</CardTitle>
+        <div className="rounded-xl bg-success/10 p-2.5">
+          <TrendingUp className="h-4 w-4 text-success" />
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-2">
         {isLoading ? (
-          <div className="text-xl sm:text-2xl font-bold text-muted-foreground">...</div>
+          <div className="text-3xl font-bold text-muted-foreground animate-pulse">...</div>
         ) : (
-          <div className="text-xl sm:text-2xl font-bold text-green-600 truncate">
+          <div className="text-3xl font-semibold tracking-tight text-success">
             +{formatCurrency.format(totalIncomes)}
           </div>
         )}
-        <p className="text-xs text-muted-foreground mt-1 truncate">
-          {incomes.length} transazioni • {periodLabel}
+        <p className="text-xs text-muted-foreground">
+          {incomes.length} {incomes.length === 1 ? 'transaction' : 'transactions'}
         </p>
       </CardContent>
     </Card>

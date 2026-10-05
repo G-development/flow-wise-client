@@ -182,17 +182,17 @@ export default function Settings() {
   return (
     <>
       <Navbar />
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <main className="app-page">
+        <div className="app-page-header">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Account Settings</h1>
-            <p className="text-sm text-muted-foreground">Gestisci profilo, notifiche e preferenze</p>
+            <h1 className="page-title">Account Settings</h1>
+            <p className="page-description">Gestisci profilo, notifiche e preferenze</p>
           </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[320px,1fr]">
           {/* Card avatar / info */}
-          <div className="border rounded-xl shadow-sm bg-white p-4 md:p-6 space-y-4">
+          <div className="surface-card p-4 md:p-6 space-y-4">
             <div className="flex items-start gap-4">
               <div className="relative inline-block">
                 <Avatar className="h-20 w-20 rounded-lg">
@@ -239,10 +239,10 @@ export default function Settings() {
           </div>
 
           {/* Card form */}
-          <div className="border rounded-xl shadow-sm bg-white p-4 md:p-6 space-y-4">
+          <div className="surface-card p-4 md:p-6 space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Label className="text-sm font-medium text-foreground flex items-center gap-2">
                   <User width={18} /> Name
                 </Label>
                 <Input
@@ -253,7 +253,7 @@ export default function Settings() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Label className="text-sm font-medium text-foreground flex items-center gap-2">
                   <Sparkle width={18} /> Username
                 </Label>
                 <Input
@@ -264,7 +264,7 @@ export default function Settings() {
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Label className="text-sm font-medium text-foreground flex items-center gap-2">
                   <Send width={18} /> E-mail
                 </Label>
                 <Input value={profile.email ?? ""} disabled />
@@ -273,7 +273,7 @@ export default function Settings() {
               <div className="flex items-center gap-3 md:col-span-2">
                 <div className="flex items-center gap-2">
                   <BellRing width={18} />
-                  <Label className="text-sm font-medium text-gray-700">Notifications</Label>
+                  <Label className="text-sm font-medium text-foreground">Notifications</Label>
                 </div>
                 <Checkbox
                   id="notifications"
@@ -284,7 +284,7 @@ export default function Settings() {
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Label className="text-sm font-medium text-foreground flex items-center gap-2">
                   <HandCoins width={18} /> Currency
                 </Label>
                 <Input
@@ -297,7 +297,7 @@ export default function Settings() {
             </div>
 
             {message && (
-              <p className="text-sm text-green-600 bg-green-50 border border-green-100 rounded-md px-3 py-2">
+              <p className="rounded-md border border-success/20 bg-success/10 px-3 py-2 text-sm text-success">
                 {message}
               </p>
             )}
@@ -312,7 +312,7 @@ export default function Settings() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </>
   );
 }

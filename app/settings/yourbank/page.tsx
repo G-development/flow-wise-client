@@ -264,11 +264,16 @@ function YourBank() {
   return (
     <>
       <Navbar />
-      <div className="flex-1 space-y-4 p-8 pt-6">
-        <h1 className="text-3xl font-bold tracking-tight">Your Bank</h1>
+      <main className="app-page">
+        <div className="app-page-header">
+          <div>
+            <h1 className="page-title">Your Bank</h1>
+            <p className="page-description">Connect and review your linked bank accounts.</p>
+          </div>
+        </div>
 
         {statusMessage && (
-          <div className="p-4 bg-green-100 text-700 rounded flex items-center justify-between">
+          <div className="flex items-center justify-between rounded-xl border border-success/20 bg-success/10 p-4 text-success">
             {statusMessage}
 
             <BankDrawer
@@ -347,7 +352,7 @@ function YourBank() {
             </div>
           )}
         </div>
-      </div>
+      </main>
     </>
   );
 }

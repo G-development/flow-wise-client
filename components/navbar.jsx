@@ -1,8 +1,3 @@
-/**
- * v0 by Vercel.
- * @see https://v0.dev/t/lJwnQlHSEBA
- * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
- */
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
@@ -23,6 +18,7 @@ import {
   Banknote,
   Wallet,
   Boxes,
+  Menu,
 } from "lucide-react";
 import Logo from "../app/flow-wise-logo.svg";
 
@@ -35,235 +31,231 @@ import {
 import { Button } from "@/components/ui/button";
 import { NavUser } from "./nav-user";
 
+const navLinks = [
+  { href: '/dashboard', icon: ChartNoAxesCombined, label: 'Dashboard' },
+  { href: '/incomes', icon: Plus, label: 'Incomes' },
+  { href: '/expenses', icon: Minus, label: 'Expenses' },
+];
+
+const mainLinks = [
+  { href: '/budgets', icon: HandCoins, label: 'Budgets' },
+  { href: '/wallets', icon: Wallet, label: 'Wallets' },
+  { href: '/category', icon: Boxes, label: 'Categories' },
+];
+
+const settingsLinks = [
+  { href: '/settings', icon: User, label: 'Account' },
+  { href: '/settings/import', icon: Upload, label: 'Import' },
+  { href: '/settings/yourbank', icon: Banknote, label: 'Your Bank' },
+];
+
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const isActive = (path) => pathname === path;
+  const isActive = (path) => pathname === path || pathname.startsWith(`${path}/`);
+
+  const navLinkClass = (active) =>
+    `flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+      active
+        ? 'bg-primary/10 text-primary'
+        : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+    }`;
+
+  const desktopNavClass = (active) =>
+    `inline-flex h-10 w-max items-center justify-center rounded-xl px-2.5 xl:px-3 text-sm font-medium transition-colors duration-200 ${
+      active
+        ? 'bg-primary/10 text-primary'
+        : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+    }`;
 
   return (
     <>
-    <header className="flex h-14 w-full shrink-0 items-center px-3 md:px-6 border-b sticky top-0 bg-background z-50">
-      {/* Mobile App Bar */}
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="lg:hidden" aria-label="Open menu">
-            <MenuIcon className="h-5 w-5" />
-            <span className="sr-only">Toggle navigation menu</span>
-          </Button>
-        </SheetTrigger>
+      <header className="sticky top-0 z-50 w-full border-b border-border/70 bg-background/90 shadow-sm backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
+        <div className="mx-auto flex h-16 w-full max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-5 lg:px-8">
+          {/* Mobile Menu Button */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 rounded-xl lg:hidden hover:bg-secondary"
+                aria-label="Open menu"
+              >
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle navigation menu</span>
+              </Button>
+            </SheetTrigger>
 
-        <div className="lg:hidden flex items-center gap-2 flex-1 justify-center">
-          <Image src={Logo} width={36} alt="Flow wise logo" />
-          <span className="font-semibold text-base">Flow Wise</span>
-        </div>
+            <SheetContent side="left" className="w-64 p-0">
+              <div className="flex items-center gap-2 border-b px-4 py-4">
+                <Image src={Logo} width={32} height={32} alt="Flow wise" />
+                <SheetTitle className="text-lg">Flow Wise</SheetTitle>
+              </div>
+              <nav className="space-y-6 px-4 py-6">
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Main</p>
+                  {navLinks.map(({ href, icon: Icon, label }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      className={navLinkClass(isActive(href))}
+                      prefetch={false}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {label}
+                    </Link>
+                  ))}
+                </div>
 
-        <div className="lg:hidden">
-          <NavUser />
-        </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Management</p>
+                  {mainLinks.map(({ href, icon: Icon, label }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      className={navLinkClass(isActive(href))}
+                      prefetch={false}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {label}
+                    </Link>
+                  ))}
+                </div>
 
-        <SheetContent side="left" className="p-0">
-          <div className="px-4 py-3 border-b flex items-center gap-2">
-            <Image src={Logo} width={32} height={32} alt="Flow wise" />
-            <SheetTitle className="text-base">Flow Wise</SheetTitle>
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Settings</p>
+                  {settingsLinks.map(({ href, icon: Icon, label }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      className={navLinkClass(isActive(href))}
+                      prefetch={false}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {label}
+                    </Link>
+                  ))}
+                </div>
+
+                <Separator />
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-2"
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    router.push("/login");
+                  }}
+                >
+                  <LogOut className="h-4 w-4" /> Logout
+                </Button>
+              </nav>
+            </SheetContent>
+          </Sheet>
+
+          {/* Mobile Logo */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <Image src={Logo} width={32} height={32} alt="Flow wise logo" />
+          <span className="font-semibold tracking-tight text-base">Flow Wise</span>
           </div>
-          <nav className="grid gap-1 p-4">
-            <Link href="/dashboard" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted" prefetch={false}>
-              <ChartNoAxesCombined className="h-4 w-4" /> Dashboard
-            </Link>
-            <Link href="/incomes" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted" prefetch={false}>
-              <Plus className="h-4 w-4" /> Incomes
-            </Link>
-            <Link href="/expenses" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted" prefetch={false}>
-              <Minus className="h-4 w-4" /> Expenses
-            </Link>
-            <Separator className="my-2" />
-            <Link href="/budgets" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted" prefetch={false}>
-              <HandCoins className="h-4 w-4" /> Budgets
-            </Link>
-            <Link href="/wallets" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted" prefetch={false}>
-              <Wallet className="h-4 w-4" /> Wallets
-            </Link>
-            <Link href="/category" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted" prefetch={false}>
-              <Boxes className="h-4 w-4" /> Categories
-            </Link>
-            <Separator className="my-2" />
-            <Link href="/settings" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted" prefetch={false}>
-              <User className="h-4 w-4" /> Account
-            </Link>
-            <Link href="/settings/import" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted" prefetch={false}>
-              <Upload className="h-4 w-4" /> Import
-            </Link>
-            <Link href="/settings/yourbank" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted" prefetch={false}>
-              <Banknote className="h-4 w-4" /> Your Bank
-            </Link>
-            <Button
-              variant="outline"
-              className="mt-2 justify-start gap-2"
-              onClick={async () => {
-                await supabase.auth.signOut();
-                router.push("/login");
-              }}
-            >
-              <LogOut className="h-4 w-4" /> Logout
-            </Button>
+
+          {/* Mobile User Menu */}
+          <div className="lg:hidden">
+            <NavUser />
+          </div>
+
+          {/* Desktop Logo */}
+          <Link href="/dashboard" className="mr-5 hidden shrink-0 items-center gap-2.5 lg:flex" prefetch={false}>
+            <Image src={Logo} width={36} height={36} alt="Flow wise logo" />
+            <span className="hidden text-lg font-semibold tracking-tight xl:inline">Flow Wise</span>
+          </Link>
+
+          {/* Desktop Nav */}
+          <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
+            {navLinks.map(({ href, icon: Icon, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={desktopNavClass(isActive(href))}
+                prefetch={false}
+                aria-current={isActive(href) ? "page" : undefined}
+              >
+                <Icon className="mr-2 h-4 w-4" aria-hidden="true" />
+                {label}
+              </Link>
+            ))}
+            <Separator orientation="vertical" className="mx-1 h-6" />
+            {mainLinks.map(({ href, icon: Icon, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={desktopNavClass(isActive(href))}
+                prefetch={false}
+                aria-current={isActive(href) ? "page" : undefined}
+              >
+                <Icon className="mr-2 h-4 w-4" aria-hidden="true" />
+                {label}
+              </Link>
+            ))}
           </nav>
-        </SheetContent>
-      </Sheet>
 
-      {/* Desktop Nav */}
-      <Link href="/dashboard" className="mr-6 hidden lg:flex" prefetch={false}>
-        <Image src={Logo} width={60} height={60} alt="Flow wise logo" />
-        <span className="sr-only">Flow Wise</span>
-      </Link>
-      <nav className="ml-auto hidden lg:flex gap-6">
-        <Link
-          href="/dashboard"
-          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
-            isActive('/dashboard') ? 'bg-gray-100 font-semibold' : 'bg-white'
-          }`}
-          prefetch={false}
-        >
-          Dashboard
-        </Link>
-        <Link
-          href="/incomes"
-          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
-            isActive('/incomes') ? 'bg-gray-100 font-semibold' : 'bg-white'
-          }`}
-          prefetch={false}
-        >
-          Incomes
-        </Link>
-        <Link
-          href="/expenses"
-          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
-            isActive('/expenses') ? 'bg-gray-100 font-semibold' : 'bg-white'
-          }`}
-          prefetch={false}
-        >
-          Expenses
-        </Link>
-        <Link
-          href="/budgets"
-          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
-            isActive('/budgets') ? 'bg-gray-100 font-semibold' : 'bg-white'
-          }`}
-          prefetch={false}
-        >
-          Budgets
-        </Link>
-        <Link
-          href="/wallets"
-          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
-            isActive('/wallets') ? 'bg-gray-100 font-semibold' : 'bg-white'
-          }`}
-          prefetch={false}
-        >
-          Wallets
-        </Link>
-        <Link
-          href="/category"
-          className={`group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none ${
-            isActive('/category') ? 'bg-gray-100 font-semibold' : 'bg-white'
-          }`}
-          prefetch={false}
-        >
-          Categories
-        </Link>
-        <NavUser />
+          {/* Desktop User Menu */}
+          <div className="ml-auto hidden lg:flex items-center gap-2">
+            <NavUser />
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Bottom Navigation */}
+      <nav aria-label="Mobile navigation" className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_-18px_rgba(15,23,42,0.35)] backdrop-blur-xl lg:hidden">
+        <div className="mx-auto grid max-w-lg grid-cols-5 gap-1 py-1.5">
+          {navLinks.map(({ href, icon: Icon, label }) => (
+            <Link
+              key={href}
+              href={href}
+              prefetch={false}
+              className={`flex min-w-0 flex-col items-center justify-center rounded-xl px-1 py-2.5 gap-1 text-[10px] font-medium transition-colors duration-200 ${
+                isActive(href)
+                  ? 'text-primary bg-primary/10'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              aria-label={label}
+              aria-current={isActive(href) ? "page" : undefined}
+            >
+              <Icon className="h-5 w-5" />
+              <span>{label}</span>
+            </Link>
+          ))}
+          <Link
+            href="/budgets"
+            prefetch={false}
+            className={`flex min-w-0 flex-col items-center justify-center rounded-xl px-1 py-2.5 gap-1 text-[10px] font-medium transition-colors duration-200 ${
+              isActive('/budgets')
+                ? 'text-primary bg-primary/10'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+            aria-label="Budgets"
+            aria-current={isActive('/budgets') ? "page" : undefined}
+          >
+            <HandCoins className="h-5 w-5" />
+            <span>Budget</span>
+          </Link>
+          <Link
+            href="/wallets"
+            prefetch={false}
+            className={`flex min-w-0 flex-col items-center justify-center rounded-xl px-1 py-2.5 gap-1 text-[10px] font-medium transition-colors duration-200 ${
+              isActive('/wallets')
+                ? 'text-primary bg-primary/10'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+            aria-label="Wallets"
+            aria-current={isActive('/wallets') ? "page" : undefined}
+          >
+            <Wallet className="h-5 w-5" />
+            <span>Wallet</span>
+          </Link>
+        </div>
       </nav>
-    </header>
-    {/* Bottom Navigation (Mobile) */}
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background lg:hidden pb-safe">
-      <div className="grid grid-cols-5">
-        <Link
-          href="/dashboard"
-          prefetch={false}
-          className={`flex flex-col items-center justify-center py-3 gap-1 text-[11px] ${isActive('/dashboard') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
-          aria-label="Dashboard"
-        >
-          <ChartNoAxesCombined className="h-5 w-5" />
-          <span>Dashboard</span>
-        </Link>
-        <Link
-          href="/incomes"
-          prefetch={false}
-          className={`flex flex-col items-center justify-center py-3 gap-1 text-[11px] ${isActive('/incomes') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
-          aria-label="Incomes"
-        >
-          <Plus className="h-5 w-5" />
-          <span>Incomes</span>
-        </Link>
-        <Link
-          href="/expenses"
-          prefetch={false}
-          className={`flex flex-col items-center justify-center py-3 gap-1 text-[11px] ${isActive('/expenses') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
-          aria-label="Expenses"
-        >
-          <Minus className="h-5 w-5" />
-          <span>Expenses</span>
-        </Link>
-        <Link
-          href="/wallets"
-          prefetch={false}
-          className={`flex flex-col items-center justify-center py-3 gap-1 text-[11px] ${isActive('/wallets') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
-          aria-label="Wallets"
-        >
-          <Wallet className="h-5 w-5" />
-          <span>Wallets</span>
-        </Link>
-        <Link
-          href="/settings"
-          prefetch={false}
-          className={`flex flex-col items-center justify-center py-3 gap-1 text-[11px] ${isActive('/settings') ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
-          aria-label="Settings"
-        >
-          <User className="h-5 w-5" />
-          <span>Settings</span>
-        </Link>
-      </div>
-    </nav>
     </>
-  );
-}
-
-function MenuIcon(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="4" x2="20" y1="12" y2="12" />
-      <line x1="4" x2="20" y1="6" y2="6" />
-      <line x1="4" x2="20" y1="18" y2="18" />
-    </svg>
-  );
-}
-
-function MountainIcon(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
-    </svg>
   );
 }

@@ -74,65 +74,84 @@ export default function Dashboard() {
   return (
     <>
       <Navbar />
-      <div className="container mx-auto py-4 md:py-8 px-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-          <div className="space-y-1">
-            <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
-              {isEditMode ? "Edit mode: drag to reorganize, click remove to delete widgets" : "Click Edit to customize your dashboard layout."}
-            </p>
+      <main className="app-page">
+        <div className="space-y-8">
+          {/* Header Section */}
+          <div className="space-y-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-2">
+                <h1 className="page-title">Dashboard</h1>
+                <p className="page-description">
+                  {isEditMode
+                    ? "Drag widgets to reorganize, click remove to delete"
+                    : "Track your finances at a glance"}
+                </p>
+              </div>
+            </div>
+
+            {/* Controls Bar */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+              <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
+              <div className="flex flex-wrap gap-2">
+                {!isEditMode && (
+                  <NewTransaction
+                    trigger={
+                      <Button
+                        className="gap-2 font-semibold shadow-md hover:shadow-lg transition-shadow"
+                        aria-label="Add transaction"
+                      >
+                        <Plus className="h-4 w-4" />
+                        <span>Add Transaction</span>
+                      </Button>
+                    }
+                  />
+                )}
+                {isEditMode && (
+                  <AddWidgetDialog
+                    existingWidgets={widgets}
+                    onAddWidget={handleAddWidget}
+                  />
+                )}
+                <Button
+                  onClick={() => isEditMode ? handleSaveEdit() : setIsEditMode(true)}
+                  variant={isEditMode ? "default" : "outline"}
+                  className="gap-2 font-semibold"
+                >
+                  {isEditMode ? (
+                    <>
+                      <Check className="h-4 w-4" />
+                      Done
+                    </>
+                  ) : (
+                    <>
+                      <Edit2 className="h-4 w-4" />
+                      Edit
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-center">
-            <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
-            {!isEditMode && (
-              <NewTransaction
-                trigger={
-                  <Button
-                    variant="default"
-                    className="bg-black text-white hover:bg-black/90 border-black"
-                    aria-label="Add transaction"
-                  >
-                    <Plus className="hidden sm:inline h-4 w-4" />
-                    <span className="sm:hidden">Add</span>
-                  </Button>
-                }
-              />
-            )}
-            {isEditMode && <AddWidgetDialog existingWidgets={widgets} onAddWidget={handleAddWidget} />}
-            <Button
-              onClick={() => isEditMode ? handleSaveEdit() : setIsEditMode(true)}
-              variant={isEditMode ? "default" : "outline"}
-              className="hidden sm:flex w-full sm:w-auto"
-            >
-              {isEditMode ? (
-                <>
-                  <Check className="mr-2 h-4 w-4" />
-                  Done
-                </>
-              ) : (
-                <>
-                  <Edit2 className="mr-2 h-4 w-4" />
-                  Edit
-                </>
-              )}
-            </Button>
-          </div>
+
+          {/* Widgets Grid */}
+          {widgets.length === 0 ? (
+            <div className="flex items-center justify-center min-h-96 bg-secondary/30 rounded-lg border-2 border-dashed border-border">
+              <div className="text-center space-y-2">
+                <p className="text-muted-foreground font-medium">No widgets available</p>
+                <p className="text-sm text-muted-foreground">Click Edit to add widgets to your dashboard</p>
+              </div>
+            </div>
+          ) : (
+            <DashboardGrid
+              widgets={widgets}
+              onLayoutChange={handleLayoutChange}
+              dateFilter={{ startDate: startDateStr, endDate: endDateStr }}
+              isEditMode={isEditMode}
+              onRemoveWidget={handleRemoveWidget}
+            />
+          )}
         </div>
-        
-        {widgets.length === 0 ? (
-          <div className="text-center text-muted-foreground">
-            No widgets available
-          </div>
-        ) : (
-          <DashboardGrid
-            widgets={widgets}
-            onLayoutChange={handleLayoutChange}
-            dateFilter={{ startDate: startDateStr, endDate: endDateStr }}
-            isEditMode={isEditMode}
-            onRemoveWidget={handleRemoveWidget}
-          />
-        )}
-      </div>
+      </main>
     </>
   );
 }

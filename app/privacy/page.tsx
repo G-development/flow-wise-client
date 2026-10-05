@@ -2,9 +2,11 @@
 
 export default function PrivacyTerms() {
   return (
-    <div className="p-8 max-w-3xl mx-auto space-y-6">
-      <h1 className="text-4xl font-bold text-center">Flow Wise © 2025</h1>
-      <h1 className="text-3xl font-bold">Terms of Service & Privacy Policy</h1>
+    <main className="mx-auto max-w-3xl space-y-8 px-4 py-10 text-foreground sm:px-6">
+      <header className="space-y-3 border-b pb-6 text-center">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Flow Wise</p>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Terms of Service &amp; Privacy Policy</h1>
+      </header>
 
       {/* Terms of Service */}
       <section className="space-y-4">
@@ -84,7 +86,7 @@ export default function PrivacyTerms() {
         </p>
       </section>
 
-      <p className="text-sm text-gray-500">Last updated: August 2025</p>
-    </div>
+      <p className="text-sm text-muted-foreground">Last updated: August 2025</p>
+    </main>
   );
 }

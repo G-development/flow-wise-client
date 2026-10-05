@@ -14,7 +14,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Routes that don't require authentication
-const PUBLIC_ROUTES = ["/login", "/register", "/privacy"];
+const PUBLIC_ROUTES = ["/", "/login", "/register", "/privacy"];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthContextType>({
@@ -47,8 +47,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           router.replace("/login");
         } else if (session && (pathname === "/login" || pathname === "/register")) {
           router.replace("/dashboard");
-        } else if (!session && pathname === "/") {
-          router.replace("/login");
         } else if (session && pathname === "/") {
           router.replace("/dashboard");
         }

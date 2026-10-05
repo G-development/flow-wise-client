@@ -53,9 +53,9 @@ export default function Incomes() {
       const categoryName = categoryInfo?.name ?? "-";
       const categoryType = categoryInfo?.type;
       const badgeClass = categoryType === "income"
-        ? "bg-emerald-100 text-emerald-800"
+        ? "bg-success/10 text-success"
         : categoryType === "expense"
-          ? "bg-rose-100 text-rose-800"
+          ? "bg-destructive/10 text-destructive"
           : "bg-muted text-foreground";
 
       const dateStr = tx.date ? new Date(tx.date).toLocaleDateString("it-IT") : "-";
@@ -77,14 +77,14 @@ export default function Incomes() {
   }, [transactions, wallets, categories]);
 
   return (
-    <>
+    <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 max-w-7xl mx-auto">
+      <main className="app-page">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="app-page-header">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Incomes</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h1 className="page-title">Incomes</h1>
+            <p className="page-description">
               Record and track your earnings
             </p>
           </div>
@@ -103,7 +103,7 @@ export default function Incomes() {
 
         {/* Table */}
         {!isLoading && (
-          <div className="overflow-x-auto rounded-lg border">
+          <div className="overflow-x-auto rounded-xl border border-border/70 bg-card shadow-sm">
           <DynamicTable
             data={rows}
             caption={`Income transactions shown from ${dateRange?.from?.toDateString()} to ${dateRange?.to?.toDateString()}`}
@@ -156,7 +156,7 @@ export default function Incomes() {
             />
           </>
         )}
-      </div>
-    </>
+      </main>
+    </div>
   );
 }
