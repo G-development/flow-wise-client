@@ -19,6 +19,7 @@ import {
   Wallet,
   Boxes,
   Menu,
+  Bot,
 } from "lucide-react";
 import Logo from "../app/flow-wise-logo.svg";
 
@@ -38,6 +39,7 @@ const navLinks = [
 ];
 
 const mainLinks = [
+  { href: '/ai-beta', icon: Bot, label: 'AI Beta' },
   { href: '/budgets', icon: HandCoins, label: 'Budgets' },
   { href: '/wallets', icon: Wallet, label: 'Wallets' },
   { href: '/category', icon: Boxes, label: 'Categories' },

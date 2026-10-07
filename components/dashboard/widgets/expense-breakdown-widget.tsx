@@ -128,7 +128,7 @@ export function ExpenseBreakdownWidget({
                   content={
                     <ChartTooltipContent
                       hideLabel
-                      formatter={(value, name, item, _index, payload) => (
+                      formatter={(value, name, _item, _index, payload) => (
                         <div className="flex w-full justify-between">
                           <span className="text-muted-foreground mr-3">
                             {(payload as { category?: string })?.category || name}

@@ -68,19 +68,6 @@ export interface Category extends Record<string, unknown> {
   updated_at?: string;
 }
 
-// Transactions Hooks
-export function useTransactions(startDate?: string, endDate?: string) {
-  return useQuery({
-    queryKey: queryKeys.transactions.byDateRange(startDate, endDate),
-    queryFn: async () => {
-      const query = buildQuery({ startDate, endDate });
-      const res = await apiFetch(`/transaction${query}`);
-      if (!res.ok) throw new Error("Failed to fetch transactions");
-      return res.json() as Promise<Transaction[]>;
-    },
-  });
-}
-
 export function useDeleteTransaction() {
   const queryClient = useQueryClient();
   

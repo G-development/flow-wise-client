@@ -1,90 +1,70 @@
-# Flow Wise - Client
+# Flow Wise Client
 
-## Descrizione
-Frontend di Flow-Wise, un money tracker con dashboard, gestione transazioni, wallet e analisi categorie.
-Realizzato con Next.js 15, Tailwind CSS e Supabase Auth.
+Frontend del money tracker Flow Wise, realizzato con Next.js App Router, React,
+TypeScript, Tailwind CSS e autenticazione Supabase.
 
-## Tech
+## Funzionalità
 
-- Next.js 15
-- TypeScript
-- Tailwind CSS
-- ShadCN/UI
-- Supabase Auth
-- React Query
-- Recharts
-- Papaparse per import CSV
-- Sonner per notifiche toast
+- Autenticazione e registrazione; sono presenti anche le pagine di recupero
+  password (vedi la nota sulle route pubbliche in [Architettura](./APP_ARCHITECTURE.md)).
+- Dashboard configurabile con widget per saldo, entrate, spese e grafici.
+- Pagine per entrate, spese, wallet e categorie.
+- Importazione CSV delle transazioni.
+- Integrazione bancaria in beta, disponibile dalla pagina Your Bank.
+- Pagina **AI Beta** per interrogare l'agente di analisi delle spese. Ogni
+  messaggio invia la domanda e il periodo selezionato al backend; la cronologia
+  è solo locale alla pagina e non costituisce una conversazione persistente.
+- Layout responsive con navigazione mobile.
 
-## Feature principali
+## Struttura
 
-- Dashboard con widget drag & drop e modalita edit/view
-- Layout dashboard salvato per utente
-- Grafici e breakdown spese per categoria
-- Date range condiviso tra Dashboard, Incomes e Expenses
-- Pagine Incomes, Expenses e Wallet con filtri, tabelle e azioni inline
-- Import CSV transazioni con validazione e feedback
-- Autenticazione Supabase e sessione utente
-- Mobile-first responsive design con bottom navigation
-
-## Struttura del progetto
-
-```
-flow-wise-client/
-├── app/               # pagine e layout Next.js
-│   ├── dashboard/
-│   ├── incomes/
-│   ├── expenses/
-│   ├── wallets/
-│   ├── settings/
-│   ├── login/
-│   ├── register/
-│   └── ...
-├── components/        # componenti riutilizzabili e UI primitives
-│   ├── ui/
-│   └── ...
-├── lib/               # client Supabase, hook e utility
-├── styles/            # stili globali
-└── public/            # asset statici
+```text
+app/                  Route Next.js e pagine
+  ai-beta/            Chat di prova per l'agente delle spese
+  dashboard/          Dashboard e widget
+  settings/            Profilo, import e integrazione bancaria
+components/            Componenti condivisi e primitive UI
+lib/                   Client Supabase, API, hook e provider
+public/                Asset statici
 ```
 
-## Configurazione ambiente
+## Configurazione
 
-Crea un file `.env.local` nella root del progetto con almeno queste variabili:
+Crea `.env.local` nella root del progetto:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5030
-NEXT_PUBLIC_SUPABASE_URL=YOUR_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<publishable-key>
 ```
 
-Note:
-- Il client usa solo la anon key pubblicabile.
-- Il backend deve usare la SUPABASE_SERVICE_ROLE_KEY per bypassare le RLS.
+`NEXT_PUBLIC_API_URL` deve puntare al server Flow Wise. In locale il backend
+consente le origini client di sviluppo configurate in `server.js`; in
+produzione configura le origini effettive in `ALLOWED_ORIGINS` sul server.
+Non inserire chiavi Supabase service-role o chiavi del provider AI nel client.
 
-## Avvio locale
+Per l'agente AI configura `LLM_API_KEY` sul **server**, non qui. Le transazioni
+del periodo richiesto vengono inviate dal backend al provider configurato.
+
+## Avvio e controlli
 
 ```bash
-cd flow-wise-client
 npm install
 npm run dev
 ```
 
-Apri http://localhost:3000 e verifica che il server sia raggiungibile su NEXT_PUBLIC_API_URL.
+Per compilare per la produzione:
 
-## Script disponibili
+```bash
+npm run build
+```
 
-- npm run dev — avvia Next.js in sviluppo (Turbopack)
-- npm run build — genera il build di produzione
-- npm run start — esegue il build in produzione
-- npm run lint — esegue ESLint
+La base URL predefinita locale del client è `http://localhost:5030` solo se
+impostata in `.env.local`; anche il frontend e il server devono essere avviati
+separatamente.
 
-## Risoluzione problemi
+## Documentazione
 
-- CORS: verifica che il backend includa http://localhost:3000 in ALLOWED_ORIGINS.
-- Dati non visibili: assicurati di essere autenticato e che il token Supabase sia valido.
-- Import CSV: usa colonne coerenti con il formato del progetto e formato data supportato.
-
-## Deployment
-
-Questa app e pronta per Vercel. Assicurati che NEXT_PUBLIC_API_URL punti al backend di produzione.
+- [API Structure](./API_STRUCTURE.md): chiamate client, route backend e caching.
+- [Architettura](./APP_ARCHITECTURE.md): struttura e flussi applicativi.
+- [Dashboard](./DASHBOARD_STRUCTURE.md): widget, griglia e persistenza layout.

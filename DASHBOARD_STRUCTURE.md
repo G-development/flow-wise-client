@@ -1,58 +1,47 @@
-> ⚠️ **Generato con IA** - Questo documento è stato generato utilizzando GitHub Copilot
+# Dashboard e widget
 
-# Dashboard & dnd-kit: Struttura
+La dashboard è implementata in `app/dashboard/page.tsx`; il modello dati e la
+validazione della griglia sono in `lib/types/dashboard.ts`. Il renderer sceglie
+un componente in base a `widget.type`.
 
-Questo documento riassume l'implementazione della dashboard drag & drop basata su dnd-kit (griglia 4×3, widget configurabili, layout salvato per utente).
+## Widget supportati
 
-## Componenti e Tipi Principali
-- Tipi: [lib/types/dashboard.ts](lib/types/dashboard.ts) → `Widget`, `WidgetPosition`, `DashboardLayout`, `DEFAULT_LAYOUT`, `GRID_COLS/ROWS`, helper `isValidPosition` (collisioni e bounds).
-- Griglia: [components/dashboard/dashboard-grid.tsx](components/dashboard/dashboard-grid.tsx) → DndContext + PointerSensor, griglia CSS 4×3, drag overlay, validazione collisioni, callback `onLayoutChange`, toggle edit/view (bordo dashed in edit, invisibile in view) e pulsante remove in edit.
-- Draggable wrapper: [components/dashboard/draggable-widget.tsx](components/dashboard/draggable-widget.tsx) → set di attributi dnd-kit, posizionamento via `gridColumn`/`gridRow`, cursor grab.
-- Renderer widget: [components/dashboard/widget-renderer.tsx](components/dashboard/widget-renderer.tsx) → switch su `widget.type`.
-- Dialog aggiunta: [components/dashboard/add-widget-dialog.tsx](components/dashboard/add-widget-dialog.tsx) → pulsante “+” in edit mode per aggiungere widget mancanti con posizionamento automatico.
-- Widget disponibili:
-  - Balance: [components/dashboard/widgets/total-balance-widget.tsx](components/dashboard/widgets/total-balance-widget.tsx) (somma wallets via `useWallets`).
-  - Entrate periodo: [components/dashboard/widgets/period-incomes-widget.tsx](components/dashboard/widgets/period-incomes-widget.tsx) (range date o ultimi 30 giorni via `useIncomes`).
-  - Spese periodo: [components/dashboard/widgets/period-expenses-widget.tsx](components/dashboard/widgets/period-expenses-widget.tsx) (range date o ultimi 30 giorni via `useExpenses`).
-  - Income vs Expenses: [components/dashboard/widgets/income-vs-expenses-widget.tsx](components/dashboard/widgets/income-vs-expenses-widget.tsx) (barre proporzionali e bilancio).
-  - Expense Breakdown: [components/dashboard/widgets/expense-breakdown-widget.tsx](components/dashboard/widgets/expense-breakdown-widget.tsx) (torta per categoria con legenda e totale, tooltip con categoria+importo, legenda scrollabile).
+- `total-balance`: somma dei saldi dei wallet.
+- `period-incomes`: totale delle entrate nell'intervallo.
+- `period-expenses`: totale delle spese nell'intervallo.
+- `income-vs-expenses`: confronto dei totali e differenza tra entrate e spese.
+- `expense-breakdown`: torta e legenda delle spese raggruppate per categoria.
 
-### Aggiornamenti UI recenti
-- Dialog “Add Widget” con icone per tipo e layout responsivo su mobile.
-- Legenda del widget “Spese per categoria” scrollabile per evitare overflow.
-- Tooltip del widget mostra categoria e importo formattato.
-- Date range condiviso via provider tra le pagine principali.
+Il layout iniziale include solo saldo totale e entrate del periodo. Il provider
+globale delle date parte dal primo giorno del mese corrente a oggi; i widget
+periodali usano l'intervallo condiviso oppure, quando non fornito, gli ultimi
+30 giorni. La valuta visualizzata nei widget è EUR.
 
-## API & Persistenza Layout
-- Endpoint backend: [flow-wise-server/routes/dashboard-layout.js](../flow-wise-server/routes/dashboard-layout.js)
-  - `GET /dashboard-layout` → restituisce layout utente (altrimenti `{ widgets: [] }`).
-  - `PUT /dashboard-layout` → upsert del layout (unique per `user_id`).
-- Tabella Supabase: `dashboard_layouts` (user_id UNIQUE, widgets JSONB, RLS attive, trigger updated_at). Migration già eseguita manualmente.
-- Hook React Query: [lib/hooks/useQueries.ts](lib/hooks/useQueries.ts)
-  - `useDashboardLayout()` (query key `dashboard-layout`).
-  - `useSaveDashboardLayout()` (mutation con invalidation + toast).
+## Griglia e modifiche
 
-## Pagina Dashboard
-- [app/dashboard/page.tsx](app/dashboard/page.tsx)
-  - Carica layout via `useDashboardLayout`; se vuoto, usa `DEFAULT_LAYOUT` (2 widget di default).
-  - Stato `widgets` locale con init idempotente (`initialized`).
-  - Modalità view/edit: in edit si abilitano drag, resize menu, rimozione widget e pulsante “+” per aggiungere widget; in view drag disabilitato e UI pulita.
-  - `DashboardGrid` per drag & drop; `onLayoutChange` salva via `useSaveDashboardLayout`; `handleSaveEdit` chiude edit e persiste.
-  - Date range picker condiviso per widget che supportano il filtro.
-  - Messaggio di fallback se `widgets.length === 0`, loading spinner su fetch.
+Su desktop la griglia usa 4 colonne × 3 righe. `isValidPosition` verifica che
+un widget resti entro i limiti e non si sovrapponga agli altri. In modalità
+edit si possono trascinare, ridimensionare tramite i preset `1 × 1`, `2 × 1`
+e `2 × 2`, rimuovere e aggiungere widget. L'aggiunta cerca il primo spazio
+libero `2 × 1`; il dialogo non filtra i tipi già presenti. Su mobile i widget
+sono disposti in una colonna e drag/resize sono disabilitati.
 
-## dnd-kit: Scelte Implementative
-- Sensor: `PointerSensor` con `activationConstraint.distance = 8` (evita drag accidentali).
-- Collision: `closestCenter` + validazione custom `isValidPosition` (no collisioni, rispetto bounds griglia 4×3).
-- Grid sizing: CSS `gridTemplateColumns/Rows`, overlay semi-trasparente durante il drag.
+Il layout utente viene letto da `GET /dashboard-layout` e salvato con
+`PUT /dashboard-layout`. Gli spostamenti, ridimensionamenti, aggiunte e
+rimozioni salvano tramite `useSaveDashboardLayout`; il pulsante Done salva
+ancora il layout corrente. L'API usa la tabella Supabase `dashboard_layouts`;
+questa tabella deve essere predisposta nel database.
 
-## Default Layout
-- `DEFAULT_LAYOUT` (2 widget):
-  - `total-balance` @ (x:0,y:0,w:2,h:1)
-  - `period-incomes` @ (x:2,y:0,w:2,h:1)
-  - Gli altri widget possono essere aggiunti dall’utente via dialog “+” in edit mode; posizionamento automatico cerca lo slot libero più vicino (2x1).
+## Componenti principali
 
-## Note Operative
-- Server deve essere attivo su `http://localhost:5030` per caricare wallets/incomes/layout.
-- In produzione, `NEXT_PUBLIC_API_URL` deve puntare al backend corretto.
-- Se manca un record layout per l’utente, il client usa il default e salva al primo drag.
+- `components/dashboard/dashboard-grid.tsx`: griglia, interazione dnd-kit,
+  resize e rimozione.
+- `components/dashboard/draggable-widget.tsx`: wrapper trascinabile.
+- `components/dashboard/widget-renderer.tsx`: selezione del componente widget.
+- `components/dashboard/add-widget-dialog.tsx`: selezione e posizionamento
+  automatico di widget.
+- `components/dashboard/widgets/`: implementazioni dei cinque widget.
+- `lib/hooks/useQueries.ts`: query layout e mutation di salvataggio.
+
+Le date condivise con le pagine Entrate e Spese provengono da
+`DateRangeProvider`; il layout dei widget è invece specifico per utente.
