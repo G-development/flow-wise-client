@@ -181,37 +181,9 @@ const res = await apiFetch(`/wallet/123`, { method: "DELETE" });
 
 ---
 
-#### C. `bankApiFetch()` - Helper per API Bancarie
+#### C. Integrazione bancaria
 
-```typescript
-export async function bankApiFetch(
-  path: string,
-  accessToken: string,
-  options: RequestInit = {}
-): Promise<Response> {
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${accessToken}`,  // Token diverso!
-  };
-
-  // (stesso merge logic di apiFetch)
-  if (options.headers) { ... }
-
-  const hasBody = ...;
-  const isFormData = ...;
-  if (hasBody && !isFormData && !("Content-Type" in headers)) {
-    headers["Content-Type"] = "application/json";
-  }
-
-  return fetch(`${API_URL}${path}`, { ...options, headers });
-}
-```
-
-**Spiegazione:**
-- Simile ad `apiFetch`, ma accetta un token diverso (e.g., GoCardless accessToken).
-- Usato per endpoint bancari che richiedono un token separato da Supabase.
-- Mantiene la stessa struttura per consistenza.
-
----
+Tutte le chiamate bancarie dal client passano per `apiFetch` e sono autenticate con la sessione Supabase. Il server gestisce in modo privato i token del provider, il callback OAuth e la sincronizzazione programmata.
 
 #### D. `buildQuery()` - Costruttore Query Params
 
@@ -971,7 +943,7 @@ Se devi aggiungere una nuova risorsa (es. `Budget`):
 ## Conclusione
 
 Il sistema di **API centralizzato + React Query** fornisce:
-- **Coerenza**: tutti i fetch passano per `apiFetch` e `bankApiFetch`.
+- **Coerenza**: tutte le chiamate autenticate passano per `apiFetch`.
 - **Caching intelligente**: evita ridondanti network request.
 - **Sincronizzazione**: invalidazione cascading tiene dati sincronizzati.
 - **DX**: meno boilerplate, errori gestiti, callback ben organizzati.

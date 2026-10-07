@@ -2,14 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +67,7 @@ export default function ForgotPasswordPage() {
               Check Your Email
             </h1>
             <p className="text-gray-600 mb-6">
-              We've sent a password reset link to your email address. Click the
+              We&apos;ve sent a password reset link to your email address. Click the
               link in the email to reset your password.
             </p>
             <p className="text-sm text-gray-500 mb-6">
@@ -77,7 +75,7 @@ export default function ForgotPasswordPage() {
             </p>
             <div className="space-y-3">
               <p className="text-sm text-gray-600">
-                Didn't receive the email?
+                Didn&apos;t receive the email?
               </p>
               <button
                 onClick={() => {
@@ -103,7 +101,7 @@ export default function ForgotPasswordPage() {
             Forgot Password?
           </h1>
           <p className="text-gray-600">
-            Enter your email address and we'll send you a link to reset your
+            Enter your email address and we&apos;ll send you a link to reset your
             password.
           </p>
         </div>

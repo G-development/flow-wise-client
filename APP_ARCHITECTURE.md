@@ -57,7 +57,7 @@ Entrambi deployati su **Vercel** con variabili d'ambiente gestite nel dashboard 
 - `app/wallets/page.tsx`: Gestione portafogli, toggle default
 - `app/category/page.tsx`: Gestione categorie, toggle active
 - `app/dashboard/page.tsx`: Dashboard con drag & drop, modalità edit/view, pulsante "+" per aggiungere widget e salvataggio layout
-- `app/settings/yourbank/page.tsx`: Integrazione banche (GoCardless-like)
+- `app/settings/yourbank/page.tsx`: Collegamento Open Banking e movimenti sincronizzati
 - `app/settings/import/page.tsx`: Import transazioni
 
 Widget dashboard disponibili: saldo totale, entrate periodo, spese periodo, income vs expenses, breakdown spese per categoria (vedi [DASHBOARD_STRUCTURE.md](DASHBOARD_STRUCTURE.md)).
@@ -78,8 +78,9 @@ apiFetch(path, options, token?)
   → Aggiunge Content-Type: application/json se body presente
   → Chiama fetch(API_URL + path)
 
-bankApiFetch(path, accessToken, options)
-  → Simile ad apiFetch, ma usa token diverso (GoCardless)
+Integrazione bancaria
+  → Usa apiFetch e il bearer token Supabase dell'utente
+  → Il server gestisce token bancari e callback OAuth
 ```
 
 **`lib/constants.ts`**
@@ -278,11 +279,14 @@ export function asyncHandler(fn) {
 - `DELETE /wallet/:id` (cancella)
 
 **`routes/bank.js`** (Integrazione banche)
-- `POST /bank/token` (pubblico, ottiene token GoCardless)
-- `GET /bank/institutions` (pubblico, lista banche)
-- `POST /bank/requisition` (protetto, salva requisition)
-- `GET /bank/accounts` (protetto, lista conti collegati)
-- `GET /bank/transactions` (protetto, scarica transazioni)
+- `GET /bank/institutions` (protetto, lista istituti supportati)
+- `GET /bank/authorize` (protetto, avvia OAuth con state cifrato)
+- `GET /bank/callback` (callback OAuth, salva connessione e avvia il primo sync)
+- `GET /bank/status` (protetto, stato della connessione)
+- `POST /bank/sync` e `GET /bank/transactions` (protetti, sincronizza e legge i movimenti)
+- `POST /bank/disconnect` (protetto, rimuove le credenziali salvate)
+
+Il browser usa `apiFetch` e il bearer token Supabase; token OAuth, callback e sincronizzazione con il provider restano sul server.
 
 ---
 
@@ -462,6 +466,6 @@ RATE_LIMIT_MAX_REQUESTS=5
 2. **Grafici avanzati**: Breakdown per categoria, trend, forecast.
 3. **Mobile app**: React Native o Flutter.
 4. **Offline mode**: Service Worker + sync.
-5. **Bank auto-sync**: Webhook GoCardless per transazioni real-time.
+5. **Bank auto-sync**: Scheduler server per sincronizzazione periodica dei movimenti.
 6. **Notifications**: Email/push per budget exceeded.
 7. **Multi-currency**: Conversione real-time, storage per valuta.

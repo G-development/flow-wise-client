@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -12,7 +12,6 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
   const [validating, setValidating] = useState(true);
   const [tokenValid, setTokenValid] = useState(false);
-  const [email, setEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
@@ -30,38 +29,37 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    validateToken();
-  }, [token, emailParam]);
-
-  const validateToken = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5030"}/auth/verify-reset-token`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+    const validateToken = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5030"}/auth/verify-reset-token`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ token }),
           },
-          body: JSON.stringify({ token }),
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setError(data.error || "Invalid or expired reset link");
+          setTokenValid(false);
+        } else {
+          setTokenValid(true);
         }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || "Invalid or expired reset link");
-        setTokenValid(false);
-      } else {
-        setTokenValid(true);
-        setEmail(data.email);
+      } catch (err) {
+        setError("Failed to validate reset link");
+        console.error(err);
+      } finally {
+        setValidating(false);
       }
-    } catch (err) {
-      setError("Failed to validate reset link");
-      console.error(err);
-    } finally {
-      setValidating(false);
-    }
-  };
+    };
+
+    void validateToken();
+  }, [token, emailParam]);
 
   // Calcola la forza della password
   useEffect(() => {
@@ -247,7 +245,7 @@ export default function ResetPasswordPage() {
             Reset Password
           </h1>
           <p className="text-gray-600">
-            Enter your new password below. Make sure it's strong and secure.
+            Enter your new password below. Make sure it&apos;s strong and secure.
           </p>
         </div>
 
@@ -439,7 +437,7 @@ export default function ResetPasswordPage() {
                         clipRule="evenodd"
                       />
                     </svg>
-                    Passwords don't match
+                    Passwords don&apos;t match
                   </p>
                 )}
               </div>
@@ -479,5 +477,21 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Validating reset link...</p>
+          </div>
+        </div>
+      }
+    >
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

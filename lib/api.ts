@@ -1,52 +1,11 @@
 import { supabase } from "./supabaseClient";
 import { API_URL } from "./constants";
 
-const FETCH_TIMEOUT_MS = 30000; // 30 seconds
+const FETCH_TIMEOUT_MS = 30000;
 
 export async function getAuthToken(): Promise<string | null> {
   const { data } = await supabase.auth.getSession();
   return data.session?.access_token ?? null;
-}
-
-// Helper for bank API calls that use a different token (GoCardless accessToken)
-export async function bankApiFetch(
-  path: string,
-  accessToken: string,
-  options: RequestInit = {}
-): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-
-  try {
-    const headers: Record<string, string> = {
-      Authorization: `Bearer ${accessToken}`,
-    };
-
-    if (options.headers) {
-      if (options.headers instanceof Headers) {
-        options.headers.forEach((value, key) => {
-          headers[key] = value;
-        });
-      } else {
-        Object.assign(headers, options.headers);
-      }
-    }
-
-    const hasBody = typeof options.body !== "undefined" && options.body !== null;
-    const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
-    if (hasBody && !isFormData && !("Content-Type" in headers)) {
-      headers["Content-Type"] = "application/json";
-    }
-
-    return fetch(`${API_URL}${path}`, { ...options, headers, signal: controller.signal });
-  } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new Error(`Request timeout after ${FETCH_TIMEOUT_MS}ms`);
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeoutId);
-  }
 }
 
 export async function apiFetch(
@@ -65,7 +24,6 @@ export async function apiFetch(
       Authorization: `Bearer ${authToken}`,
     };
 
-    // Merge existing headers (handle both object and Headers instance)
     if (options.headers) {
       if (options.headers instanceof Headers) {
         options.headers.forEach((value, key) => {
@@ -76,16 +34,20 @@ export async function apiFetch(
       }
     }
 
-    // Imposta Content-Type JSON automaticamente se è presente un body non-FormData
     const hasBody = typeof options.body !== "undefined" && options.body !== null;
-    const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
+    const isFormData =
+      typeof FormData !== "undefined" && options.body instanceof FormData;
     if (hasBody && !isFormData && !("Content-Type" in headers)) {
       headers["Content-Type"] = "application/json";
     }
 
-    return fetch(`${API_URL}${path}`, { ...options, headers, signal: controller.signal });
+    return await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
   } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
+    if (error instanceof DOMException && error.name === "AbortError") {
       throw new Error(`Request timeout after ${FETCH_TIMEOUT_MS}ms`);
     }
     throw error;
@@ -94,11 +56,15 @@ export async function apiFetch(
   }
 }
 
-export function buildQuery(params: Record<string, string | number | undefined>): string {
+export function buildQuery(
+  params: Record<string, string | number | undefined>
+): string {
   const qs = new URLSearchParams();
-  Object.entries(params).forEach(([k, v]) => {
-    if (v !== undefined && v !== null) qs.append(k, String(v));
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      qs.append(key, String(value));
+    }
   });
-  const s = qs.toString();
-  return s ? `?${s}` : "";
+  const queryString = qs.toString();
+  return queryString ? `?${queryString}` : "";
 }
