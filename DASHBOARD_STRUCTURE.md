@@ -6,16 +6,20 @@ un componente in base a `widget.type`.
 
 ## Widget supportati
 
-- `total-balance`: somma dei saldi dei wallet.
-- `period-incomes`: totale delle entrate nell'intervallo.
-- `period-expenses`: totale delle spese nell'intervallo.
-- `income-vs-expenses`: confronto dei totali e differenza tra entrate e spese.
-- `expense-breakdown`: torta e legenda delle spese raggruppate per categoria.
+- `total-balance`: somma dei saldi di tutti i wallet dell'utente.
+- `period-incomes`: totale delle entrate nell'intervallo di date selezionato.
+- `period-expenses`: totale delle spese nell'intervallo di date selezionato.
+- `income-vs-expenses`: confronto dei totali e differenza netta tra entrate e spese.
+- `expense-breakdown`: grafico a torta e legenda delle spese raggruppate per categoria.
 
 Il layout iniziale include solo saldo totale e entrate del periodo. Il provider
 globale delle date parte dal primo giorno del mese corrente a oggi; i widget
 periodali usano l'intervallo condiviso oppure, quando non fornito, gli ultimi
 30 giorni. La valuta visualizzata nei widget è EUR.
+
+## Aggiornamento e Reattività
+
+Quando nuovi movimenti vengono aggiunti manualmente, importati via CSV (`/settings/import`) o importati dal conto bancario (`/settings/yourbank`), la cache TanStack Query viene invalidata automaticamente, aggiornando in tempo reale tutti i widget della dashboard e i saldi dei wallet.
 
 ## Griglia e modifiche
 
@@ -29,8 +33,7 @@ sono disposti in una colonna e drag/resize sono disabilitati.
 Il layout utente viene letto da `GET /dashboard-layout` e salvato con
 `PUT /dashboard-layout`. Gli spostamenti, ridimensionamenti, aggiunte e
 rimozioni salvano tramite `useSaveDashboardLayout`; il pulsante Done salva
-ancora il layout corrente. L'API usa la tabella Supabase `dashboard_layouts`;
-questa tabella deve essere predisposta nel database.
+il layout corrente. L'API usa la tabella Supabase `dashboard_layouts`.
 
 ## Componenti principali
 

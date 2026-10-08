@@ -1,31 +1,36 @@
 # Flow Wise Client
 
-Frontend del money tracker Flow Wise, realizzato con Next.js App Router, React,
-TypeScript, Tailwind CSS e autenticazione Supabase.
+Frontend del money tracker Flow Wise, realizzato con Next.js App Router (Next.js 15), React 19,
+TypeScript, Tailwind CSS, TanStack Query e autenticazione Supabase.
 
 ## Funzionalità
 
-- Autenticazione e registrazione; sono presenti anche le pagine di recupero
-  password (vedi la nota sulle route pubbliche in [Architettura](./APP_ARCHITECTURE.md)).
-- Dashboard configurabile con widget per saldo, entrate, spese e grafici.
-- Pagine per entrate, spese, wallet e categorie.
-- Importazione CSV delle transazioni.
-- Integrazione bancaria in beta, disponibile dalla pagina Your Bank.
-- Pagina **AI Beta** per interrogare l'agente di analisi delle spese. Ogni
-  messaggio invia la domanda e il periodo selezionato al backend; la cronologia
-  è solo locale alla pagina e non costituisce una conversazione persistente.
-- Layout responsive con navigazione mobile.
+- **Autenticazione**: Registrazione, login, recupero e reset password via email con token temporaneo.
+- **Dashboard Personalizzabile**: Griglia widget interattiva (saldo totale, entrate, spese, confronto entrate/uscite, grafico a torta per categoria) con supporto drag & drop, resize e salvataggio persistente del layout per utente.
+- **Gestione Finanziaria**: Pagine dedicate per entrate (`/incomes`), spese (`/expenses`), wallet (`/wallets`) e categorie (`/category`).
+- **Importazione CSV**: Caricamento massivo e parsing automatico di file CSV di transazioni.
+- **Integrazione Bancaria Completa (`/settings/yourbank`)**:
+  - Connessione a conti bancari reali tramite **Open Banking PSD2 (GoCardless)** o in modalità **Sandbox Mock interattiva**.
+  - Visualizzazione e sincronizzazione automatica dei movimenti.
+  - **Filtro del periodo transazioni** (con default dal 1° del mese corrente a oggi e preset rapidi).
+  - **Selezione massiva e importazione** guidata delle transazioni bancarie nei propri Wallet e Categorie.
+- **AI Beta (`/ai-beta`)**: Interfaccia di chat per interrogare l'agente intelligente di analisi delle spese.
+- **Design & UX**: Interfaccia moderna responsive, supporto dark/light theme, notifiche toast con Sonner.
 
 ## Struttura
 
 ```text
 app/                  Route Next.js e pagine
   ai-beta/            Chat di prova per l'agente delle spese
-  dashboard/          Dashboard e widget
-  settings/            Profilo, import e integrazione bancaria
-components/            Componenti condivisi e primitive UI
-lib/                   Client Supabase, API, hook e provider
-public/                Asset statici
+  dashboard/          Dashboard e griglia widget
+  incomes/            Gestione entrate
+  expenses/           Gestione spese
+  wallets/            Gestione wallet e conti
+  category/           Gestione categorie
+  settings/           Profilo, import CSV e integrazione bancaria
+components/           Componenti condivisi, navbar e primitive UI
+lib/                  Client Supabase, API wrapper, hook e provider
+public/               Asset statici
 ```
 
 ## Configurazione
@@ -43,9 +48,6 @@ consente le origini client di sviluppo configurate in `server.js`; in
 produzione configura le origini effettive in `ALLOWED_ORIGINS` sul server.
 Non inserire chiavi Supabase service-role o chiavi del provider AI nel client.
 
-Per l'agente AI configura `LLM_API_KEY` sul **server**, non qui. Le transazioni
-del periodo richiesto vengono inviate dal backend al provider configurato.
-
 ## Avvio e controlli
 
 ```bash
@@ -59,12 +61,8 @@ Per compilare per la produzione:
 npm run build
 ```
 
-La base URL predefinita locale del client è `http://localhost:5030` solo se
-impostata in `.env.local`; anche il frontend e il server devono essere avviati
-separatamente.
-
 ## Documentazione
 
-- [API Structure](./API_STRUCTURE.md): chiamate client, route backend e caching.
-- [Architettura](./APP_ARCHITECTURE.md): struttura e flussi applicativi.
+- [API Structure](./API_STRUCTURE.md): chiamate client, route backend, caching e payload.
+- [Architettura](./APP_ARCHITECTURE.md): struttura del frontend e del backend, layout e flussi di dati.
 - [Dashboard](./DASHBOARD_STRUCTURE.md): widget, griglia e persistenza layout.

@@ -5,7 +5,7 @@ Flow Wise è composto da due applicazioni distinte:
 - **Client**: Next.js 15 App Router, React 19, TypeScript, Tailwind CSS,
   componenti Radix/shadcn-style, TanStack Query e Supabase Auth.
 - **Server**: API Express 4 in ESM, Supabase JS, Zod, CORS e servizi per
-  importazione, reset password e connessione bancaria.
+  importazione, reset password, connessione bancaria Open Banking PSD2 e agente AI.
 
 Le configurazioni locali del client e del server sono in `.env.local` e `.env`;
 non committare file contenenti segreti.
@@ -24,7 +24,7 @@ protetta. Le route considerate pubbliche dal provider sono `/`, `/login`,
 Le pagine `/forgot-password` e `/reset-password` sono implementate e chiamano
 le route pubbliche di reset del server, ma non sono incluse nell'elenco
 `PUBLIC_ROUTES` del provider: attualmente un utente senza sessione viene
-reindirizzato al login se vi accede. La logica non è stata modificata.
+reindirizzato al login se vi accede.
 
 La barra di navigazione è in `components/navbar.jsx`. `lib/api.ts` centralizza
 le chiamate autenticate; i form di autenticazione usano anche direttamente
@@ -37,14 +37,20 @@ Supabase o `fetch`, a seconda del flusso.
 - `/dashboard`: griglia widget configurabile e intervallo date condiviso.
 - `/incomes`, `/expenses`: rispettivamente movimenti di tipo entrata e spesa.
 - `/wallets`, `/category`, `/budgets`: gestione wallet, categorie e pagina
-  budgets attualmente indicata come work in progress.
+  budgets.
 - `/settings`, `/settings/import`, `/settings/yourbank`: profilo, CSV e
-  integrazione bancaria.
+  integrazione bancaria completa.
 - `/ai-beta`: interfaccia di prova dell'agente di analisi spese.
 - `/privacy`: informativa.
 
-La pagina AI Beta invia ogni domanda separatamente insieme al periodo scelto;
-la cronologia in pagina non è memoria lato modello o lato server.
+### Integrazione Bancaria (`/settings/yourbank`)
+
+La pagina `/settings/yourbank` include:
+- **Badge di stato modalità**: mostra dinamicamente se è attivo l'ambiente *PSD2 Open Banking* reale o la *Sandbox Mode*.
+- **Drawer di selezione istituti (`BankDrawer.tsx`)**: ricerca rapida e avvio dell'autorizzazione per banche italiane ed europee.
+- **Card dei conti collegati**: elenco dei conti attivi con data dell'ultimo sync, azione di sincronizzazione manuale immediata e disconnessione sicura.
+- **Filtro del periodo transazioni**: default dinamico dal 1° giorno del mese corrente alla data odierna, con preset rapidi (*Questo mese*, *Mese scorso*, *Ultimi 30 gg*, *Ultimi 90 gg*, *Tutto*) e selezione date manuale.
+- **Selezione massiva e importazione (`ImportTransactionDialog.tsx`)**: selezione multipla di movimenti con checkbox, riepilogo finanziario di entrate/spese e conversione immediata in record di tipo `Transaction` associati al Wallet e alla Categoria scelti, con invalidazione automatica della cache TanStack Query.
 
 ### Stato e dati
 
@@ -79,7 +85,7 @@ la service-role key.
 - `/category`, `/wallet`: gestione delle risorse utente.
 - `/dashboard-layout`: lettura e salvataggio layout widget.
 - `/import`: importazione CSV.
-- `/bank`: OAuth e movimenti bancari.
+- `/bank`: configurazione provider, autorizzazione OAuth, callback, sincronizzazione conti, filtri data e importazione massiva nei wallet.
 - `/agents/analytics`: analisi delle spese con provider AI compatibile OpenAI.
 
 Le route protette usano `requireAuth`; le eccezioni, come callback OAuth e
@@ -94,7 +100,7 @@ provider: totale, media, categoria, andamento mensile e fino a dieci esempi,
 con limiti sulle descrizioni. Il provider si configura sul server con
 `LLM_API_KEY`; endpoint Groq e modello predefinito sono documentati nel
 README server. Ogni messaggio è indipendente e la richiesta non persiste una
-conversazione. I dati inclusi nel riepilogo vengono inviati al provider AI.
+conversazione.
 
 ## Avvio e verifica
 
@@ -103,5 +109,4 @@ Avvia prima il server (`cd ../flow-wise-server && npm run dev`), poi il client
 `http://localhost:5030`; Supabase deve essere configurato per entrambi.
 
 Per verificare il client esegui `npx tsc --noEmit` e `npm run build`. Per
-verificare il server esegui `node --check` sui file JavaScript. I manifest
-attuali non definiscono una suite di test applicativa.
+verificare il server esegui `node --check` sui file JavaScript.
