@@ -27,7 +27,7 @@ export function DraggableWidget({ widget, children, disableDrag }: DraggableWidg
       style={style}
       {...(!disableDrag ? listeners : {})}
       {...(!disableDrag ? attributes : {})}
-      className={`h-full w-full ${!disableDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
+      className={`h-full w-full min-h-0 ${!disableDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
     >
       {children}
     </div>

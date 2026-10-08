@@ -105,13 +105,13 @@ export function ExpenseBreakdownWidget({
   const isLoading = expensesLoading || categoriesLoading;
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-3">
+    <Card className="h-full flex flex-col overflow-hidden min-h-0">
+      <CardHeader className="flex-shrink-0 p-4 pb-2">
         <CardTitle className="text-xs sm:text-sm font-medium">
           Spese per Categoria
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col items-center justify-center">
+      <CardContent className="flex-1 p-4 pt-0 overflow-hidden flex flex-col items-center justify-center min-h-0">
         {isLoading ? (
           <div className="w-full h-32 bg-muted rounded animate-pulse" />
         ) : chartData.length === 0 ? (
@@ -121,7 +121,7 @@ export function ExpenseBreakdownWidget({
         ) : (
           <div className="w-full space-y-3">
             {/* Pie Chart */}
-            <ChartContainer config={chartConfig} className="w-full aspect-square max-h-[200px]">
+            <ChartContainer config={chartConfig} className="w-full aspect-square max-h-[200px] shrink-0">
               <PieChart>
                 <ChartTooltip
                   cursor={false}
@@ -153,7 +153,7 @@ export function ExpenseBreakdownWidget({
             </ChartContainer>
 
             {/* Legend (scrollable to avoid oversized widget) */}
-            <ScrollArea className="h-36 w-full">
+            <ScrollArea className="flex-1 min-h-0 w-full">
               <div className="space-y-1 text-xs pr-2">
                 {chartData.map((item) => (
                   <div key={item.category} className="flex items-center justify-between">

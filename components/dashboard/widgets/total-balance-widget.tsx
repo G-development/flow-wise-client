@@ -13,14 +13,14 @@ export function TotalBalanceWidget() {
   }, 0);
 
   return (
-    <Card className="h-full border-border/70 shadow-sm transition-shadow hover:shadow-md">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+    <Card className="h-full flex flex-col overflow-hidden border-border/70 shadow-sm transition-shadow hover:shadow-md min-h-0">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-2">
         <CardTitle className="text-sm font-semibold">Total Balance</CardTitle>
         <div className="rounded-xl bg-primary/10 p-2.5">
           <Wallet2 className="h-4 w-4 text-primary" />
         </div>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="flex-1 p-4 pt-0 space-y-2 overflow-hidden flex flex-col justify-center min-h-0">
         {isLoading ? (
           <div className="text-3xl font-bold text-muted-foreground animate-pulse">...</div>
         ) : (

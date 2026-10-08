@@ -159,12 +159,15 @@ export function DashboardGrid({ widgets, onLayoutChange, dateFilter, isEditMode 
       {/* Griglia principale */}
       <div
         ref={setGridRef}
-        className={`grid gap-2 md:gap-4 p-2 md:p-4 rounded-lg ${isEditMode ? 'border-2 border-dashed border-gray-300' : ''}`}
+        className={`grid mx-auto w-full max-w-6xl gap-3 md:gap-4 p-2 md:p-4 rounded-lg overflow-hidden ${isEditMode ? 'border-2 border-dashed border-gray-300' : ''}`}
         style={{
-          gridTemplateColumns: `repeat(${isMobile ? 1 : GRID_COLS}, 1fr)`,
+          gridTemplateColumns: `repeat(${isMobile ? 1 : GRID_COLS}, minmax(180px, 1fr))`,
           gridTemplateRows: isMobile
             ? `repeat(${effectiveWidgets.length || 1}, minmax(150px, auto))`
-            : `repeat(${GRID_ROWS}, minmax(150px, 1fr))`,
+            : `repeat(${GRID_ROWS}, minmax(0, 1fr))`,
+          ...(!isMobile && {
+            height: "clamp(680px, 72vh, 980px)",
+          }),
           ...(isEditMode && !isMobile && {
             backgroundImage: `
               repeating-linear-gradient(
@@ -191,7 +194,7 @@ export function DashboardGrid({ widgets, onLayoutChange, dateFilter, isEditMode 
         {effectiveWidgets.map((widget) => (
           <div 
             key={widget.id} 
-            className={`relative group transition-all duration-300 ease-in-out ${isEditMode ? 'border border-dashed border-gray-300' : ''}`}
+            className={`relative group transition-all duration-300 ease-in-out min-h-0 overflow-hidden ${isEditMode ? 'border border-dashed border-gray-300' : ''}`}
             style={{
               gridColumn: `${widget.position.x + 1} / span ${widget.position.w}`,
               gridRow: `${widget.position.y + 1} / span ${widget.position.h}`,

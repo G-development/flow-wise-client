@@ -58,13 +58,13 @@ export function IncomeVsExpensesWidget({
   const isLoading = incomesLoading || expensesLoading;
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-3">
+    <Card className="h-full flex flex-col overflow-hidden min-h-0">
+      <CardHeader className="flex-shrink-0 flex items-center p-4 pb-2">
         <CardTitle className="text-xs sm:text-sm font-medium">
           Entrate vs Uscite
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex-1 p-4 pt-0 space-y-4 overflow-hidden flex flex-col justify-center min-h-0">
         {isLoading ? (
           <div className="space-y-3">
             <div className="h-8 bg-muted rounded animate-pulse" />

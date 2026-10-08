@@ -35,14 +35,14 @@ export function PeriodIncomesWidget({ config, dateFilter }: PeriodIncomesWidgetP
   });
 
   return (
-    <Card className="h-full border-border/70 shadow-sm transition-shadow hover:shadow-md">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+    <Card className="h-full border-border/70 shadow-sm transition-shadow hover:shadow-md flex flex-col overflow-hidden min-h-0">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-2">
         <CardTitle className="text-sm font-semibold">Period Incomes</CardTitle>
         <div className="rounded-xl bg-success/10 p-2.5">
           <TrendingUp className="h-4 w-4 text-success" />
         </div>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="flex-1 p-4 pt-0 space-y-2 overflow-hidden flex flex-col justify-center min-h-0">
         {isLoading ? (
           <div className="text-3xl font-bold text-muted-foreground animate-pulse">...</div>
         ) : (
