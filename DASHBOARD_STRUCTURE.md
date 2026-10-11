@@ -19,17 +19,17 @@ periodali usano l'intervallo condiviso oppure, quando non fornito, gli ultimi
 
 ## Aggiornamento e Reattività
 
-Le mutation delle transazioni (`useCreateTransaction`, `useUpdateTransaction`,
-`useDeleteTransaction`) e l'importazione bancaria (`ImportTransactionDialog.tsx`)
-invalidano tutte lo stesso insieme di risorse: `transactions`, `wallets`,
-`incomes` e `expenses`. I widget della dashboard e i saldi dei wallet, che
-leggono `GET /wallet`, si riaggiornano quindi subito senza ricaricare la pagina.
+Tutte le vie di inserimento invalidano lo stesso insieme di risorse —
+`transactions`, `wallets`, `incomes` e `expenses`: le mutation delle transazioni
+(`useCreateTransaction`, `useUpdateTransaction`, `useDeleteTransaction`),
+l'importazione bancaria (`ImportTransactionDialog.tsx`) e l'import CSV
+(`useImportCsv`, usata da `/settings/import`). I widget della dashboard e i
+saldi dei wallet, che leggono `GET /wallet`, si riaggiornano quindi subito senza
+ricaricare la pagina.
 
-L'import CSV (`/settings/import`) fa eccezione: la pagina non chiama mai
-`invalidateQueries` e si limita a mostrare il riepilogo dell'esito, quindi dopo
-un import CSV i widget restano sui dati precedenti finché la query non viene
-rifetchata per un altro motivo. Con `refetchOnWindowFocus` disabilitato e uno
-`staleTime` di 60 secondi, non succede da solo.
+Nel caso dell'import CSV l'invalidazione scatta solo se la risposta è andata a
+buon fine (`res.ok`, cioè `201`): su un import fallito non c'è nulla da
+riallineare.
 
 ## Griglia e modifiche
 

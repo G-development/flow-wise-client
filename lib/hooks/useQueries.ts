@@ -141,6 +141,34 @@ export function useUpdateTransaction() {
   });
 }
 
+/**
+ * Import CSV (`POST /import/csv`).
+ *
+ * Restituisce la `Response` grezza e non mostra toast: la pagina
+ * `/settings/import` gestisce già i propri messaggi con un `id` condiviso e lo
+ * stato `importResult`. L'invalidazione avviene solo sul ramo di successo.
+ */
+export function useImportCsv() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { csv: string }) => {
+      return apiFetch("/import/csv", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: (res) => {
+      if (!res.ok) return;
+
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wallets.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.incomes.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.expenses.all });
+    },
+  });
+}
+
 // Wallets Hooks
 export function useWallets() {
   return useQuery({

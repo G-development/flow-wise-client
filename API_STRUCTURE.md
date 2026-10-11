@@ -80,9 +80,10 @@ Gli hook sono in `lib/hooks/useQueries.ts`. Le query condividono un
 - `retry`: una volta per query e nessun retry predefinito per mutation;
 - `refetchOnWindowFocus`: disabilitato.
 
-Le chiavi sono raggruppate in `queryKeys`. Le mutation di transazioni o le importazioni bancarie
-invalidano transazioni, wallet, entrate e spese; le mutation di wallet o
-categorie invalidano la rispettiva risorsa. Le mutation mostrano toast tramite
-Sonner.
+Le chiavi sono raggruppate in `queryKeys`. Le mutation di transazioni, le importazioni bancarie
+e l'import CSV (`useImportCsv`) invalidano transazioni, wallet, entrate e spese; le mutation di
+wallet o categorie invalidano la rispettiva risorsa. Le mutation mostrano toast tramite Sonner,
+con l'eccezione di `useImportCsv`, che non ne mostra: la pagina `/settings/import` gestisce già
+i propri messaggi con un `id` condiviso.
 
 `buildQuery` serializza parametri non nulli con `URLSearchParams`.

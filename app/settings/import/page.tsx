@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import Navbar from "@/components/navbar";
 import Papa from "papaparse";
 import { parse } from "date-fns";
-import { apiFetch } from "@/lib/api";
+import { useImportCsv } from "@/lib/hooks/useQueries";
 import { toast } from "sonner";
 import { Upload, FileText, CheckCircle, AlertCircle, Info } from "lucide-react";
 
@@ -24,6 +24,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export default function Import() {
   const [isLoading, setIsLoading] = useState(false);
+  const importCsv = useImportCsv();
   const [importResult, setImportResult] = useState<{
     success: boolean;
     importedCount: number;
@@ -154,10 +155,7 @@ export default function Import() {
 
       toast.loading('Importing transactions...', { id: loadingToast });
 
-      const res = await apiFetch('/import/csv', {
-        method: 'POST',
-        body: JSON.stringify({ csv: fileText }),
-      });
+      const res = await importCsv.mutateAsync({ csv: fileText });
 
       const responseData = await res.json().catch(() => ({}));
 
