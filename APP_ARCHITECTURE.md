@@ -110,3 +110,59 @@ Avvia prima il server (`cd ../flow-wise-server && npm run dev`), poi il client
 
 Per verificare il client esegui `npx tsc --noEmit` e `npm run build`. Per
 verificare il server esegui `node --check` sui file JavaScript.
+
+Nota: `npm run build` esegue anche il lint di Next, quindi un errore ESLint
+(per esempio una regola `no-explicit-any`) fa fallire la build anche con i tipi
+corretti.
+
+## Stato verificato e limiti noti
+
+Verificato leggendo il codice e lanciando i controlli di build. Da aggiornare
+quando i punti vengono chiusi.
+
+**Comportamenti non implementati**
+
+- **Saldo wallet**: `Wallet.balance` resta a `0`. Il server lo scrive solo alla
+  creazione (`routes/wallet.js`, `routes/user.js`) e su `PUT /wallet/:id`, che il
+  client non chiama mai con `balance`. Nessuna route lo ricalcola su
+  insert/update/delete di `Transaction`. Conseguenza: il widget `total-balance` e
+  la colonna Balance di `/wallets` mostrano sempre zero.
+- **CRUD categorie dal client**: `category-dialog.tsx` invia
+  `type: "income" | "expense"`, mentre `utils/schemas.js` valida
+  `z.enum(["I", "E"])` → `400 Validation error`. In `/category` l'edit passa
+  `row.Name` come id (il nome usato come uuid) e la delete riusa `DeleteDialog`,
+  che cancella una transazione con l'id della categoria prima di richiamare
+  `onSuccess`.
+- **Recupero password poco affidabile**: `requestPasswordReset` usa
+  `supabase.auth.admin.listUsers()` senza paginazione (solo i primi utenti) e,
+  se `SMTP_HOST` non è configurato, l'invio fallisce ma la route risponde
+  comunque `success: true`.
+- **`/forgot-password` e `/reset-password` non sono in `PUBLIC_ROUTES`**
+  (`lib/providers/AuthProvider.tsx`): l'utente senza sessione viene reindirizzato
+  al login.
+
+**Integrazione bancaria**
+
+- `BANK_PROVIDER` è documentata in `.env.example` e in [BANK_INTEGRATION.md](../flow-wise-server/BANK_INTEGRATION.md)
+  ma non è letta dal codice: la modalità live è attiva quando
+  `GOCARDLESS_SECRET_ID` e `GOCARDLESS_SECRET_KEY` sono presenti.
+- `fetchTransactions` in `utils/bankService.js` cattura gli errori del provider e
+  ricade sulla generazione mock: in modalità live un errore API può inserire
+  movimenti fittizi.
+- Gli `external_id` dei movimenti mock contengono un timestamp, quindi a ogni
+  sincronizzazione l'unicità `(user_id, bank_id, account_id, external_id)` non
+  viene rispettata e i movimenti si duplicano.
+- `access_token` e `refresh_token` sono memorizzati in chiaro in
+  `bank_connections`.
+- `BANK_SCHEDULER_SECRET` non configurato → le route `/bank/scheduler/*`
+  rispondono `503`.
+
+**Debito tecnico minore**
+
+- `app/incomes/page.tsx` e `app/expenses/page.tsx` sono due copie identiche.
+- `lib/types/dashboard.ts` e `lib/hooks/useQueries.ts` convivono con tipi
+  duplicati nelle pagine (`Category.type` come `"income" | "expense"` rispetto a
+  `"I" | "E"` del database).
+- Codice morto: `app/dashboard/another/page.tsx` (ritorna `null`),
+  `check-db.mjs` vuoto, `/budgets` è un placeholder, `components/navbar.jsx` è
+  JSX non tipizzato in un progetto TypeScript.
