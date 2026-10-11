@@ -25,7 +25,7 @@ Le pagine `/forgot-password` e `/reset-password` sono implementate e chiamano
 le route pubbliche di reset del server; essendo in `PUBLIC_ROUTES` del provider
 sono raggiungibili anche senza sessione.
 
-La barra di navigazione è in `components/navbar.jsx`. `lib/api.ts` centralizza
+La barra di navigazione è in `components/navbar.tsx`. `lib/api.ts` centralizza
 le chiamate autenticate; i form di autenticazione usano anche direttamente
 Supabase o `fetch`, a seconda del flusso.
 
@@ -35,8 +35,9 @@ Supabase o `fetch`, a seconda del flusso.
   registrazione e recupero credenziali.
 - `/dashboard`: griglia widget configurabile e intervallo date condiviso.
 - `/incomes`, `/expenses`: rispettivamente movimenti di tipo entrata e spesa.
-- `/wallets`, `/category`, `/budgets`: gestione wallet, categorie e pagina
-  budgets.
+- `/wallets`, `/category`: gestione wallet e categorie.
+- `/budgets`: placeholder "Work in progress", deliberatamente non linkato in
+  navigazione finche' la feature non esiste (raggiungibile solo per URL diretto).
 - `/settings`, `/settings/import`, `/settings/yourbank`: profilo, CSV e
   integrazione bancaria completa.
 - `/ai-beta`: interfaccia di prova dell'agente di analisi spese.
@@ -179,6 +180,6 @@ quando i punti vengono chiusi.
 - `app/incomes/page.tsx` e `app/expenses/page.tsx` sono quasi identici:
   il diff riguarda solo l'hook usato, il nome del componente, il titolo e il
   wrapper esterno, quindi ogni correzione va replicata a mano in entrambi.
-- Codice morto: `app/dashboard/another/page.tsx` (ritorna `null`),
-  `check-db.mjs` vuoto (nel repo server), `/budgets` è un placeholder,
-  `components/navbar.jsx` è JSX non tipizzato in un progetto TypeScript.
+- `/budgets` è un placeholder "Work in progress" non linkato in navigazione
+  finche' la feature non esiste (raggiungibile solo per URL diretto);
+  `check-db.mjs` vuoto (nel repo server).

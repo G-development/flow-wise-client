@@ -12,7 +12,6 @@ import {
   ChartNoAxesCombined,
   Plus,
   Minus,
-  HandCoins,
   User,
   Upload,
   Banknote,
@@ -21,6 +20,7 @@ import {
   Menu,
   Bot,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Logo from "../app/flow-wise-logo.svg";
 
 import {
@@ -32,20 +32,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { NavUser } from "./nav-user";
 
-const navLinks = [
+interface NavLink {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+}
+
+const navLinks: NavLink[] = [
   { href: '/dashboard', icon: ChartNoAxesCombined, label: 'Dashboard' },
   { href: '/incomes', icon: Plus, label: 'Incomes' },
   { href: '/expenses', icon: Minus, label: 'Expenses' },
 ];
 
-const mainLinks = [
+const mainLinks: NavLink[] = [
   { href: '/ai-beta', icon: Bot, label: 'AI Beta' },
-  { href: '/budgets', icon: HandCoins, label: 'Budgets' },
   { href: '/wallets', icon: Wallet, label: 'Wallets' },
   { href: '/category', icon: Boxes, label: 'Categories' },
 ];
 
-const settingsLinks = [
+const settingsLinks: NavLink[] = [
   { href: '/settings', icon: User, label: 'Account' },
   { href: '/settings/import', icon: Upload, label: 'Import' },
   { href: '/settings/yourbank', icon: Banknote, label: 'Your Bank' },
@@ -55,16 +60,16 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const isActive = (path) => pathname === path || pathname.startsWith(`${path}/`);
+  const isActive = (path: string) => pathname === path || pathname.startsWith(`${path}/`);
 
-  const navLinkClass = (active) =>
+  const navLinkClass = (active: boolean) =>
     `flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
       active
         ? 'bg-primary/10 text-primary'
         : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
     }`;
 
-  const desktopNavClass = (active) =>
+  const desktopNavClass = (active: boolean) =>
     `inline-flex h-10 w-max items-center justify-center rounded-xl px-2.5 xl:px-3 text-sm font-medium transition-colors duration-200 ${
       active
         ? 'bg-primary/10 text-primary'
@@ -210,7 +215,7 @@ export default function Navbar() {
 
       {/* Mobile Bottom Navigation */}
       <nav aria-label="Mobile navigation" className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_-18px_rgba(15,23,42,0.35)] backdrop-blur-xl lg:hidden">
-        <div className="mx-auto grid max-w-lg grid-cols-5 gap-1 py-1.5">
+        <div className="mx-auto grid max-w-lg grid-cols-4 gap-1 py-1.5">
           {navLinks.map(({ href, icon: Icon, label }) => (
             <Link
               key={href}
@@ -228,20 +233,6 @@ export default function Navbar() {
               <span>{label}</span>
             </Link>
           ))}
-          <Link
-            href="/budgets"
-            prefetch={false}
-            className={`flex min-w-0 flex-col items-center justify-center rounded-xl px-1 py-2.5 gap-1 text-[10px] font-medium transition-colors duration-200 ${
-              isActive('/budgets')
-                ? 'text-primary bg-primary/10'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-            aria-label="Budgets"
-            aria-current={isActive('/budgets') ? "page" : undefined}
-          >
-            <HandCoins className="h-5 w-5" />
-            <span>Budget</span>
-          </Link>
           <Link
             href="/wallets"
             prefetch={false}
