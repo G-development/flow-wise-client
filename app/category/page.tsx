@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/navbar";
 import { useCategories, useUpdateCategory, useDeleteCategory } from "@/lib/hooks/useQueries";
+import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
+import { TruncatedNotice } from "@/components/truncated-notice";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash } from "lucide-react";
 import CategoryDialog from "@/components/category-dialog";
@@ -21,7 +23,10 @@ interface Category {
 }
 
 export default function Categories() {
-  const { data: categories = [], isLoading, isError, refetch } = useCategories();
+  const { data: categoryList = EMPTY_LIST_RESPONSE, isLoading, isError, refetch } =
+    useCategories();
+  // Il server risponde con l'envelope di lista: le righe stanno in `rows`.
+  const categories = categoryList.rows;
   const updateCategory = useUpdateCategory();
   const deleteCategory = useDeleteCategory();
 
@@ -112,6 +117,15 @@ export default function Categories() {
           <div className="bg-destructive/10 border border-destructive/50 rounded-lg p-4">
             <p className="text-destructive font-medium">Error loading categories</p>
           </div>
+        )}
+
+        {/* Elenco parziale: il server dichiara di aver tagliato il set */}
+        {!isLoading && !isError && categoryList.truncated && (
+          <TruncatedNotice
+            shown={categoryList.count}
+            total={categoryList.total}
+            className="mb-4"
+          />
         )}
 
         {!isLoading && !isError && categories.length === 0 && (

@@ -20,6 +20,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUpdateTransaction } from "@/lib/hooks/useQueries";
+import { checkAmountInput } from "@/lib/amountInput";
+import { parseListResponse } from "@/lib/listResponse";
 import { toast } from "sonner";
 import { apiFetch, getAuthToken } from "@/lib/api";
 
@@ -67,11 +69,14 @@ const EditDialog: React.FC<EditDialogProps> = ({
           if (!walletRes.ok) throw new Error("Errore nel recupero wallet");
           if (!catRes.ok) throw new Error("Errore nel recupero categorie");
 
-          const [transaction, walletData, cats] = await Promise.all([
+          const [transaction, walletData, categoryResponse] = await Promise.all([
             txRes.json(),
             walletRes.json(),
             catRes.json(),
           ]);
+          const cats = parseListResponse<{ id: string; name: string }>(
+            categoryResponse
+          ).rows;
 
           setFormData({
             wallet_id: transaction.wallet_id?.toString() || "",
@@ -120,13 +125,23 @@ const EditDialog: React.FC<EditDialogProps> = ({
       return;
     }
 
+    const check = checkAmountInput(parseFloat(formData.amount));
+
+    // Il segno lo porta il selettore Income/Expense della transazione: un
+    // importo negativo va fermato qui, non normalizzato con `Math.abs`
+    // (vedi `lib/amountInput.ts`).
+    if (!check.ok) {
+      toast.error(check.message);
+      return;
+    }
+
     updateTransaction.mutate(
       {
         id: String(id),
         data: {
           wallet_id: Number(formData.wallet_id),
           category_id: Number(formData.category_id),
-          amount: parseFloat(formData.amount),
+          amount: check.amount,
           date: formData.date,
           description: formData.description,
           note: formData.note,
@@ -184,6 +199,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
             </Label>
             <Input
               type="number"
+              min="0"
               name="amount"
               value={formData.amount}
               onChange={handleInputChange}

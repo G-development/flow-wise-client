@@ -2,6 +2,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useExpenses, useCategories, type Transaction, type Category } from "@/lib/hooks/useQueries";
+import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
+import { TruncatedNotice } from "@/components/truncated-notice";
+import { absoluteAmount } from "@/lib/amount";
 import { WidgetConfig } from "@/lib/types/dashboard";
 import { useMemo } from "react";
 import {
@@ -44,11 +47,19 @@ export function ExpenseBreakdownWidget({
   const startDate = dateFilter?.startDate || config?.startDate || defaultStartDate;
   const endDate = dateFilter?.endDate || config?.endDate || defaultEndDate;
 
-  const { data: expenses = [], isLoading: expensesLoading } = useExpenses(
+  const { data: expenses = EMPTY_LIST_RESPONSE, isLoading: expensesLoading } = useExpenses(
     startDate,
     endDate
   );
-  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+  const { data: categoryList = EMPTY_LIST_RESPONSE, isLoading: categoriesLoading } =
+    useCategories();
+  // La risposta e' l'envelope di lista: le righe stanno in `rows`.
+  const categories = categoryList.rows;
+
+  // Righe effettivamente ricevute: il grafico e il totale leggono queste, mai il
+  // `count` dichiarato dal server (che puo' essere maggiore di `rows.length`
+  // quando il set e' troncato).
+  const expenseRows = expenses.rows;
 
   // Create a map of category_id to category name
   const categoryMap = useMemo(() => {
@@ -63,15 +74,17 @@ export function ExpenseBreakdownWidget({
   const expensesByCategory = useMemo(() => {
     const grouped: { [key: string]: number } = {};
 
-    expenses.forEach((expense: Transaction) => {
+    expenseRows.forEach((expense: Transaction) => {
       const categoryKey = String(expense.category_id);
       const categoryName = categoryMap[categoryKey] || "Uncategorized";
-      const amount = typeof expense.amount === "number" ? expense.amount : 0;
+      // Convenzione importi (lib/amount.ts): la magnitudine si legge da `amount`,
+      // il segno da `type`. Qui le fette del grafico sono magnitudini.
+      const amount = absoluteAmount(expense.amount);
       grouped[categoryName] = (grouped[categoryName] || 0) + amount;
     });
 
     return grouped;
-  }, [expenses, categoryMap]);
+  }, [expenseRows, categoryMap]);
 
   // Format data for pie chart
   const chartData = useMemo(() => {
@@ -176,9 +189,14 @@ export function ExpenseBreakdownWidget({
             <div className="pt-2 border-t flex items-center justify-between">
               <span className="text-xs font-medium">Totale</span>
               <span className="text-xs font-bold">
+                {expenses.truncated ? "≥ " : ""}
                 {formatCurrency.format(totalExpenses)}
               </span>
             </div>
+
+            {expenses.truncated && (
+              <TruncatedNotice shown={expenses.count} total={expenses.total} />
+            )}
           </div>
         )}
       </CardContent>

@@ -24,6 +24,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useWallets, useActiveCategories, useCreateTransaction } from "@/lib/hooks/useQueries";
+import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
+import { checkAmountInput } from "@/lib/amountInput";
 import { X, TrendingUp, TrendingDown, Calendar, Wallet as WalletIcon, Tag } from "lucide-react";
 
 type FormData = {
@@ -45,9 +47,11 @@ export default function NewTransaction({ onSuccess, trigger }: NewTransactionPro
   const [open, setOpen] = useState(false);
   const { data: wallets = [] } = useWallets();
   const {
-    data: categories = [],
+    data: categoryList = EMPTY_LIST_RESPONSE,
     isLoading: categoriesLoading,
   } = useActiveCategories();
+  // La risposta e' l'envelope di lista: le righe stanno in `rows`.
+  const categories = categoryList.rows;
   const createTransaction = useCreateTransaction();
   
   const [formData, setFormData] = useState<FormData>({
@@ -92,10 +96,19 @@ export default function NewTransaction({ onSuccess, trigger }: NewTransactionPro
       return;
     }
 
+    const check = checkAmountInput(Number(formData.amount));
+
+    // Il segno lo porta il selettore Income/Expense: un importo negativo va
+    // fermato qui, non normalizzato con `Math.abs` (vedi `lib/amountInput.ts`).
+    if (!check.ok) {
+      toast.error(check.message);
+      return;
+    }
+
     createTransaction.mutate({
       description: formData.description,
       note: formData.note,
-      amount: Number(formData.amount),
+      amount: check.amount,
       type: formData.type,
       wallet_id: formData.wallet_id,
       category_id: formData.category_id,
@@ -185,6 +198,7 @@ export default function NewTransaction({ onSuccess, trigger }: NewTransactionPro
               <Input
                 id="amount"
                 type="number"
+                min="0"
                 placeholder="0.00"
                 value={formData.amount}
                 onChange={(e) =>

@@ -57,18 +57,43 @@ export function parseListResponse<T>(
     };
   }
 
-  const body: Record<string, unknown> =
-    payload && typeof payload === "object"
-      ? (payload as Record<string, unknown>)
-      : {};
+  if (!payload || typeof payload !== "object") {
+    throw new Error("Invalid list response: expected an array or response object");
+  }
 
+  const body = payload as Record<string, unknown>;
   const raw = body[rowsKey];
-  const rows = Array.isArray(raw) ? (raw as T[]) : [];
+  if (!Array.isArray(raw)) {
+    throw new Error(`Invalid list response: "${rowsKey}" must be an array`);
+  }
+
+  const count = body.count === undefined ? raw.length : body.count;
+  if (
+    typeof count !== "number" ||
+    !Number.isSafeInteger(count) ||
+    count < 0 ||
+    count !== raw.length
+  ) {
+    throw new Error("Invalid list response: count must match the number of rows");
+  }
+
+  const truncated = body.truncated === undefined ? false : body.truncated;
+  if (typeof truncated !== "boolean") {
+    throw new Error("Invalid list response: truncated must be a boolean");
+  }
+
+  const total = body.total === undefined || body.total === null ? null : body.total;
+  if (
+    total !== null &&
+    (typeof total !== "number" || !Number.isSafeInteger(total) || total < 0)
+  ) {
+    throw new Error("Invalid list response: total must be a non-negative integer or null");
+  }
 
   return {
-    rows,
-    count: typeof body.count === "number" ? body.count : rows.length,
-    truncated: body.truncated === true,
-    total: typeof body.total === "number" ? body.total : null,
+    rows: raw as T[],
+    count,
+    truncated,
+    total,
   };
 }

@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, buildQuery } from "@/lib/api";
+import { parseListResponse } from "@/lib/listResponse";
+import { errorFromResponse } from "@/lib/httpError";
 import { toast } from "sonner";
 import { DashboardLayout, Widget } from "@/lib/types/dashboard";
 
@@ -47,6 +49,15 @@ export interface Transaction extends Record<string, unknown> {
   updated_at?: string;
 }
 
+/**
+ * Risorsa wallet come la restituisce `GET /wallet`.
+ *
+ * `balance` NON e' una colonna memorizzata: e' il saldo DERIVATO dalle transazioni
+ * (vedi `utils/walletService.js` nel server, che lo sovrascrive nella risposta).
+ * Il campo si chiama `balance` anche nell'API, quindi il nome resta; cio' che non
+ * deve esistere e' un tipo di scrittura che lo accetti come valore da persistere:
+ * per quello usa `WalletCreateInput` / `WalletUpdateInput`.
+ */
 export interface Wallet extends Record<string, unknown> {
   id: string;
   userid: string;
@@ -64,6 +75,11 @@ export interface Wallet extends Record<string, unknown> {
   created_at?: string;
   updated_at?: string;
 }
+
+/** Input di `POST /wallet`: il saldo e' derivato, quindi non e' accettato. */
+export type WalletCreateInput = {
+  name: string;
+};
 
 /**
  * Input di `PUT /wallet/:id`: il saldo FINALE e' derivato e non e' aggiornabile,
@@ -118,7 +134,11 @@ export function useCreateTransaction() {
         method: "POST",
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed to create transaction");
+      // Il 400 di validazione (es. amount negativo) va mostrato al cliente: il
+      // messaggio sta in `details[].message`, non nel generico "Validation error".
+      if (!res.ok) {
+        throw await errorFromResponse(res, "Failed to create transaction");
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -128,8 +148,8 @@ export function useCreateTransaction() {
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses.all });
       toast.success("Transaction created");
     },
-    onError: () => {
-      toast.error("Failed to create transaction");
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 }
@@ -143,7 +163,9 @@ export function useUpdateTransaction() {
         method: "PUT",
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed to update transaction");
+      if (!res.ok) {
+        throw await errorFromResponse(res, "Failed to update transaction");
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -153,8 +175,8 @@ export function useUpdateTransaction() {
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses.all });
       toast.success("Transaction updated");
     },
-    onError: () => {
-      toast.error("Failed to update transaction");
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 }
@@ -203,7 +225,7 @@ export function useCreateWallet() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (data: Partial<Wallet>) => {
+    mutationFn: async (data: WalletCreateInput) => {
       const res = await apiFetch("/wallet", {
         method: "POST",
         body: JSON.stringify(data),
@@ -263,13 +285,20 @@ export function useDeleteWallet() {
 }
 
 // Categories Hooks
+/**
+ * Categorie dell'utente.
+ *
+ * Come `useIncomes`/`useExpenses` il risultato e' l'envelope
+ * `{ rows, count, truncated, total }` (vedi `lib/listResponse.ts`), non un array:
+ * il server pagina oltre il tetto PostgREST e dichiara quando il set e' parziale.
+ */
 export function useCategories() {
   return useQuery({
     queryKey: queryKeys.categories.all,
     queryFn: async () => {
       const res = await apiFetch("/category");
       if (!res.ok) throw new Error("Failed to fetch categories");
-      return res.json() as Promise<Category[]>;
+      return parseListResponse<Category>(await res.json());
     },
   });
 }
@@ -280,7 +309,7 @@ export function useActiveCategories() {
     queryFn: async () => {
       const res = await apiFetch("/category/active");
       if (!res.ok) throw new Error("Failed to fetch active categories");
-      return res.json() as Promise<Category[]>;
+      return parseListResponse<Category>(await res.json());
     },
   });
 }
@@ -294,15 +323,15 @@ export function useCreateCategory() {
         method: "POST",
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed to create category");
+      if (!res.ok) throw await errorFromResponse(res, "Failed to create category");
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
       toast.success("Category created");
     },
-    onError: () => {
-      toast.error("Failed to create category");
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 }
@@ -316,15 +345,15 @@ export function useUpdateCategory() {
         method: "PUT",
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed to update category");
+      if (!res.ok) throw await errorFromResponse(res, "Failed to update category");
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
       toast.success("Category updated");
     },
-    onError: () => {
-      toast.error("Failed to update category");
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 }
@@ -335,20 +364,27 @@ export function useDeleteCategory() {
   return useMutation({
     mutationFn: async (id: string) => {
       const res = await apiFetch(`/category/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete category");
+      if (!res.ok) throw await errorFromResponse(res, "Failed to delete category");
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
       toast.success("Category deleted");
     },
-    onError: () => {
-      toast.error("Failed to delete category");
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 }
 
 // Income/Expense Hooks
+/**
+ * Liste di entrate/spese dell'intervallo richiesto.
+ *
+ * Il risultato non e' un array ma l'envelope `{ rows, count, truncated, total }`
+ * (vedi `lib/listResponse.ts`): le somme vanno calcolate su `rows`, e quando
+ * `truncated` e' `true` la lista e' un sottoinsieme e il totale non e' definitivo.
+ */
 export function useIncomes(startDate?: string, endDate?: string) {
   return useQuery({
     queryKey: queryKeys.incomes.byDateRange(startDate, endDate),
@@ -356,7 +392,7 @@ export function useIncomes(startDate?: string, endDate?: string) {
       const query = buildQuery({ startDate, endDate });
       const res = await apiFetch(`/income/all${query}`);
       if (!res.ok) throw new Error("Failed to fetch incomes");
-      return res.json() as Promise<Transaction[]>;
+      return parseListResponse<Transaction>(await res.json());
     },
   });
 }
@@ -368,7 +404,7 @@ export function useExpenses(startDate?: string, endDate?: string) {
       const query = buildQuery({ startDate, endDate });
       const res = await apiFetch(`/expense/all${query}`);
       if (!res.ok) throw new Error("Failed to fetch expenses");
-      return res.json() as Promise<Transaction[]>;
+      return parseListResponse<Transaction>(await res.json());
     },
   });
 }

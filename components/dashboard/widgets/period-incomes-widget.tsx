@@ -2,6 +2,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useIncomes } from "@/lib/hooks/useQueries";
+import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
+import { TruncatedNotice } from "@/components/truncated-notice";
+import { totalForType } from "@/lib/amount";
 import { TrendingUp } from "lucide-react";
 import { WidgetConfig } from "@/lib/types/dashboard";
 import { useMemo } from "react";
@@ -22,12 +25,13 @@ export function PeriodIncomesWidget({ config, dateFilter }: PeriodIncomesWidgetP
   const startDate = dateFilter?.startDate || config?.startDate || defaultStartDate;
   const endDate = dateFilter?.endDate || config?.endDate || defaultEndDate;
 
-  const { data: incomes = [], isLoading } = useIncomes(startDate, endDate);
+  const { data: incomes = EMPTY_LIST_RESPONSE, isLoading } = useIncomes(startDate, endDate);
 
-  const totalIncomes = incomes.reduce((sum, income) => {
-    const amount = typeof income.amount === "number" ? income.amount : 0;
-    return sum + amount;
-  }, 0);
+  // Convenzione importi (lib/amount.ts): `amount` è assoluto, `type` decide il
+  // segno. Il totale non somma mai il valore grezzo. Sommiamo `rows`, cioè lo
+  // stesso insieme di righe che il server ha contato: quando `truncated` è true
+  // l'insieme è incompleto e il totale va presentato come parziale.
+  const totalIncomes = totalForType(incomes.rows, "I");
 
   const formatCurrency = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -47,12 +51,17 @@ export function PeriodIncomesWidget({ config, dateFilter }: PeriodIncomesWidgetP
           <div className="text-3xl font-bold text-muted-foreground animate-pulse">...</div>
         ) : (
           <div className="text-3xl font-semibold tracking-tight text-success">
-            +{formatCurrency.format(totalIncomes)}
+            +{incomes.truncated ? "≥ " : ""}
+            {formatCurrency.format(totalIncomes)}
           </div>
         )}
-        <p className="text-xs text-muted-foreground">
-          {incomes.length} {incomes.length === 1 ? 'transaction' : 'transactions'}
-        </p>
+        {incomes.truncated ? (
+          <TruncatedNotice shown={incomes.count} total={incomes.total} />
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            {incomes.rows.length} {incomes.rows.length === 1 ? 'transaction' : 'transactions'}
+          </p>
+        )}
       </CardContent>
     </Card>
   );

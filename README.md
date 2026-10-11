@@ -61,6 +61,17 @@ Per compilare per la produzione:
 npm run build
 ```
 
+I controlli del client — test unitari, typecheck e build con lint — stanno in un
+unico comando:
+
+```bash
+npm test    # node --test + npx tsc --noEmit + next build (include il lint di Next)
+```
+
+Il comando parte da `.next` pulito: senza la pulizia i tipi generati di una route
+rimossa o rinominata restano in cache e fanno fallire la build su un albero
+sorgente corretto.
+
 ## Push gate
 
 Il repo versiona un hook `pre-push` in `.githooks/pre-push`, attivo quando
@@ -73,10 +84,10 @@ printf '%s' "$(git rev-parse HEAD)" > "$(git rev-parse --git-dir)/hermes-push-ap
 ```
 
 L'approvazione vale per un solo commit: appena aggiungi un commit il gate si
-richiude da solo. Superato il gate, l'hook esegue i controlli prima di lasciar
-passare il push (`npx tsc --noEmit` e `npm run build`, che include anche il lint
-di Next). L'uscita consapevole, che salta gate e check, è
-`HERMES_PUSH_APPROVED=1 git push`.
+richiude da solo. Superato il gate, l'hook esegue `npm test` prima di lasciar
+passare il push: `node --test` (invarianti), `npx tsc --noEmit` (typecheck) e
+`next build` (build + lint di Next), in quest'ordine. L'uscita consapevole, che
+salta gate e check, è `HERMES_PUSH_APPROVED=1 git push`.
 
 ## Documentazione
 

@@ -22,6 +22,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { apiFetch } from "@/lib/api";
 import { queryKeys, useActiveCategories, useWallets } from "@/lib/hooks/useQueries";
+import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
 import { toast } from "sonner";
 import {
   ArrowDownLeft,
@@ -103,9 +104,11 @@ export default function ImportTransactionDialog({
   const queryClient = useQueryClient();
   const { data: wallets = [], isLoading: loadingWallets } = useWallets();
   const {
-    data: categories = [],
+    data: categoryList = EMPTY_LIST_RESPONSE,
     isLoading: loadingCategories,
   } = useActiveCategories();
+  // La risposta e' l'envelope di lista: le righe stanno in `rows`.
+  const categories = categoryList.rows;
 
   const [selectedWalletId, setSelectedWalletId] = useState<string>("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");

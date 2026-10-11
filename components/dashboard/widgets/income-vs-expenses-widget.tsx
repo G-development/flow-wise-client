@@ -2,6 +2,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useIncomes, useExpenses } from "@/lib/hooks/useQueries";
+import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
+import { TruncatedNotice } from "@/components/truncated-notice";
+import { totalForType } from "@/lib/amount";
 import { WidgetConfig } from "@/lib/types/dashboard";
 import { useMemo } from "react";
 
@@ -25,24 +28,27 @@ export function IncomeVsExpensesWidget({
   const startDate = dateFilter?.startDate || config?.startDate || defaultStartDate;
   const endDate = dateFilter?.endDate || config?.endDate || defaultEndDate;
 
-  const { data: incomes = [], isLoading: incomesLoading } = useIncomes(
+  const { data: incomes = EMPTY_LIST_RESPONSE, isLoading: incomesLoading } = useIncomes(
     startDate,
     endDate
   );
-  const { data: expenses = [], isLoading: expensesLoading } = useExpenses(
+  const { data: expenses = EMPTY_LIST_RESPONSE, isLoading: expensesLoading } = useExpenses(
     startDate,
     endDate
   );
 
-  const totalIncomes = incomes.reduce((sum, income) => {
-    const amount = typeof income.amount === "number" ? income.amount : 0;
-    return sum + amount;
-  }, 0);
+  // Convenzione importi (lib/amount.ts): `amount` è assoluto, `type` decide il
+  // segno, quindi entrambi i totali sono magnitudini positive e il segno della
+  // differenza nasce dai tipi, non dai valori grezzi. I totali leggono `rows`,
+  // cioè le righe effettivamente ricevute, non il campo `count` dichiarato.
+  const totalIncomes = totalForType(incomes.rows, "I");
+  const totalExpenses = totalForType(expenses.rows, "E");
 
-  const totalExpenses = expenses.reduce((sum, expense) => {
-    const amount = typeof expense.amount === "number" ? expense.amount : 0;
-    return sum + amount;
-  }, 0);
+  const truncatedShown = incomes.count + expenses.count;
+  const truncatedTotal =
+    incomes.total !== null && expenses.total !== null
+      ? incomes.total + expenses.total
+      : null;
 
   const difference = totalIncomes - totalExpenses;
   const maxValue = Math.max(totalIncomes, totalExpenses) || 1;
@@ -118,6 +124,10 @@ export function IncomeVsExpensesWidget({
                 </span>
               </div>
             </div>
+
+            {(incomes.truncated || expenses.truncated) && (
+              <TruncatedNotice shown={truncatedShown} total={truncatedTotal} />
+            )}
           </>
         )}
       </CardContent>

@@ -25,6 +25,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { apiFetch, buildQuery } from "@/lib/api";
+import { parseListResponse } from "@/lib/listResponse";
+import { TruncatedNotice } from "@/components/truncated-notice";
 import BankDrawer, { type Institution } from "./BankDrawer";
 import ImportTransactionDialog, {
   type BankTransactionItem,
@@ -56,6 +58,11 @@ interface BankStatusResponse extends BankConnection {
 
 interface BankTransactionsResponse {
   transactions: BankTransactionItem[];
+  /** Righe totali del periodo secondo il server; `null` se non dichiarate. */
+  count?: number;
+  /** `true` quando il server ha tagliato la lista al tetto di paginazione. */
+  truncated?: boolean;
+  total?: number | null;
 }
 
 interface BankSetupStatus {
@@ -107,6 +114,14 @@ function YourBank() {
   const [connections, setConnections] = useState<BankConnection[]>([]);
   const [setupStatus, setSetupStatus] = useState<BankSetupStatus | null>(null);
   const [transactions, setTransactions] = useState<BankTransactionItem[]>([]);
+  /**
+   * Troncamento dichiarato dal server su `GET /bank/transactions`: la lista
+   * mostrata non e' l'intero periodo richiesto. `null` = set completo.
+   */
+  const [transactionsTruncated, setTransactionsTruncated] = useState<{
+    shown: number;
+    total: number | null;
+  } | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
@@ -142,7 +157,11 @@ function YourBank() {
         response,
         "Impossibile caricare i movimenti bancari."
       );
-      setTransactions(data.transactions || []);
+      const parsed = parseListResponse<BankTransactionItem>(data, "transactions");
+      setTransactions(parsed.rows);
+      setTransactionsTruncated(
+        parsed.truncated ? { shown: parsed.count, total: parsed.total } : null
+      );
     } catch (err) {
       console.error("Error loading transactions:", err);
     }
@@ -654,6 +673,13 @@ function YourBank() {
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Filtra per periodo e seleziona le transazioni per importarle in blocco nei tuoi Wallet.
                   </p>
+                  {transactionsTruncated && (
+                    <TruncatedNotice
+                      shown={transactionsTruncated.shown}
+                      total={transactionsTruncated.total}
+                      className="mt-1.5"
+                    />
+                  )}
                 </div>
 
                 {selectedTxnIds.size > 0 && (

@@ -97,6 +97,25 @@ la service-role key.
 Le route protette usano `requireAuth`; le eccezioni, come callback OAuth e
 reset password, hanno il proprio flusso di verifica.
 
+### Convenzione sugli importi
+
+`Transaction.amount` è un **valore assoluto**: il segno lo decide `type` (`"I"` /
+`"E"`). Il segno non va mai letto dal numero, perché un `amount` negativo non
+significa "uscita" ma "dato non normalizzato" (per esempio un CSV importato con
+`-50,00`).
+
+La regola vive in due punti speculari, uno per repo, perché i repo sono separati:
+`lib/amount.ts` nel client (`absoluteAmount`, `signedAmount`, `totalForType`) e
+`utils/amount.js` nel server (`amountToCents`, `signedAmountCents`), che
+`sumBalancesInCents` usa per il saldo. I widget di dashboard sommano con
+`totalForType` le stesse righe che il server somma per il saldo, quindi una riga
+col segno nel numero non fa più divergere i totali di periodo dal saldo: entrambi
+la contano come magnitudine e le danno il segno di `type`.
+
+Non vale per `bank_transactions`, dove il segno è nel valore perché è il formato
+del provider bancario: la traduzione in (`amount` positivo, `type`) avviene
+all'import.
+
 ### Saldo dei wallet
 
 Il saldo mostrato non è un valore memorizzato: è **derivato dalle transazioni**
@@ -120,17 +139,55 @@ crescerà, la sostituzione naturale è una view Postgres (`wallet_balances`
 
 La colonna `Wallet.balance` esiste ancora e viene scritta a `0` alla creazione
 del wallet (`routes/wallet.js`, `routes/user.js`), ma non è più la fonte del
-dato mostrato; anche `PUT /wallet/:id` non accetta più `balance` e aggiorna solo
-nome e flag di default.
+dato mostrato; `PUT /wallet/:id` non accetta `balance`.
+
+Il punto di partenza della somma è `Wallet.opening_balance_cents` (integer NOT
+NULL default 0, in centesimi, `migrations/003_wallet_opening_balance.sql`):
+`sumBalancesInCents` parte da lì invece che da zero, altrimenti il saldo è
+corretto solo se ogni movimento dalla nascita del wallet è in `Transaction`.
+`PUT /wallet/:id` accetta anche `opening_balance_cents` (intero, segno ammesso) e
+la pagina `/wallets` lo mostra e lo rende modificabile per wallet: l'input è in
+EUR e viene convertito in centesimi prima della chiamata.
+
+### Liste e troncamento
+
+PostgREST tronca una risposta a 1000 righe anche senza `limit`: vale per gli
+endpoint di lista, non solo per il saldo. Il server pagina e ogni endpoint di
+lista risponde con un envelope
+(`{ data, count, truncated, total }`; `GET /bank/transactions` mantiene
+`transactions` al posto di `data`, vedi
+[API_STRUCTURE.md](./API_STRUCTURE.md)).
+
+Il client legge quell'envelope con `parseListResponse` (`lib/listResponse.ts`) e
+gli hook `useIncomes` / `useExpenses` restituiscono `{ rows, count, truncated,
+total }`. Da qui discendono due regole, entrambe coperte dal codice:
+
+- le righe si leggono da `rows` e le somme si calcolano su `rows`, mai sul campo
+  dichiarato `count`: così la somma di periodo usa lo stesso insieme di righe che
+  il server ha contato, e con 1001 righe nel periodo i due numeri coincidono;
+- quando `truncated` è `true` l'insieme è incompleto: i widget mostrano
+  `≥ <totale>` e `components/truncated-notice.tsx` rende "Dati troncati: mostrate
+  N righe su M", quindi una somma parziale non viene mai presentata come totale
+  definitivo. Lo stesso avviso compare su `/incomes`, `/expenses`
+  (`components/movements-list.tsx`) e sui movimenti bancari
+  (`/settings/yourbank`).
+
+`parseListResponse` accetta anche l'array nudo della forma precedente al
+contratto, per non rompere il client nella finestra in cui il server non è ancora
+aggiornato; in quel caso non c'è nulla da dichiarare e `total` resta `null`.
 
 ### Agente di analytics
 
 `routes/agents.js` recupera solo spese dell'utente autenticato nell'intervallo
 richiesto (mese corrente fino a oggi se omesso), con un massimo di 1.000
-transazioni. `agents/analyticsAgent.js` aggrega i dati prima dell'invio al
-provider: totale, media, categoria, andamento mensile e fino a dieci esempi,
-con limiti sulle descrizioni. Il provider si configura sul server con
-`LLM_API_KEY`; endpoint Groq e modello predefinito sono documentati nel
+transazioni per richiesta (`.range(0, limit - 1)`, `range` è inclusivo). Il
+totale reale del periodo arriva da una count query separata, e la risposta dichiara
+sempre la copertura ("Ho analizzato N movimenti su M del periodo"): se il periodo
+ha più movimenti del limite, `analysis` lo dice esplicitamente invece di
+presentare l'analisi come completa. `agents/analyticsAgent.js` aggrega i dati
+prima dell'invio al provider: totale, media, categoria, andamento mensile e fino
+a dieci esempi, con limiti sulle descrizioni. Il provider si configura sul server
+con `LLM_API_KEY`; endpoint Groq e modello predefinito sono documentati nel
 README server. Ogni messaggio è indipendente e la richiesta non persiste una
 conversazione.
 
@@ -161,25 +218,34 @@ quando i punti vengono chiusi.
 
 **Integrazione bancaria**
 
-- `BANK_PROVIDER` è documentata in `.env.example` e in [BANK_INTEGRATION.md](../flow-wise-server/BANK_INTEGRATION.md)
-  ma non è letta dal codice: la modalità live è attiva quando
-  `GOCARDLESS_SECRET_ID` e `GOCARDLESS_SECRET_KEY` sono presenti.
-- `fetchTransactions` in `utils/bankService.js` cattura gli errori del provider e
-  ricade sulla generazione mock: in modalità live un errore API può inserire
-  movimenti fittizi.
-- Gli `external_id` dei movimenti mock contengono un timestamp, quindi a ogni
-  sincronizzazione l'unicità `(user_id, bank_id, account_id, external_id)` non
-  viene rispettata e i movimenti si duplicano.
-- `access_token` e `refresh_token` sono memorizzati in chiaro in
-  `bank_connections`.
+Chiusa il 2026-10-11, verificata sul codice del server (`utils/bankService.js`):
+
+- `BANK_PROVIDER` e `BANK_MOCK_ENABLED` sono lette davvero da
+  `isMockBankModeEnabled()`: il mock è attivo solo con un consenso esplicito
+  (`BANK_PROVIDER=mock`, oppure `BANK_MOCK_ENABLED` a `true`/`1`/`yes`/`on`).
+  In ogni altro caso il server è in **live**: un errore del provider GoCardless
+  risale come errore e non diventa mai una lista di movimenti finti. Il live
+  richiede `GOCARDLESS_SECRET_ID` e `GOCARDLESS_SECRET_KEY`, documentate in
+  `.env.example` e in [BANK_INTEGRATION.md](../flow-wise-server/BANK_INTEGRATION.md).
+- gli `external_id` dei movimenti mock sono deterministici
+  (`txn_<bank>_<account>_mock_<daysAgo>_<indice>`, nessun timestamp), quindi
+  l'unicità `(user_id, bank_id, account_id, external_id)` regge a ogni
+  sincronizzazione e l'upsert non duplica i movimenti;
+- `access_token` e `refresh_token` in `bank_connections` sono cifrati at-rest
+  (`utils/bankTokenCrypto.js`), non più in chiaro.
+
+Limite noto:
+
 - `BANK_SCHEDULER_SECRET` non configurato → le route `/bank/scheduler/*`
   rispondono `503`.
 
 **Debito tecnico minore**
 
-- `app/incomes/page.tsx` e `app/expenses/page.tsx` sono quasi identici:
-  il diff riguarda solo l'hook usato, il nome del componente, il titolo e il
-  wrapper esterno, quindi ogni correzione va replicata a mano in entrambi.
+- `app/incomes/page.tsx` e `app/expenses/page.tsx` sono wrapper sottili attorno
+  alla lista movimenti condivisa (`components/movements-list.tsx`): differiscono
+  solo per l'hook dati usato, il titolo, la descrizione, il prefisso della
+  caption e il wrapper esterno, quindi una correzione alla lista si fa in un
+  posto solo.
 - `/budgets` è un placeholder "Work in progress" non linkato in navigazione
   finche' la feature non esiste (raggiungibile solo per URL diretto);
   `check-db.mjs` vuoto (nel repo server).

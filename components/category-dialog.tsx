@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useCreateCategory, useUpdateCategory, useCategories } from "@/lib/hooks/useQueries";
+import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
 import { toast } from "sonner";
 
 interface CategoryDialogProps {
@@ -35,7 +36,9 @@ export default function CategoryDialog({
   categoryId,
   onSuccess,
 }: CategoryDialogProps) {
-  const { data: categories = [] } = useCategories();
+  const { data: categoryList = EMPTY_LIST_RESPONSE } = useCategories();
+  // La risposta e' l'envelope di lista: le righe stanno in `rows`.
+  const categories = categoryList.rows;
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
 
