@@ -43,6 +43,12 @@ Supabase o `fetch`, a seconda del flusso.
 - `/ai-beta`: interfaccia di prova dell'agente di analisi spese.
 - `/privacy`: informativa.
 
+Il CRUD delle categorie è in `components/category-dialog.tsx`, che invia
+`type: "I"` / `"E"` come il database; in `/category` edit e delete partono
+dall'id della riga (la colonna id è nascosta da `hiddenColumns` di
+`components/dynamic-table.tsx`) e `components/delete-dialog.tsx` è un dialog di
+conferma generico che lascia la mutation al chiamante.
+
 ### Integrazione Bancaria (`/settings/yourbank`)
 
 La pagina `/settings/yourbank` include:
@@ -50,7 +56,7 @@ La pagina `/settings/yourbank` include:
 - **Drawer di selezione istituti (`BankDrawer.tsx`)**: ricerca rapida e avvio dell'autorizzazione per banche italiane ed europee.
 - **Card dei conti collegati**: elenco dei conti attivi con data dell'ultimo sync, azione di sincronizzazione manuale immediata e disconnessione sicura.
 - **Filtro del periodo transazioni**: default dinamico dal 1° giorno del mese corrente alla data odierna, con preset rapidi (*Questo mese*, *Mese scorso*, *Ultimi 30 gg*, *Ultimi 90 gg*, *Tutto*) e selezione date manuale.
-- **Selezione massiva e importazione (`ImportTransactionDialog.tsx`)**: selezione multipla di movimenti con checkbox, riepilogo finanziario di entrate/spese e conversione immediata in record di tipo `Transaction` associati al Wallet e alla Categoria scelti, con invalidazione automatica della cache TanStack Query.
+- **Selezione massiva e importazione (`ImportTransactionDialog.tsx`)**: riepilogo finanziario del gruppo selezionato (numero di movimenti, totale entrate e totale spese) e conversione in record di tipo `Transaction` associati al Wallet di destinazione e a una Categoria, con invalidazione automatica della cache TanStack Query (`transactions`, `wallets`, `incomes`, `expenses`). Per un solo movimento la categoria si sceglie a mano ed è filtrata sul tipo atteso dal segno dell'importo. Per un import massivo l'**auto-suggerimento** è attivo di default: a ogni movimento viene proposta una categoria **attiva** del tipo corretto (`.type === "I"` per importi non negativi, `"E"` altrimenti), scelta confrontando descrizione e controparte con il nome della categoria; i movimenti vengono raggruppati per categoria suggerita e inviati al server con una richiesta `POST /bank/import` per gruppo. Disattivando l'interruttore si sceglie un'unica categoria per tutti i movimenti selezionati.
 
 ### Stato e dati
 
@@ -91,6 +97,32 @@ la service-role key.
 Le route protette usano `requireAuth`; le eccezioni, come callback OAuth e
 reset password, hanno il proprio flusso di verifica.
 
+### Saldo dei wallet
+
+Il saldo mostrato non è un valore memorizzato: è **derivato dalle transazioni**
+a ogni lettura, in `utils/walletService.js`. `sumBalancesInCents` legge le
+transazioni dell'utente paginando con `.range()` (PostgREST tronca le risposte a
+1000 righe e su questo progetto gli aggregati SQL sono disabilitati con
+`PGRST123`, quindi la somma avviene in JavaScript), somma in centesimi per
+evitare errori di virgola mobile e si ferma con un errore esplicito oltre
+`MAX_PAGES` invece di restituire una somma parziale. `getWalletsWithBalances`
+restituisce i wallet con il `balance` calcolato ed è quello che usa
+`GET /wallet`; `getWalletBalance` (il singolo wallet) è esportato ma nessuna
+route lo chiama ancora.
+
+La scelta è deliberata: `Wallet.balance` andrebbe riscritto da ogni percorso che
+tocca `Transaction` (creazione, modifica ed eliminazione di transazioni, import
+CSV, import bancario) e basta dimenticarne uno per avere un saldo sbagliato che
+sembra corretto; derivarlo rende `Transaction` l'unica fonte di verità. Il costo
+è una lettura paginata per ogni richiesta che mostra i saldi. Quando il volume
+crescerà, la sostituzione naturale è una view Postgres (`wallet_balances`
+`GROUP BY wallet_id`) letta in una sola query.
+
+La colonna `Wallet.balance` esiste ancora e viene scritta a `0` alla creazione
+del wallet (`routes/wallet.js`, `routes/user.js`), ma non è più la fonte del
+dato mostrato; anche `PUT /wallet/:id` non accetta più `balance` e aggiorna solo
+nome e flag di default.
+
 ### Agente di analytics
 
 `routes/agents.js` recupera solo spese dell'utente autenticato nell'intervallo
@@ -120,19 +152,8 @@ corretti.
 Verificato leggendo il codice e lanciando i controlli di build. Da aggiornare
 quando i punti vengono chiusi.
 
-**Comportamenti non implementati**
+**Difetti aperti**
 
-- **Saldo wallet**: `Wallet.balance` resta a `0`. Il server lo scrive solo alla
-  creazione (`routes/wallet.js`, `routes/user.js`) e su `PUT /wallet/:id`, che il
-  client non chiama mai con `balance`. Nessuna route lo ricalcola su
-  insert/update/delete di `Transaction`. Conseguenza: il widget `total-balance` e
-  la colonna Balance di `/wallets` mostrano sempre zero.
-- **CRUD categorie dal client**: `category-dialog.tsx` invia
-  `type: "income" | "expense"`, mentre `utils/schemas.js` valida
-  `z.enum(["I", "E"])` → `400 Validation error`. In `/category` l'edit passa
-  `row.Name` come id (il nome usato come uuid) e la delete riusa `DeleteDialog`,
-  che cancella una transazione con l'id della categoria prima di richiamare
-  `onSuccess`.
 - **Recupero password poco affidabile**: `requestPasswordReset` usa
   `supabase.auth.admin.listUsers()` senza paginazione (solo i primi utenti) e,
   se `SMTP_HOST` non è configurato, l'invio fallisce ma la route risponde
@@ -159,10 +180,9 @@ quando i punti vengono chiusi.
 
 **Debito tecnico minore**
 
-- `app/incomes/page.tsx` e `app/expenses/page.tsx` sono due copie identiche.
-- `lib/types/dashboard.ts` e `lib/hooks/useQueries.ts` convivono con tipi
-  duplicati nelle pagine (`Category.type` come `"income" | "expense"` rispetto a
-  `"I" | "E"` del database).
+- `app/incomes/page.tsx` e `app/expenses/page.tsx` sono quasi identici:
+  il diff riguarda solo l'hook usato, il nome del componente, il titolo e il
+  wrapper esterno, quindi ogni correzione va replicata a mano in entrambi.
 - Codice morto: `app/dashboard/another/page.tsx` (ritorna `null`),
-  `check-db.mjs` vuoto, `/budgets` è un placeholder, `components/navbar.jsx` è
-  JSX non tipizzato in un progetto TypeScript.
+  `check-db.mjs` vuoto (nel repo server), `/budgets` è un placeholder,
+  `components/navbar.jsx` è JSX non tipizzato in un progetto TypeScript.

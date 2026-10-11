@@ -36,6 +36,13 @@ Le chiamate bancarie e quelle dell'agente AI passano attraverso `apiFetch`.
 | Banca - Importazione | `POST /bank/import` (`{ transactionIds, walletId, categoryId }`) |
 | AI Beta | `POST /agents/analytics` con domanda e date `startDate`/`endDate` |
 
+Il contratto dei wallet merita una nota a parte, perché il saldo non è un campo
+scrivibile: `GET /wallet` restituisce ogni wallet con il `balance` **calcolato
+dalle transazioni** al momento della lettura (vedi
+[APP_ARCHITECTURE.md](./APP_ARCHITECTURE.md)), mentre `PUT /wallet/:id` accetta
+solo `name` e `is_default` — lo schema di validazione del server non prevede più
+`balance`. `POST /wallet` accetta solo `name` e crea il wallet con `balance: 0`.
+
 ### Elenco transazioni
 
 Il backend espone l'elenco completo su `GET /transaction/all` e
@@ -47,8 +54,9 @@ una route lista. Le pagine principali del client usano gli endpoint separati
 
 La pagina `/settings/yourbank` interagisce con il backend tramite:
 1. `GET /bank/transactions?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD`: carica i movimenti bancari sincronizzati per il periodo selezionato.
-2. `POST /bank/import`: invia un payload JSON con gli ID delle transazioni selezionate, il `walletId` e il `categoryId`. Il server inserisce i record nella tabella `Transaction` di Flow Wise e contrassegna i movimenti come `imported`.
-3. Invalida la cache TanStack Query per `transactions`, `wallets`, `expenses` e `incomes`.
+2. `POST /bank/import`: invia un payload JSON con gli ID delle transazioni selezionate, il `walletId` e il `categoryId`. Il server inserisce i record nella tabella `Transaction` di Flow Wise, decide il tipo dal segno dell'importo (`amount >= 0` → `"I"`, altrimenti `"E"`; un eventuale `defaultType` inviato dal chiamante ha la precedenza) e contrassegna i movimenti come `imported`.
+3. **Categoria proposta automaticamente nell'import massivo**: `ImportTransactionDialog.tsx` non si limita a inoltrare la categoria scelta dall'utente. Con l'auto-suggerimento attivo (default) assegna a ogni movimento una categoria **attiva** del tipo corretto per il segno dell'importo, scegliendola in base alla somiglianza tra descrizione/controparte e nome della categoria; raggruppa poi i movimenti per categoria suggerita e ripete la chiamata a `POST /bank/import` una volta per gruppo. Per un singolo movimento o con l'auto-suggerimento disattivato invia una sola chiamata con la categoria scelta a mano.
+4. Invalida la cache TanStack Query per `transactions`, `wallets`, `expenses` e `incomes`.
 
 ## AI Beta
 

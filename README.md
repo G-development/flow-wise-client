@@ -7,13 +7,13 @@ TypeScript, Tailwind CSS, TanStack Query e autenticazione Supabase.
 
 - **Autenticazione**: Registrazione, login, recupero e reset password via email con token temporaneo.
 - **Dashboard Personalizzabile**: Griglia widget interattiva (saldo totale, entrate, spese, confronto entrate/uscite, grafico a torta per categoria) con supporto drag & drop, resize e salvataggio persistente del layout per utente.
-- **Gestione Finanziaria**: Pagine dedicate per entrate (`/incomes`), spese (`/expenses`), wallet (`/wallets`) e categorie (`/category`).
+- **Gestione Finanziaria**: Pagine dedicate per entrate (`/incomes`), spese (`/expenses`), wallet (`/wallets`) e categorie (`/category`). Il saldo di ogni wallet è calcolato dalle transazioni, non è un valore memorizzato a parte.
 - **Importazione CSV**: Caricamento massivo e parsing automatico di file CSV di transazioni.
 - **Integrazione Bancaria Completa (`/settings/yourbank`)**:
   - Connessione a conti bancari reali tramite **Open Banking PSD2 (GoCardless)** o in modalità **Sandbox Mock interattiva**.
   - Visualizzazione e sincronizzazione automatica dei movimenti.
   - **Filtro del periodo transazioni** (con default dal 1° del mese corrente a oggi e preset rapidi).
-  - **Selezione massiva e importazione** guidata delle transazioni bancarie nei propri Wallet e Categorie.
+  - **Selezione massiva e importazione** guidata delle transazioni bancarie nei propri Wallet e Categorie, con proposta automatica della categoria in base al segno dell'importo.
 - **AI Beta (`/ai-beta`)**: Interfaccia di chat per interrogare l'agente intelligente di analisi delle spese.
 - **Design & UX**: Interfaccia moderna responsive, supporto dark/light theme, notifiche toast con Sonner.
 
@@ -60,6 +60,23 @@ Per compilare per la produzione:
 ```bash
 npm run build
 ```
+
+## Push gate
+
+Il repo versiona un hook `pre-push` in `.githooks/pre-push`, attivo quando
+`git config core.hooksPath .githooks` è impostato. L'hook **rifiuta il push**
+finché non esiste un'approvazione per lo **SHA esatto** del commit corrente; il
+file di approvazione vive in `.git/` (non tracciato) e si crea con:
+
+```bash
+printf '%s' "$(git rev-parse HEAD)" > "$(git rev-parse --git-dir)/hermes-push-approval"
+```
+
+L'approvazione vale per un solo commit: appena aggiungi un commit il gate si
+richiude da solo. Superato il gate, l'hook esegue i controlli prima di lasciar
+passare il push (`npx tsc --noEmit` e `npm run build`, che include anche il lint
+di Next). L'uscita consapevole, che salta gate e check, è
+`HERMES_PUSH_APPROVED=1 git push`.
 
 ## Documentazione
 

@@ -6,7 +6,7 @@ un componente in base a `widget.type`.
 
 ## Widget supportati
 
-- `total-balance`: somma dei saldi di tutti i wallet dell'utente.
+- `total-balance`: somma i saldi di tutti i wallet dell'utente. Il saldo di ogni wallet non è memorizzato: è **derivato** dalle transazioni lato server (`utils/walletService.js`), e la somma copre tutte le transazioni dell'utente senza filtro di data. Per questo il widget non dipende dall'intervallo date condiviso e cambia anche quando si registra un movimento con data fuori dal periodo selezionato.
 - `period-incomes`: totale delle entrate nell'intervallo di date selezionato.
 - `period-expenses`: totale delle spese nell'intervallo di date selezionato.
 - `income-vs-expenses`: confronto dei totali e differenza netta tra entrate e spese.
@@ -19,7 +19,17 @@ periodali usano l'intervallo condiviso oppure, quando non fornito, gli ultimi
 
 ## Aggiornamento e Reattività
 
-Quando nuovi movimenti vengono aggiunti manualmente, importati via CSV (`/settings/import`) o importati dal conto bancario (`/settings/yourbank`), la cache TanStack Query viene invalidata automaticamente, aggiornando in tempo reale tutti i widget della dashboard e i saldi dei wallet.
+Le mutation delle transazioni (`useCreateTransaction`, `useUpdateTransaction`,
+`useDeleteTransaction`) e l'importazione bancaria (`ImportTransactionDialog.tsx`)
+invalidano tutte lo stesso insieme di risorse: `transactions`, `wallets`,
+`incomes` e `expenses`. I widget della dashboard e i saldi dei wallet, che
+leggono `GET /wallet`, si riaggiornano quindi subito senza ricaricare la pagina.
+
+L'import CSV (`/settings/import`) fa eccezione: la pagina non chiama mai
+`invalidateQueries` e si limita a mostrare il riepilogo dell'esito, quindi dopo
+un import CSV i widget restano sui dati precedenti finché la query non viene
+rifetchata per un altro motivo. Con `refetchOnWindowFocus` disabilitato e uno
+`staleTime` di 60 secondi, non succede da solo.
 
 ## Griglia e modifiche
 
