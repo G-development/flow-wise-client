@@ -49,18 +49,16 @@ fail() {
   exit 1
 }
 
-echo "[pre-push] npx tsc --noEmit"
-npx tsc --noEmit || fail "typecheck"
-
-build_log=$(mktemp)
-echo "[pre-push] npm run build (include il lint di Next)"
-if ! npm run build >"$build_log" 2>&1; then
-  echo "[pre-push] output della build (ultime righe):"
-  tail -30 "$build_log"
-  rm -f "$build_log"
-  fail "build client (next build esegue anche il lint)"
-fi
-rm -f "$build_log"
+# Un solo `npm test` copre i tre passi richiesti, nell'ordine, e si ferma al primo
+# che fallisce (catena `&&` nel comando):
+#   node --test       -> invarianti unit (type stripping nativo di Node, nessun JSX)
+#   npx tsc --noEmit  -> typecheck
+#   next build        -> build + lint di Next (un errore di lint fa fallire il build)
+# Parte da `rm -rf .next` perché i tipi generati obsoleti di `.next/types` fanno
+# fallire `next build` su un albero sorgente corretto (falsi rossi quando una route
+# viene rimossa o rinominata). Una sola build: nessun passo duplicato da tenere allineato.
+echo "[pre-push] npm test (node --test && npx tsc --noEmit && next build)"
+npm test || fail "test client (node --test / tsc --noEmit / next build)"
 
 echo "[pre-push] check superati: push consentito."
 exit 0
