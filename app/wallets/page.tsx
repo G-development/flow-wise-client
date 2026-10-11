@@ -3,16 +3,111 @@
 import { useMemo, useState, useCallback } from "react";
 import { DynamicTable } from "@/components/dynamic-table";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import Navbar from "@/components/navbar";
-import { useWallets, useUpdateWallet } from "@/lib/hooks/useQueries";
+import { useWallets, useUpdateWallet, type Wallet } from "@/lib/hooks/useQueries";
 import { toast } from "sonner";
 
-interface Wallet {
-  id: string;
-  name: string;
-  balance: number;
-  currency: string;
-  is_default: boolean;
+/**
+ * Il server parla in centesimi interi (`opening_balance_cents`, come la somma in
+ * `utils/walletService.js`), l'utente digita euro. Accetta virgola o punto e un
+ * segno (un'apertura negativa è un debito); rifiuta tutto il resto invece di
+ * convertire un valore ambiguo in un importo plausibile.
+ */
+function parseAmountToCents(raw: string): number | null {
+  const normalized = raw.trim().replace(/\s/g, "").replace(",", ".");
+  if (!/^-?\d+(\.\d{1,2})?$/.test(normalized)) return null;
+  return Math.round(Number(normalized) * 100);
+}
+
+function formatCents(cents: number, currency: string): string {
+  return new Intl.NumberFormat("it-IT", {
+    style: "currency",
+    currency,
+  }).format((Number.isFinite(cents) ? cents : 0) / 100);
+}
+
+function OpeningBalanceCell({
+  wallet,
+  saving,
+  onSave,
+}: {
+  wallet: Wallet;
+  saving: boolean;
+  onSave: (wallet: Wallet, cents: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const currency = wallet.currency || "EUR";
+
+  const startEditing = () => {
+    setDraft((wallet.opening_balance_cents / 100).toFixed(2));
+    setError(null);
+    setEditing(true);
+  };
+
+  const commit = () => {
+    const cents = parseAmountToCents(draft);
+    if (cents === null) {
+      setError("Enter a valid amount, e.g. 13264,23");
+      return;
+    }
+    setEditing(false);
+    onSave(wallet, cents);
+  };
+
+  if (!editing) {
+    return (
+      <div className="flex items-center gap-2">
+        <span>{formatCents(wallet.opening_balance_cents, currency)}</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={startEditing}
+          disabled={saving}
+        >
+          Edit
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <Input
+          className="h-8 w-28"
+          inputMode="decimal"
+          value={draft}
+          autoFocus
+          aria-label={`Opening balance for ${wallet.name}`}
+          onChange={(event) => {
+            setDraft(event.target.value);
+            setError(null);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") commit();
+            if (event.key === "Escape") setEditing(false);
+          }}
+        />
+        <Button size="sm" onClick={commit} disabled={saving}>
+          Save
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setEditing(false)}
+          disabled={saving}
+        >
+          Cancel
+        </Button>
+      </div>
+      {error && <span className="text-xs text-destructive">{error}</span>}
+    </div>
+  );
 }
 
 export default function Wallets() {
@@ -42,17 +137,44 @@ export default function Wallets() {
     }
   }, [updateWallet]);
 
+  const handleOpeningBalanceSave = useCallback(
+    async (wallet: Wallet, cents: number) => {
+      setChangingId(wallet.id);
+      try {
+        // La cache dei wallet è invalidata dalla mutation: il `balance` riletto
+        // dal server è già ricalcolato con la nuova apertura.
+        await updateWallet.mutateAsync({
+          id: wallet.id,
+          data: { opening_balance_cents: cents },
+        });
+        toast.success("Opening balance updated");
+      } catch {
+        toast.error("Failed to update opening balance");
+      } finally {
+        setChangingId(null);
+      }
+    },
+    [updateWallet]
+  );
+
   const rows = useMemo(() => {
     const formatCurrency = (wallet: Wallet) => {
       const currency = wallet.currency || "EUR";
-      const amount = typeof wallet.balance === "number" ? wallet.balance : Number(wallet.balance) || 0;
-      return new Intl.NumberFormat("it-IT", { style: "currency", currency }).format(amount);
+      // `balance` e' il saldo derivato restituito da GET /wallet, non una colonna memorizzata.
+      return new Intl.NumberFormat("it-IT", { style: "currency", currency }).format(wallet.balance);
     };
 
     return wallets.map((w, idx) => ({
       "#": idx + 1,
       Name: w.name,
       Balance: formatCurrency(w),
+      "Opening balance": (
+        <OpeningBalanceCell
+          wallet={w}
+          saving={changingId === w.id}
+          onSave={handleOpeningBalanceSave}
+        />
+      ),
       Default: (
         <Switch
           checked={w.is_default}
@@ -61,7 +183,7 @@ export default function Wallets() {
         />
       ),
     }));
-  }, [wallets, changingId, updateWallet.isPending, handleSetDefault]);
+  }, [wallets, changingId, updateWallet.isPending, handleSetDefault, handleOpeningBalanceSave]);
 
   return (
     <>
@@ -102,7 +224,7 @@ export default function Wallets() {
           <div className="overflow-x-auto rounded-xl border border-border/70 bg-card shadow-sm">
             <DynamicTable
               data={rows}
-              caption={`You can create up to 3 wallets. You currently have ${wallets.length}.`}
+              caption={`You can create up to 3 wallets. You currently have ${wallets.length}. Balance is derived from movements, starting from the opening balance.`}
             />
           </div>
         )}

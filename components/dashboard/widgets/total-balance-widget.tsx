@@ -7,10 +7,14 @@ import { Wallet2 } from "lucide-react";
 export function TotalBalanceWidget() {
   const { data: wallets = [], isLoading } = useWallets();
 
-  const totalBalance = wallets.reduce((sum, wallet) => {
-    const balance = typeof wallet.balance === "number" ? wallet.balance : 0;
-    return sum + balance;
-  }, 0);
+  // `wallet.balance` e' il saldo derivato restituito da GET /wallet (parte dal saldo di
+  // apertura del wallet, `utils/walletService.js`), non una colonna memorizzata.
+  const totalBalance = wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
+
+  const formattedTotal = new Intl.NumberFormat("it-IT", {
+    style: "currency",
+    currency: "EUR",
+  }).format(totalBalance);
 
   return (
     <Card className="h-full flex flex-col overflow-hidden border-border/70 shadow-sm transition-shadow hover:shadow-md min-h-0">
@@ -25,7 +29,7 @@ export function TotalBalanceWidget() {
           <div className="text-3xl font-bold text-muted-foreground animate-pulse">...</div>
         ) : (
           <div className="text-3xl font-semibold tracking-tight text-foreground">
-            €{totalBalance.toFixed(2)}
+            {formattedTotal}
           </div>
         )}
         <p className="text-xs text-muted-foreground">

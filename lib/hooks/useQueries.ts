@@ -51,12 +51,30 @@ export interface Wallet extends Record<string, unknown> {
   id: string;
   userid: string;
   name: string;
+  /** saldo derivato dalle transazioni, non memorizzato sulla riga `Wallet` */
   balance: number;
+  /**
+   * Saldo di APERTURA in centesimi (intero, segno ammesso): e' il punto di
+   * partenza della somma derivata in `utils/walletService.js`, non il saldo
+   * finale. In UI si digita in EUR e si converte con `Math.round(euro * 100)`.
+   */
+  opening_balance_cents: number;
   currency: string;
   is_default: boolean;
   created_at?: string;
   updated_at?: string;
 }
+
+/**
+ * Input di `PUT /wallet/:id`: il saldo FINALE e' derivato e non e' aggiornabile,
+ * il saldo di APERTURA si' (in centesimi interi, segno ammesso): e' il punto di
+ * partenza da cui il server ricostruisce `balance`.
+ */
+export type WalletUpdateInput = {
+  name?: string;
+  is_default?: boolean;
+  opening_balance_cents?: number;
+};
 
 export interface Category extends Record<string, unknown> {
   id: string;
@@ -207,7 +225,7 @@ export function useUpdateWallet() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Wallet> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: WalletUpdateInput }) => {
       const res = await apiFetch(`/wallet/${id}`, {
         method: "PUT",
         body: JSON.stringify(data),
