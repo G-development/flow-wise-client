@@ -19,12 +19,11 @@ non committare file contenenti segreti.
 controlla e osserva la sessione Supabase, aggiorna lo stato condiviso e
 reindirizza alla pagina di login quando manca una sessione su una route
 protetta. Le route considerate pubbliche dal provider sono `/`, `/login`,
-`/register` e `/privacy`.
+`/register`, `/privacy`, `/forgot-password` e `/reset-password`.
 
 Le pagine `/forgot-password` e `/reset-password` sono implementate e chiamano
-le route pubbliche di reset del server, ma non sono incluse nell'elenco
-`PUBLIC_ROUTES` del provider: attualmente un utente senza sessione viene
-reindirizzato al login se vi accede.
+le route pubbliche di reset del server; essendo in `PUBLIC_ROUTES` del provider
+sono raggiungibili anche senza sessione.
 
 La barra di navigazione è in `components/navbar.jsx`. `lib/api.ts` centralizza
 le chiamate autenticate; i form di autenticazione usano anche direttamente
@@ -158,9 +157,6 @@ quando i punti vengono chiusi.
   `supabase.auth.admin.listUsers()` senza paginazione (solo i primi utenti) e,
   se `SMTP_HOST` non è configurato, l'invio fallisce ma la route risponde
   comunque `success: true`.
-- **`/forgot-password` e `/reset-password` non sono in `PUBLIC_ROUTES`**
-  (`lib/providers/AuthProvider.tsx`): l'utente senza sessione viene reindirizzato
-  al login.
 
 **Integrazione bancaria**
 
