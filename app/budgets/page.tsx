@@ -2,6 +2,10 @@
 
 import Navbar from "@/components/navbar";
 
+// TODO(budgets): pagina ancora solo placeholder "Work in progress".
+// Deliberatamente NON linkata in navigazione (voce rimossa da components/navbar.tsx)
+// finche' la feature non esiste davvero: raggiungibile solo per URL diretto.
+// Quando i budget verranno implementati (cfr. BudgetAdvisor), va rimessa la voce di menu.
 export default function Budgets() {
   return (
     <>
