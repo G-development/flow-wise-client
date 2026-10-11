@@ -62,7 +62,8 @@ export interface Category extends Record<string, unknown> {
   id: string;
   userid: string;
   name: string;
-  type: "income" | "expense";
+  /** Il database usa "I" / "E"; questo tipo seguiva "income" | "expense" e non corrispondeva. */
+  type: "I" | "E";
   active: boolean;
   created_at?: string;
   updated_at?: string;

@@ -44,8 +44,8 @@ export default function Categories() {
     );
   };
 
-  const handleDelete = (category: Category) => {
-    setSelectedId(category.id);
+  const handleDelete = (categoryId: string) => {
+    setSelectedId(categoryId);
     setDeleteOpen(true);
   };
 
@@ -53,12 +53,13 @@ export default function Categories() {
     if (!selectedId) return;
     try {
       await deleteCategory.mutateAsync(selectedId);
-      toast.success("Category deleted");
+      // La mutation invalida già la cache; refetch riallinea questo elenco.
       refetch();
+    } catch {
+      // l'errore è già notificato dalla mutation
+    } finally {
       setDeleteOpen(false);
       setSelectedId(null);
-    } catch {
-      toast.error("Error deleting category");
     }
   };
 
@@ -134,14 +135,15 @@ export default function Categories() {
           <div className="overflow-x-auto rounded-xl border border-border/70 bg-card shadow-sm">
             <DynamicTable
               data={categories.map((c) => {
-                const type = c.type?.toLowerCase();
-                const isIncome = type === "income" || type === "i";
+                const isIncome = c.type === "I";
                 const label = isIncome ? "Income" : "Expense";
                 const badgeClass = isIncome
                   ? "border-0 bg-success/10 text-success hover:bg-success/15"
                   : "border-0 bg-destructive/10 text-destructive hover:bg-destructive/15";
 
                 return {
+                  // Id presente nei dati ma nascosto: serve alle azioni, non all'utente
+                  Id: c.id,
                   Name: c.name,
                   Type: <Badge className={`${badgeClass} font-medium`}>{label}</Badge>,
                   Active: (
@@ -152,6 +154,7 @@ export default function Categories() {
                   ),
                 };
               })}
+              hiddenColumns={["Id"]}
               caption={`Hai ${categories.length} categor${categories.length === 1 ? "ia" : "ie"}.`}
               renderActions={(row) => (
                 <div className="flex justify-end gap-2">
@@ -159,7 +162,7 @@ export default function Categories() {
                     size="icon"
                     variant="ghost"
                     className="h-8 w-8"
-                    onClick={() => handleEditOpen(row.Name as string)}
+                    onClick={() => handleEditOpen(String(row.Id))}
                   >
                     <Pencil className="h-4 w-4" />
                     <span className="sr-only">Modifica</span>
@@ -168,10 +171,7 @@ export default function Categories() {
                     size="icon"
                     variant="ghost"
                     className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => {
-                      const category = categories.find((c) => c.name === row.Name);
-                      if (category) handleDelete(category);
-                    }}
+                    onClick={() => handleDelete(String(row.Id))}
                   >
                     <Trash className="h-4 w-4" />
                     <span className="sr-only">Elimina</span>
@@ -192,10 +192,12 @@ export default function Categories() {
       />
 
       <DeleteDialog
-        id={selectedId}
         isOpen={deleteOpen}
+        title="Delete category"
+        description="Are you sure you want to delete this category? This action cannot be undone."
+        isPending={deleteCategory.isPending}
         onClose={() => setDeleteOpen(false)}
-        onSuccess={handleDeleteConfirm}
+        onConfirm={handleDeleteConfirm}
       />
     </>
   );

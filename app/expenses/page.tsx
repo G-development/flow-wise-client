@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useExpenses, useWallets, useCategories } from "@/lib/hooks/useQueries";
+import { useExpenses, useWallets, useCategories, useDeleteTransaction } from "@/lib/hooks/useQueries";
 import DatePickerWithRange from "@/components/date-picker";
 import { DynamicTable } from "@/components/dynamic-table";
 import Navbar from "@/components/navbar";
@@ -26,6 +26,7 @@ export default function Expenses() {
 
   const { data: wallets = [] } = useWallets();
   const { data: categories = [] } = useCategories();
+  const deleteTransaction = useDeleteTransaction();
 
   const rows = useMemo(() => {
     const walletMap = new Map(wallets.map((w) => [String(w.id), w.name]));
@@ -52,11 +53,12 @@ export default function Expenses() {
       const categoryInfo = categoryMap.get(categoryId);
       const categoryName = categoryInfo?.name ?? "-";
       const categoryType = categoryInfo?.type;
-      const badgeClass = categoryType === "income"
-        ? "bg-success/10 text-success"
-        : categoryType === "expense"
-          ? "bg-destructive/10 text-destructive"
-          : "bg-muted text-foreground";
+      const badgeClass =
+        categoryType === "I"
+          ? "bg-success/10 text-success"
+          : categoryType === "E"
+            ? "bg-destructive/10 text-destructive"
+            : "bg-muted text-foreground";
 
       const dateStr = tx.date ? new Date(tx.date).toLocaleDateString("it-IT") : "-";
       const amountStr = formatAmount.format(Number(tx.amount ?? 0));
@@ -149,10 +151,20 @@ export default function Expenses() {
               onSuccess={() => refetch()}
             />
             <DeleteDialog
-              id={selectedId}
               isOpen={deleteOpen}
+              title="Delete transaction"
+              description="Are you sure you want to delete this transaction? This action cannot be undone."
+              isPending={deleteTransaction.isPending}
               onClose={() => setDeleteOpen(false)}
-              onSuccess={() => refetch()}
+              onConfirm={async () => {
+                try {
+                  await deleteTransaction.mutateAsync(String(selectedId));
+                  setDeleteOpen(false);
+                  refetch();
+                } catch {
+                  // l'errore è già notificato dalla mutation
+                }
+              }}
             />
           </>
         )}

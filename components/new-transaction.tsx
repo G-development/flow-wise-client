@@ -83,11 +83,7 @@ export default function NewTransaction({ onSuccess, trigger }: NewTransactionPro
     });
   }, [open, defaultWallet, today]);
 
-  const filteredCategories = categories.filter((cat) => {
-    const typeLower = typeof cat.type === "string" ? cat.type.toLowerCase() : "";
-    const targetType = formData.type === "I" ? "income" : "expense";
-    return typeLower === targetType || typeLower === formData.type.toLowerCase();
-  });
+  const filteredCategories = categories.filter((cat) => cat.type === formData.type);
 
 
   const handleSubmit = async () => {

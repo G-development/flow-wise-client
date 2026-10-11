@@ -16,6 +16,8 @@ interface Props {
   caption?: string;
   renderActions?: (row: Record<string, unknown>) => React.ReactNode;
   isLoading?: boolean;
+  /** Colonne presenti nei dati ma non da mostrare (es. un id usato dalle azioni). */
+  hiddenColumns?: string[];
 }
 
 export function DynamicTable({
@@ -23,6 +25,7 @@ export function DynamicTable({
   caption = "default cap",
   renderActions,
   isLoading = false,
+  hiddenColumns = [],
 }: Props) {
   if (isLoading)
     return (
@@ -41,7 +44,9 @@ export function DynamicTable({
       </div>
     );
 
-  const columns = data[0] ? Object.keys(data[0]) : [];
+  const columns = (data[0] ? Object.keys(data[0]) : []).filter(
+    (column) => !hiddenColumns.includes(column)
+  );
   if (columns.length === 0) return <p>No columns available</p>;
 
   return (

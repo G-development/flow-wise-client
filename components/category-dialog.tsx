@@ -41,23 +41,24 @@ export default function CategoryDialog({
 
   const [formData, setFormData] = useState({
     name: "",
-    type: "expense" as "income" | "expense",
+    type: "E" as "I" | "E",
   });
 
   // Se siamo in edit mode, popola i dati
   useEffect(() => {
     if (categoryId && isOpen && categories.length > 0) {
-      const category = categories.find((c) => c.id === categoryId);
+      const category = categories.find(
+        (c) => String(c.id) === String(categoryId)
+      );
       if (category) {
-        const normalizedType = (category.type as string).toLowerCase();
         setFormData({
           name: category.name,
-          type: normalizedType === "income" || normalizedType === "i" ? "income" : "expense",
+          type: category.type,
         });
       }
     } else if (!categoryId && isOpen) {
       // Reset per nuovo
-      setFormData({ name: "", type: "expense" });
+      setFormData({ name: "", type: "E" });
     }
   }, [categoryId, isOpen, categories]);
 
@@ -88,7 +89,7 @@ export default function CategoryDialog({
 
       onSuccess?.();
       onClose();
-      setFormData({ name: "", type: "expense" });
+      setFormData({ name: "", type: "E" });
     } catch {
       toast.error("Error saving category");
     }
@@ -124,7 +125,7 @@ export default function CategoryDialog({
               onValueChange={(value) =>
                 setFormData((prev) => ({
                   ...prev,
-                  type: value as "income" | "expense",
+                  type: value as "I" | "E",
                 }))
               }
             >
@@ -132,8 +133,8 @@ export default function CategoryDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="income">Income</SelectItem>
-                <SelectItem value="expense">Expense</SelectItem>
+                <SelectItem value="I">Income</SelectItem>
+                <SelectItem value="E">Expense</SelectItem>
               </SelectContent>
             </Select>
           </div>

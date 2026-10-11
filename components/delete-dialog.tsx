@@ -1,3 +1,5 @@
+"use client";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,55 +10,53 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useDeleteTransaction } from "@/lib/hooks/useQueries";
 
 interface DeleteDialogProps {
   isOpen: boolean;
-  id?: string | number | null;
+  title: string;
+  description: string;
   onClose: () => void;
-  onSuccess?: () => void;
+  /** Esegue la cancellazione: la mutation e il suo toast restano al chiamante. */
+  onConfirm: () => void | Promise<void>;
+  isPending?: boolean;
 }
 
-const DeleteDialog: React.FC<DeleteDialogProps> = ({
+/**
+ * Dialog di conferma generico.
+ *
+ * Prima era legato a `useDeleteTransaction`, quindi ogni uso cancellava una
+ * transazione a prescindere da cosa si stesse eliminando (la pagina categorie
+ * finiva per chiamare `DELETE /transaction/:id` con un id di categoria).
+ */
+export default function DeleteDialog({
   isOpen,
-  id,
+  title,
+  description,
   onClose,
-  onSuccess,
-}) => {
-  const deleteTransaction = useDeleteTransaction();
-
-  const handleDelete = () => {
-    deleteTransaction.mutate(String(id), {
-      onSuccess: () => {
-        onSuccess?.();
-        onClose();
-      },
-    });
-  };
-
+  onConfirm,
+  isPending = false,
+}: DeleteDialogProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete transaction</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to delete this transaction? This action cannot
-            be undone.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel onClick={onClose} disabled={isPending}>
+            Cancel
+          </AlertDialogCancel>
           <AlertDialogAction
-            onClick={handleDelete}
+            onClick={() => void onConfirm()}
+            disabled={isPending}
             className="bg-red-600 hover:bg-red-700"
           >
-            Delete
+            {isPending ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
-};
-
-export default DeleteDialog;
+}
