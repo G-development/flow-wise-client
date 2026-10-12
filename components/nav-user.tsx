@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import {
   BadgeCheck,
   Bell,
-  CreditCard,
   LogOut,
   Sparkles,
   Import,
@@ -106,13 +105,6 @@ export function NavUser() {
             Notifications
           </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <Link href="/settings/yourbank">
-          <DropdownMenuItem>
-            <CreditCard />
-            Your bank
-          </DropdownMenuItem>
-        </Link>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <Link href="/settings/import">

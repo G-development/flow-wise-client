@@ -204,6 +204,15 @@ export default function Navbar() {
                 {label}
               </Link>
             ))}
+            <Link
+              href="/settings/yourbank"
+              className={desktopNavClass(isActive("/settings/yourbank"))}
+              prefetch={false}
+              aria-current={isActive("/settings/yourbank") ? "page" : undefined}
+            >
+              <Banknote className="mr-2 h-4 w-4" aria-hidden="true" />
+              Your Bank
+            </Link>
           </nav>
 
           {/* Desktop User Menu */}
