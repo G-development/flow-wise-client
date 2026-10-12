@@ -77,16 +77,13 @@ export function MovementsList({
       currency: "EUR",
     });
 
-    const getField = (obj: Record<string, unknown>, key: string) => {
-      const val = obj[key];
-      if (typeof val === "string" || typeof val === "number") return String(val);
-      return "";
-    };
-
     return transactions.map((tx) => {
-      const txObj = tx as Record<string, unknown>;
-      const walletId = getField(txObj, "wallet_id") || getField(txObj, "walletid");
-      const categoryId = getField(txObj, "category_id") || getField(txObj, "category");
+      // `wallet_id` / `category_id` sono i nomi delle colonne che l'API restituisce: il
+      // vecchio fallback a `walletid` / `category` era difesa per una forma di risposta
+      // che il server non produce (stessa storia di `Category.type`). Nessun parsing
+      // difensivo per una discrepanza che non esiste.
+      const walletId = tx.wallet_id == null ? "" : String(tx.wallet_id);
+      const categoryId = tx.category_id == null ? "" : String(tx.category_id);
       const walletName = walletMap.get(walletId) ?? "-";
       const categoryInfo = categoryMap.get(categoryId);
       const categoryName = categoryInfo?.name ?? "-";

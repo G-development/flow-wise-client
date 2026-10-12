@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 import { apiFetch, buildQuery } from "@/lib/api";
 import { parseListResponse } from "@/lib/listResponse";
 import { errorFromResponse } from "@/lib/httpError";
@@ -47,6 +52,19 @@ export interface Transaction extends Record<string, unknown> {
   category_id: number;
   created_at?: string;
   updated_at?: string;
+}
+
+/**
+ * Ogni scrittura su una `Transaction` muove quattro liste: le transazioni, i saldi dei
+ * wallet (derivati dalle transazioni) e le due viste filtrate `/income` e `/expense`.
+ * Erano le stesse quattro righe ripetute in ogni mutation, ed è così che una quinta
+ * lista finirebbe per restare stantia in una sola di esse.
+ */
+function invalidateTransactionData(queryClient: QueryClient) {
+  queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.wallets.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.incomes.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.expenses.all });
 }
 
 /**
@@ -113,10 +131,7 @@ export function useDeleteTransaction() {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.wallets.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.incomes.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.expenses.all });
+      invalidateTransactionData(queryClient);
       toast.success("Transaction deleted");
     },
     onError: () => {
@@ -142,10 +157,7 @@ export function useCreateTransaction() {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.wallets.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.incomes.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.expenses.all });
+      invalidateTransactionData(queryClient);
       toast.success("Transaction created");
     },
     onError: (error) => {
@@ -169,10 +181,7 @@ export function useUpdateTransaction() {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.wallets.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.incomes.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.expenses.all });
+      invalidateTransactionData(queryClient);
       toast.success("Transaction updated");
     },
     onError: (error) => {
@@ -201,10 +210,7 @@ export function useImportCsv() {
     onSuccess: (res) => {
       if (!res.ok) return;
 
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.wallets.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.incomes.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.expenses.all });
+      invalidateTransactionData(queryClient);
     },
   });
 }
