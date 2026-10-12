@@ -1,7 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
@@ -19,12 +29,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiFetch } from "@/lib/api";
-import { queryKeys, useActiveCategories, useWallets } from "@/lib/hooks/useQueries";
+import {
+  queryKeys,
+  useActiveCategories,
+  useCreateCategory,
+  useWallets,
+  type Category,
+} from "@/lib/hooks/useQueries";
 import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
+import {
+  getBankTransactionType,
+  getMissingOtherTypes,
+  suggestBankTransactionCategory,
+  type BankTransactionType,
+  type CategorySuggestion,
+} from "@/lib/bankCategorySuggestion";
 import { toast } from "sonner";
 import {
+  AlertTriangle,
   ArrowDownLeft,
   ArrowUpRight,
   CheckCircle2,
@@ -43,56 +67,20 @@ export interface BankTransactionItem {
   status?: string;
 }
 
-type TxnType = "income" | "expense";
-
-function normalizeForMatch(text: string): string {
-  return String(text)
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, " ")
-    .trim();
-}
-
-function tokenize(text: string): string[] {
-  const normalized = normalizeForMatch(text);
-  if (!normalized) return [];
-  return normalized.split(/\s+/).filter(Boolean);
-}
-
-function getTxnTypeFromAmount(amount: number | string): TxnType {
-  const n = Number(amount);
-  return Number.isFinite(n) && n >= 0 ? "income" : "expense";
-}
-
-function scoreCategoryForTxn(
-  txnTextNorm: string,
-  categoryNameNorm: string,
-  categoryTokens: string[]
-): number {
-  if (!txnTextNorm || !categoryNameNorm) return 0;
-
-  // Bonus forte se la categoria appare come substring della causale normalizzata
-  let score = 0;
-  if (txnTextNorm.includes(categoryNameNorm) && categoryNameNorm.length >= 3) {
-    score += 100;
-  }
-
-  // Bonus token-based
-  for (const token of categoryTokens) {
-    if (!token) continue;
-    if (txnTextNorm === token) score += 10;
-    else if (txnTextNorm.includes(token)) score += token.length >= 4 ? 6 : 2;
-  }
-
-  return score;
-}
-
 interface ImportTransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   transactions: BankTransactionItem[];
   onSuccess: () => void;
+}
+
+function invalidateImportedData(queryClient: ReturnType<typeof useQueryClient>) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.wallets.all }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.incomes.all }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.expenses.all }),
+  ]);
 }
 
 export default function ImportTransactionDialog({
@@ -107,128 +95,115 @@ export default function ImportTransactionDialog({
     data: categoryList = EMPTY_LIST_RESPONSE,
     isLoading: loadingCategories,
   } = useActiveCategories();
-  // La risposta e' l'envelope di lista: le righe stanno in `rows`.
   const categories = categoryList.rows;
+  const createCategory = useCreateCategory();
 
-  const [selectedWalletId, setSelectedWalletId] = useState<string>("");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
-
-  // Solo per import massivo: se ON, suggerisce una categoria per transazione e
-  // raggruppa gli import per categoryId.
-  const [autoSuggest, setAutoSuggest] = useState(true);
-
+  const [selectedWalletId, setSelectedWalletId] = useState("");
+  const [categoryIdByTxnId, setCategoryIdByTxnId] = useState<Record<string, string>>({});
+  const [createOtherTypes, setCreateOtherTypes] = useState<BankTransactionType[]>([]);
+  const [createdOtherCategoryIdByType, setCreatedOtherCategoryIdByType] = useState<Record<string, string>>({});
+  const [createdOtherCategories, setCreatedOtherCategories] = useState<Category[]>([]);
+  const [isCreateOtherOpen, setIsCreateOtherOpen] = useState(false);
+  const [declinedOtherTypes, setDeclinedOtherTypes] = useState<BankTransactionType[]>([]);
+  const [isCreatingOther, setIsCreatingOther] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isBulk = transactions.length > 1;
+  const suggestions = useMemo(() => {
+    const result: Record<string, CategorySuggestion> = {};
+    for (const transaction of transactions) {
+      result[transaction.id] = suggestBankTransactionCategory(transaction, categories);
+    }
+    return result;
+  }, [categories, transactions]);
 
-  // Calcola statistiche dei movimenti selezionati
+  useEffect(() => {
+    setCategoryIdByTxnId((previous) => {
+      const next: Record<string, string> = {};
+      for (const [transactionId, suggestion] of Object.entries(suggestions)) {
+        next[transactionId] = previous[transactionId] || suggestion.categoryId;
+      }
+      return next;
+    });
+  }, [suggestions]);
+
   const stats = useMemo(() => {
-    const totalCount = transactions.length;
     let totalIncome = 0;
     let totalExpense = 0;
-
-    transactions.forEach((txn) => {
-      const amt = Number(txn.amount);
-      if (amt >= 0) {
-        totalIncome += amt;
-      } else {
-        totalExpense += Math.abs(amt);
-      }
-    });
-
-    const isSingle = totalCount === 1;
-    const singleTxn = isSingle ? transactions[0] : null;
-    const singleIsIncome = singleTxn ? Number(singleTxn.amount) >= 0 : false;
-
-    return {
-      totalCount,
-      totalIncome,
-      totalExpense,
-      isSingle,
-      singleTxn,
-      singleIsIncome,
-    };
+    for (const transaction of transactions) {
+      const amount = Number(transaction.amount);
+      if (amount >= 0) totalIncome += amount;
+      else totalExpense += Math.abs(amount);
+    }
+    return { totalCount: transactions.length, totalIncome, totalExpense };
   }, [transactions]);
 
-  // Seleziona un wallet predefinito se non ancora scelto
   const effectiveWalletId = useMemo(() => {
     if (selectedWalletId) return selectedWalletId;
-    const defaultWallet = wallets.find((w) => w.is_default);
+    const defaultWallet = wallets.find((wallet) => wallet.is_default);
     if (defaultWallet) return String(defaultWallet.id);
-    if (wallets.length > 0) return String(wallets[0].id);
-    return "";
+    return wallets.length > 0 ? String(wallets[0].id) : "";
   }, [selectedWalletId, wallets]);
 
-  // Categorie filtrate se è un singolo movimento (Entrata o Spesa)
-  const filteredCategories = useMemo(() => {
-    if (!stats.isSingle) return categories;
-    const expectedType = stats.singleIsIncome ? "I" : "E";
-    const filtered = categories.filter((c) => c.type === expectedType);
-    return filtered.length > 0 ? filtered : categories;
-  }, [categories, stats.isSingle, stats.singleIsIncome]);
+  const uncertainCount = useMemo(
+    () => Object.values(suggestions).filter((suggestion) => suggestion.uncertain).length,
+    [suggestions]
+  );
 
-  const suggestedCategoryIdByTxnId = useMemo(() => {
-    if (!isBulk) return {} as Record<string, string>;
-    if (!categories || categories.length === 0) return {} as Record<string, string>;
+  const unresolvedTransactions = useMemo(
+    () =>
+      transactions.filter((transaction) => {
+        const selectedCategoryId = categoryIdByTxnId[transaction.id];
+        const selectedCategory = categories.find(
+          (category) => String(category.id) === selectedCategoryId
+        );
+        const isCreatedOther =
+          createdOtherCategoryIdByType[getBankTransactionType(transaction.amount)] === selectedCategoryId;
+        return (
+          (!selectedCategory && !isCreatedOther) ||
+          (selectedCategory && selectedCategory.type !== getBankTransactionType(transaction.amount))
+        );
+      }),
+    [categories, categoryIdByTxnId, createdOtherCategoryIdByType, transactions]
+  );
 
-    const incomeCategories = categories.filter((c) => c.type === "I");
-    const expenseCategories = categories.filter((c) => c.type === "E");
+  const handleCategoryChange = (transactionId: string, categoryId: string) => {
+    setCategoryIdByTxnId((previous) => ({ ...previous, [transactionId]: categoryId }));
+  };
 
-    const result: Record<string, string> = {};
-
-    for (const txn of transactions) {
-      const txnType = getTxnTypeFromAmount(txn.amount);
-      const candidates = txnType === "income" ? incomeCategories : expenseCategories;
-
-      if (!candidates || candidates.length === 0) {
-        result[txn.id] = "";
-        continue;
+  const createMissingOtherCategories = async () => {
+    setIsCreatingOther(true);
+    try {
+      const created: Category[] = [];
+      for (const type of createOtherTypes) {
+        const result = (await createCategory.mutateAsync({ name: "Altro", type })) as Category;
+        created.push(result);
       }
 
-      const txnTextNorm = normalizeForMatch(
-        `${txn.description || ""} ${txn.counterparty || ""}`
-      );
-
-      let best = candidates[0];
-      let bestScore = -Infinity;
-
-      for (const cat of candidates) {
-        const catNameNorm = normalizeForMatch(cat.name || "");
-        const catTokens = tokenize(cat.name || "");
-        const score = scoreCategoryForTxn(txnTextNorm, catNameNorm, catTokens);
-
-        if (score > bestScore) {
-          best = cat;
-          bestScore = score;
+      const createdIds: Record<string, string> = {};
+      for (const category of created) {
+        createdIds[category.type] = String(category.id);
+      }
+      setCreatedOtherCategoryIdByType((previous) => ({ ...previous, ...createdIds }));
+      setCreatedOtherCategories((previous) => [...previous, ...created]);
+      setCategoryIdByTxnId((previous) => {
+        const next = { ...previous };
+        for (const transaction of transactions) {
+          if (!suggestions[transaction.id]?.uncertain || next[transaction.id]) continue;
+          const type = getBankTransactionType(transaction.amount);
+          const categoryId = createdIds[type];
+          if (categoryId) next[transaction.id] = categoryId;
         }
-      }
-
-      // Se nessuna categoria ottiene un punteggio, resta la prima del tipo
-      // corretto: l'import non deve bloccarsi per un suggerimento imperfetto.
-      result[txn.id] = String(best?.id ?? "");
+        return next;
+      });
+      setIsCreateOtherOpen(false);
+      setCreateOtherTypes([]);
+      setDeclinedOtherTypes([]);
+      toast.success("Categorie Altro create. Controlla i suggerimenti prima di importare.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Impossibile creare le categorie Altro");
+    } finally {
+      setIsCreatingOther(false);
     }
-
-    return result;
-  }, [categories, isBulk, transactions]);
-
-  const suggestedCategorySummary = useMemo(() => {
-    if (!isBulk || !autoSuggest) return [] as Array<{ categoryId: string; count: number }>;
-
-    const counts = new Map<string, number>();
-    for (const txn of transactions) {
-      const catId = suggestedCategoryIdByTxnId[txn.id];
-      if (!catId) continue;
-      counts.set(catId, (counts.get(catId) || 0) + 1);
-    }
-
-    return Array.from(counts.entries())
-      .map(([categoryId, count]) => ({ categoryId, count }))
-      .sort((a, b) => b.count - a.count);
-  }, [autoSuggest, isBulk, suggestedCategoryIdByTxnId, transactions]);
-
-  const getCategoryNameById = (categoryId: string) => {
-    const found = categories.find((c) => String(c.id) === String(categoryId));
-    return found ? String(found.name || categoryId) : categoryId;
   };
 
   const handleImport = async () => {
@@ -236,178 +211,115 @@ export default function ImportTransactionDialog({
       toast.error("Seleziona un wallet di destinazione");
       return;
     }
-
-    const requireManualCategory = stats.isSingle || (isBulk && !autoSuggest);
-    if (requireManualCategory && !selectedCategoryId) {
-      toast.error("Seleziona una categoria per i movimenti");
+    if (loadingCategories) {
+      toast.error("Attendi il caricamento delle categorie");
       return;
     }
 
-    // Se auto-suggest è attivo, serve che le categorie siano disponibili per calcolare i suggerimenti
-    if (isBulk && autoSuggest && (!categories || categories.length === 0)) {
-      toast.error("Nessuna categoria disponibile per l’auto-suggerimento");
+    const transactionsNeedingFallback = transactions.filter(
+      (transaction) => !categoryIdByTxnId[transaction.id]
+    );
+    const missingTypes = getMissingOtherTypes(
+      transactionsNeedingFallback,
+      suggestions,
+      categories
+    );
+    const typesToAsk = missingTypes.filter((type) => !declinedOtherTypes.includes(type));
+    if (typesToAsk.length > 0) {
+      setCreateOtherTypes(typesToAsk);
+      setIsCreateOtherOpen(true);
       return;
+    }
+    if (
+      unresolvedTransactions.some((transaction) =>
+        declinedOtherTypes.includes(getBankTransactionType(transaction.amount))
+      )
+    ) {
+      toast.error("Scegli una categoria valida per ogni movimento prima di importare");
+      return;
+    }
+
+    const groups = new Map<string, string[]>();
+    for (const transaction of transactions) {
+      const categoryId = categoryIdByTxnId[transaction.id];
+      const ids = groups.get(categoryId) || [];
+      ids.push(transaction.id);
+      groups.set(categoryId, ids);
     }
 
     setIsSubmitting(true);
     const toastId = toast.loading("Importazione dei movimenti in corso...");
-
+    let importedTotal = 0;
+    let groupCount = 0;
     try {
-      // Import singolo o modalità manuale (una categoria per tutti)
-      if (stats.isSingle || !autoSuggest) {
+      for (const [categoryId, transactionIds] of groups) {
         const response = await apiFetch("/bank/import", {
           method: "POST",
           body: JSON.stringify({
-            transactionIds: transactions.map((t) => t.id),
+            transactionIds,
             walletId: Number(effectiveWalletId),
-            categoryId: Number(selectedCategoryId),
+            categoryId: Number(categoryId),
           }),
         });
-
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.error || "Errore durante l'importazione");
         }
-      } else {
-        // Import massivo con auto-suggest: raggruppa per categoryId suggerito
-        const groupedByCategory = new Map<string, string[]>();
-
-        for (const txn of transactions) {
-          const suggestedCategoryId = suggestedCategoryIdByTxnId[txn.id];
-          if (!suggestedCategoryId) {
-            throw new Error(
-              "Impossibile suggerire una categoria per almeno una transazione"
-            );
-          }
-          const ids = groupedByCategory.get(suggestedCategoryId) || [];
-          ids.push(txn.id);
-          groupedByCategory.set(suggestedCategoryId, ids);
-        }
-
-        let importedTotal = 0;
-        let groupCount = 0;
-
-        for (const [categoryId, transactionIds] of groupedByCategory.entries()) {
-          groupCount += 1;
-          const response = await apiFetch("/bank/import", {
-            method: "POST",
-            body: JSON.stringify({
-              transactionIds,
-              walletId: Number(effectiveWalletId),
-              categoryId: Number(categoryId),
-            }),
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || "Errore durante l'importazione");
-          }
-
-          const data = await response.json().catch(() => null);
-          importedTotal +=
-            typeof data?.importedCount === "number" ? data.importedCount : transactionIds.length;
-        }
-
-        // Se auto-suggest ha funzionato, la UI si aspetta sempre la stessa invalidazione
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all }),
-          queryClient.invalidateQueries({ queryKey: queryKeys.wallets.all }),
-          queryClient.invalidateQueries({ queryKey: queryKeys.incomes.all }),
-          queryClient.invalidateQueries({ queryKey: queryKeys.expenses.all }),
-        ]);
-
-        toast.success(
-          `${importedTotal} movimenti importati con successo (${groupCount} gruppi).`,
-          { id: toastId }
-        );
-
-        onOpenChange(false);
-        onSuccess();
-        return;
+        const data = await response.json().catch(() => null);
+        importedTotal +=
+          typeof data?.importedCount === "number" ? data.importedCount : transactionIds.length;
+        groupCount += 1;
       }
 
-      // Invalida le query di Flow Wise per aggiornare la dashboard e i wallet
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.wallets.all }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.incomes.all }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.expenses.all }),
-      ]);
-
+      await invalidateImportedData(queryClient);
       toast.success(
-        stats.isSingle
-          ? "Movimento importato con successo in Flow Wise!"
-          : `${transactions.length} movimenti importati con successo!`,
+        `${importedTotal} ${importedTotal === 1 ? "movimento importato" : "movimenti importati"} con successo (${groupCount} gruppi).`,
         { id: toastId }
       );
-
       onOpenChange(false);
       onSuccess();
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Errore durante l'importazione";
-      toast.error(message, { id: toastId });
+      const message = error instanceof Error ? error.message : "Errore durante l'importazione";
+      if (importedTotal > 0) {
+        await invalidateImportedData(queryClient);
+        toast.error(`${message}. Importati parzialmente ${importedTotal} movimenti; aggiorno l'elenco.`, {
+          id: toastId,
+        });
+        onOpenChange(false);
+        onSuccess();
+      } else {
+        toast.error(message, { id: toastId });
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const requireManualCategory = stats.isSingle || (isBulk && !autoSuggest);
+  const createTypesLabel = createOtherTypes
+    .map((type) => (type === "I" ? "entrate" : "spese"))
+    .join(" e ");
+  const unresolvedTypes = Array.from(
+    new Set(unresolvedTransactions.map((transaction) => getBankTransactionType(transaction.amount)))
+  );
+  const mustChooseManually = unresolvedTypes.some((type) => declinedOtherTypes.includes(type));
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg">
-            <CheckCircle2 className="h-5 w-5 text-primary" />
-            Importa in Flow Wise
-          </DialogTitle>
-          <DialogDescription>
-            {stats.isSingle
-              ? "Converti questo movimento bancario in una transazione contabile della tua dashboard."
-              : `Importa ${stats.totalCount} movimenti bancari selezionati nel tuo bilancio.`}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[620px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <CheckCircle2 className="h-5 w-5 text-primary" />
+              Importa in Flow Wise
+            </DialogTitle>
+            <DialogDescription>
+              {transactions.length === 1
+                ? "Controlla e conferma la categoria suggerita per questo movimento."
+                : `Rivedi le categorie suggerite per i ${stats.totalCount} movimenti selezionati.`}
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          {/* Dettagli Anteprima Transazione */}
-          {stats.isSingle && stats.singleTxn ? (
-            <div className="rounded-lg border border-border/80 bg-muted/40 p-3.5 space-y-2 text-sm">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="font-semibold text-foreground">
-                    {stats.singleTxn.description || "Movimento senza descrizione"}
-                  </p>
-                  {stats.singleTxn.counterparty && (
-                    <p className="text-xs text-muted-foreground">
-                      Controparte: {stats.singleTxn.counterparty}
-                    </p>
-                  )}
-                </div>
-                <div
-                  className={`flex items-center gap-1 font-semibold ${
-                    stats.singleIsIncome ? "text-emerald-500" : "text-rose-500"
-                  }`}
-                >
-                  {stats.singleIsIncome ? (
-                    <ArrowDownLeft className="h-4 w-4" />
-                  ) : (
-                    <ArrowUpRight className="h-4 w-4" />
-                  )}
-                  {Number(stats.singleTxn.amount).toLocaleString("it-IT", {
-                    style: "currency",
-                    currency: stats.singleTxn.currency || "EUR",
-                  })}
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Data: {new Date(stats.singleTxn.date).toLocaleDateString("it-IT")} • Banca:{" "}
-                {stats.singleTxn.bank_id.toUpperCase()}
-              </p>
-            </div>
-          ) : (
+          <div className="space-y-4 py-2">
             <div className="rounded-lg border border-border/80 bg-muted/40 p-3.5 space-y-1.5 text-xs text-muted-foreground">
               <div className="flex justify-between font-medium text-foreground text-sm">
                 <span>Movimenti selezionati</span>
@@ -415,194 +327,189 @@ export default function ImportTransactionDialog({
               </div>
               {stats.totalExpense > 0 && (
                 <div className="flex justify-between text-rose-500">
-                  <span>Totale Spese</span>
-                  <span>
-                    -
-                    {stats.totalExpense.toLocaleString("it-IT", {
-                      style: "currency",
-                      currency: "EUR",
-                    })}
-                  </span>
+                  <span>Totale spese</span>
+                  <span>−{stats.totalExpense.toLocaleString("it-IT", { style: "currency", currency: "EUR" })}</span>
                 </div>
               )}
               {stats.totalIncome > 0 && (
                 <div className="flex justify-between text-emerald-500">
-                  <span>Totale Entrate</span>
-                  <span>
-                    +
-                    {stats.totalIncome.toLocaleString("it-IT", {
-                      style: "currency",
-                      currency: "EUR",
-                    })}
-                  </span>
+                  <span>Totale entrate</span>
+                  <span>+{stats.totalIncome.toLocaleString("it-IT", { style: "currency", currency: "EUR" })}</span>
                 </div>
               )}
             </div>
-          )}
 
-          {/* Selezione Wallet */}
-          <div className="space-y-2">
-            <Label htmlFor="target-wallet" className="text-sm font-medium">
-              Wallet di destinazione
-            </Label>
-            <Select
-              value={effectiveWalletId}
-              onValueChange={setSelectedWalletId}
-              disabled={loadingWallets || wallets.length === 0}
-            >
-              <SelectTrigger id="target-wallet" className="w-full">
-                <SelectValue placeholder="Seleziona un wallet" />
-              </SelectTrigger>
-              <SelectContent>
-                {wallets.map((wallet) => (
-                  <SelectItem key={wallet.id} value={String(wallet.id)}>
-                    <div className="flex items-center gap-2">
-                      <WalletIcon className="h-4 w-4 text-muted-foreground" />
-                      <span>{wallet.name}</span>
-                      {wallet.is_default && (
-                        <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                          Predefinito
-                        </span>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {wallets.length === 0 && !loadingWallets && (
-              <p className="text-xs text-destructive">
-                Nessun wallet trovato. Creane uno nella sezione Wallets prima di importare.
-              </p>
-            )}
-          </div>
-
-          {/* Selezione Categoria */}
-          <div className="space-y-2">
-            {stats.isSingle ? (
-              <>
-                <Label htmlFor="target-category" className="text-sm font-medium">
-                  Categoria
-                </Label>
-                <Select
-                  value={selectedCategoryId}
-                  onValueChange={setSelectedCategoryId}
-                  disabled={loadingCategories || filteredCategories.length === 0}
-                >
-                  <SelectTrigger id="target-category" className="w-full">
-                    <SelectValue placeholder="Seleziona una categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredCategories.map((cat) => (
-                      <SelectItem key={cat.id} value={String(cat.id)}>
-                        <div className="flex items-center justify-between w-full gap-2">
-                          <span>{cat.name}</span>
-                          <span className="text-[10px] uppercase text-muted-foreground">
-                            {cat.type === "I" ? "Entrata" : "Spesa"}
+            <div className="space-y-2">
+              <Label htmlFor="target-wallet" className="text-sm font-medium">
+                Wallet di destinazione
+              </Label>
+              <Select
+                value={effectiveWalletId}
+                onValueChange={setSelectedWalletId}
+                disabled={loadingWallets || wallets.length === 0}
+              >
+                <SelectTrigger id="target-wallet" className="w-full">
+                  <SelectValue placeholder="Seleziona un wallet" />
+                </SelectTrigger>
+                <SelectContent>
+                  {wallets.map((wallet) => (
+                    <SelectItem key={wallet.id} value={String(wallet.id)}>
+                      <div className="flex items-center gap-2">
+                        <WalletIcon className="h-4 w-4 text-muted-foreground" />
+                        <span>{wallet.name}</span>
+                        {wallet.is_default && (
+                          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                            Predefinito
                           </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {filteredCategories.length === 0 && !loadingCategories && (
-                  <p className="text-xs text-destructive">
-                    Nessuna categoria disponibile. Creane una nella sezione Categorie.
-                  </p>
-                )}
-              </>
-            ) : (
-              <>
-                <div className="flex items-center justify-between gap-3">
-                  <Label className="text-sm font-medium" htmlFor="auto-suggest">
-                    Auto suggerimento
-                  </Label>
-                  <Switch
-                    id="auto-suggest"
-                    checked={autoSuggest}
-                    onCheckedChange={(checked) => setAutoSuggest(!!checked)}
-                    disabled={loadingCategories || categories.length === 0}
-                  />
-                </div>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {wallets.length === 0 && !loadingWallets && (
+                <p className="text-xs text-destructive">
+                  Nessun wallet trovato. Creane uno nella sezione Wallet prima di importare.
+                </p>
+              )}
+            </div>
 
-                {autoSuggest ? (
-                  <div className="text-xs text-muted-foreground">
-                    {suggestedCategorySummary.length > 0 ? (
-                      <>
-                        Suggerite: {" "}
-                        {suggestedCategorySummary
-                          .slice(0, 3)
-                          .map((g) => `${getCategoryNameById(g.categoryId)} (${g.count})`)
-                          .join(", ")}
-                        {suggestedCategorySummary.length > 3 ? "…" : ""}
-                      </>
-                    ) : (
-                      <span>Calcolo suggerimenti…</span>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <Label htmlFor="target-category" className="text-sm font-medium">
-                      Categoria
-                    </Label>
-                    <Select
-                      value={selectedCategoryId}
-                      onValueChange={setSelectedCategoryId}
-                      disabled={loadingCategories || filteredCategories.length === 0}
-                    >
-                      <SelectTrigger id="target-category" className="w-full">
-                        <SelectValue placeholder="Seleziona una categoria" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {filteredCategories.map((cat) => (
-                          <SelectItem key={cat.id} value={String(cat.id)}>
-                            <div className="flex items-center justify-between w-full gap-2">
-                              <span>{cat.name}</span>
-                              <span className="text-[10px] uppercase text-muted-foreground">
-                                {cat.type === "I" ? "Entrata" : "Spesa"}
-                              </span>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-sm font-medium">Categoria per movimento</Label>
+                {uncertainCount > 0 && (
+                  <span className="text-xs text-amber-600 dark:text-amber-400">
+                    {uncertainCount} da controllare
+                  </span>
+                )}
+              </div>
+              {loadingCategories ? (
+                <p className="text-xs text-muted-foreground">Caricamento categorie…</p>
+              ) : categories.length === 0 ? (
+                <p className="text-xs text-destructive">
+                  Nessuna categoria attiva. Creane una nella sezione Categorie prima di importare.
+                </p>
+              ) : (
+                <ScrollArea className="h-[min(40vh,320px)] rounded-md border">
+                  <div className="space-y-2 p-2">
+                    {transactions.map((transaction) => {
+                      const type = getBankTransactionType(transaction.amount);
+                      const suggestion = suggestions[transaction.id];
+                      const selectedCategoryId = categoryIdByTxnId[transaction.id] || "";
+                      const categoryOptions = [
+                        ...categories.filter((category) => category.type === type),
+                        ...createdOtherCategories.filter(
+                          (category) =>
+                            category.type === type &&
+                            !categories.some((existing) => String(existing.id) === String(category.id))
+                        ),
+                      ];
+                      const needsChoice = !selectedCategoryId;
+                      return (
+                        <div
+                          key={transaction.id}
+                          className="grid grid-cols-[minmax(0,1fr)_minmax(150px,200px)] items-center gap-3 rounded-md bg-muted/50 p-2"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-start gap-1.5">
+                              {suggestion?.uncertain && (
+                                <span title="Suggerimento incerto: controlla la categoria" className="mt-0.5 text-amber-600 dark:text-amber-400">
+                                  <AlertTriangle aria-label="Suggerimento incerto" className="h-4 w-4" />
+                                </span>
+                              )}
+                              <p className="truncate text-sm font-medium" title={transaction.description}>
+                                {transaction.description || "Movimento senza descrizione"}
+                              </p>
                             </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {filteredCategories.length === 0 && !loadingCategories && (
-                      <p className="text-xs text-destructive">
-                        Nessuna categoria disponibile. Creane una nella sezione Categorie.
-                      </p>
-                    )}
-                  </>
-                )}
-              </>
-            )}
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              {Number(transaction.amount) >= 0 ? (
+                                <ArrowDownLeft className="h-3 w-3 text-emerald-500" />
+                              ) : (
+                                <ArrowUpRight className="h-3 w-3 text-rose-500" />
+                              )}
+                              <span>
+                                {Number(transaction.amount).toLocaleString("it-IT", {
+                                  style: "currency",
+                                  currency: transaction.currency || "EUR",
+                                })}
+                              </span>
+                              {transaction.counterparty && <span className="truncate">· {transaction.counterparty}</span>}
+                            </div>
+                          </div>
+                          <Select
+                            value={selectedCategoryId}
+                            onValueChange={(value) => handleCategoryChange(transaction.id, value)}
+                            disabled={categoryOptions.length === 0 || isSubmitting}
+                          >
+                            <SelectTrigger
+                              aria-label={`Categoria per ${transaction.description || "movimento"}`}
+                              className={needsChoice ? "border-amber-500" : ""}
+                            >
+                              <SelectValue placeholder="Scegli categoria" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categoryOptions.map((category) => (
+                                <SelectItem key={category.id} value={String(category.id)}>
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              )}
+              {mustChooseManually && unresolvedTransactions.length > 0 && !loadingCategories && (
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  Hai scelto di non creare “Altro”. Seleziona una categoria per {unresolvedTransactions.length} {unresolvedTransactions.length === 1 ? "movimento" : "movimenti"} senza proposta.
+                </p>
+              )}
+            </div>
           </div>
-        </div>
 
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isSubmitting}
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+              Annulla
+            </Button>
+            <Button
+              type="button"
+              onClick={handleImport}
+              disabled={
+                isSubmitting ||
+                loadingCategories ||
+                !effectiveWalletId ||
+                transactions.length === 0
+              }
+            >
+              {isSubmitting ? "Importazione in corso..." : "Conferma importazione"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={isCreateOtherOpen} onOpenChange={(nextOpen) => !isCreatingOther && setIsCreateOtherOpen(nextOpen)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Crea la categoria “Altro”?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Non hai una categoria attiva “Altro” per {createTypesLabel}. Vuoi crearla e usarla come proposta per i movimenti senza una corrispondenza sicura? Potrai rivedere e modificare le categorie prima di importare.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+            disabled={isCreatingOther}
+            onClick={() => setDeclinedOtherTypes((previous) => Array.from(new Set([...previous, ...createOtherTypes])))}
           >
-            Annulla
-          </Button>
-          <Button
-            type="button"
-            onClick={handleImport}
-            disabled={
-              isSubmitting ||
-              !effectiveWalletId ||
-              transactions.length === 0 ||
-              // Se manuale serve selectedCategoryId
-              (requireManualCategory ? !selectedCategoryId : false) ||
-              // Se auto-suggest serve almeno una categoria attiva
-              (isBulk && autoSuggest ? loadingCategories || categories.length === 0 : false)
-            }
-          >
-            {isSubmitting ? "Importazione in corso..." : "Conferma Importazione"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+            No, scelgo io
+          </AlertDialogCancel>
+            <AlertDialogAction onClick={(event) => { event.preventDefault(); void createMissingOtherCategories(); }} disabled={isCreatingOther}>
+              {isCreatingOther ? "Creazione…" : "Crea categoria"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

@@ -46,10 +46,20 @@ import {
   Filter,
 } from "lucide-react";
 
+interface BankBalance {
+  amount: number;
+  currency: string | null;
+  type: string | null;
+  referenceDate: string | null;
+  providerUpdatedAt: string | null;
+  fetchedAt: string | null;
+}
+
 interface BankConnection {
   bank: string;
   account: string | null;
   lastSynced: string | null;
+  balance: BankBalance | null;
 }
 
 interface BankStatusResponse extends BankConnection {
@@ -208,17 +218,24 @@ function YourBank() {
               `Impossibile verificare lo stato di ${institution.name}.`
             );
           } catch {
-            return { connected: false, bank: institution.id, account: null, lastSynced: null };
+            return {
+              connected: false,
+              bank: institution.id,
+              account: null,
+              lastSynced: null,
+              balance: null,
+            };
           }
         })
       );
 
       const connectedBanks = bankStatuses
         .filter((status) => status.connected)
-        .map(({ bank, account, lastSynced }) => ({
+        .map(({ bank, account, lastSynced, balance }) => ({
           bank,
           account,
           lastSynced,
+          balance,
         }));
       setConnections(connectedBanks);
 
@@ -375,6 +392,7 @@ function YourBank() {
                   bank: status.bank,
                   account: status.account,
                   lastSynced: status.lastSynced,
+                  balance: status.balance,
                 }
               : conn
           )
@@ -608,6 +626,29 @@ function YourBank() {
                           <p className="text-xs text-muted-foreground">
                             Conto: {connection.account ? `${connection.account.slice(-8)}` : "Attivo"}
                           </p>
+                          <p className="mt-1 text-sm font-semibold text-foreground">
+                            {connection.balance
+                              ? connection.balance.amount.toLocaleString("it-IT", {
+                                  style: "currency",
+                                  currency: connection.balance.currency || "EUR",
+                                })
+                              : "Saldo bancario non disponibile"}
+                          </p>
+                          {connection.balance && (
+                            <p className="text-[11px] text-muted-foreground">
+                              {connection.balance.type && `Saldo ${connection.balance.type}`}
+                              {(connection.balance.referenceDate || connection.balance.fetchedAt) &&
+                                ` · aggiornato ${new Date(
+                                  connection.balance.referenceDate || connection.balance.fetchedAt || ""
+                                ).toLocaleString("it-IT", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}`}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <Badge variant="outline" className="text-emerald-500 border-emerald-500/30 bg-emerald-500/10 gap-1 text-[11px]">
