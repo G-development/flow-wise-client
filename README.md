@@ -72,22 +72,15 @@ Il comando parte da `.next` pulito: senza la pulizia i tipi generati di una rout
 rimossa o rinominata restano in cache e fanno fallire la build su un albero
 sorgente corretto.
 
-## Push gate
+## Controlli prima del push
 
 Il repo versiona un hook `pre-push` in `.githooks/pre-push`, attivo quando
-`git config core.hooksPath .githooks` è impostato. L'hook **rifiuta il push**
-finché non esiste un'approvazione per lo **SHA esatto** del commit corrente; il
-file di approvazione vive in `.git/` (non tracciato) e si crea con:
+`git config core.hooksPath .githooks` è impostato. L'hook esegue `npm test` e
+rifiuta il push se fallisce: `node --test` (invarianti), `npx tsc --noEmit`
+(typecheck) e `next build` (build + lint di Next), in quest'ordine.
 
-```bash
-printf '%s' "$(git rev-parse HEAD)" > "$(git rev-parse --git-dir)/hermes-push-approval"
-```
-
-L'approvazione vale per un solo commit: appena aggiungi un commit il gate si
-richiude da solo. Superato il gate, l'hook esegue `npm test` prima di lasciar
-passare il push: `node --test` (invarianti), `npx tsc --noEmit` (typecheck) e
-`next build` (build + lint di Next), in quest'ordine. L'uscita consapevole, che
-salta gate e check, è `HERMES_PUSH_APPROVED=1 git push`.
+Non c'è un'approvazione per commit: il push lo decide Gio, e un agente lo fa solo
+dopo il suo ok esplicito.
 
 ## Documentazione
 

@@ -17,7 +17,7 @@ caricato c'è `/context` in sessione.
 
 | Cosa | Dove |
 | --- | --- |
-| Architettura, data model, limiti noti, stato, workflow multi-agente, push gate | skill **`flow-wise`** — caricala prima di lavorare |
+| Architettura, data model, limiti noti, stato, workflow multi-agente | skill **`flow-wise`** — caricala prima di lavorare |
 | Indice file-per-file (route, componente, export) | `CODE_MAP.md` in questo repo |
 | Architettura e "stato verificato e limiti noti" | `APP_ARCHITECTURE.md` |
 | Chiamate dal client, route consumate, caching | `API_STRUCTURE.md` |
@@ -52,8 +52,8 @@ rosso anche quando `tsc --noEmit` passa.
 
 ## Guardrail
 
-- **Push gated**: `.githooks/pre-push` rifiuta il push finché non esiste un'approvazione per lo **SHA
-  esatto**. Autorizza Gio; l'agente non approva mai da solo. Un commit nuovo riapre il gate.
+- **Push solo con l'ok di Gio**: commit liberi, push mai senza il suo ok esplicito in conversazione.
+  `.githooks/pre-push` esegue i test e rifiuta il push se falliscono; non c'è più un'approvazione per SHA.
 - `app/incomes/page.tsx` e `app/expenses/page.tsx` sono due wrapper sottili sulla lista condivisa
   `components/movements-list.tsx`: un fix alla lista si fa lì, una volta. Solo ciò che sta nei wrapper
   (hook dati, testi, contenitore esterno) va toccato in entrambi.
