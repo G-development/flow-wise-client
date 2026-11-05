@@ -54,7 +54,8 @@ rosso anche quando `tsc --noEmit` passa.
 
 - **Push gated**: `.githooks/pre-push` rifiuta il push finché non esiste un'approvazione per lo **SHA
   esatto**. Autorizza Gio; l'agente non approva mai da solo. Un commit nuovo riapre il gate.
-- `app/incomes/page.tsx` e `app/expenses/page.tsx` sono ancora quasi identici: **ogni fix va applicato
-  due volte** finché non vengono deduplicati.
+- `app/incomes/page.tsx` e `app/expenses/page.tsx` sono due wrapper sottili sulla lista condivisa
+  `components/movements-list.tsx`: un fix alla lista si fa lì, una volta. Solo ciò che sta nei wrapper
+  (hook dati, testi, contenitore esterno) va toccato in entrambi.
 - `app/settings/page.tsx` scrive la tabella `Profile` dal browser con la chiave anon: dipende dalle RLS
   e fallisce in silenzio se non configurate. La scrittura appartiene al server.

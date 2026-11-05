@@ -56,7 +56,8 @@ La pagina `/settings/yourbank` include:
 - **Drawer di selezione istituti (`BankDrawer.tsx`)**: ricerca rapida e avvio dell'autorizzazione per banche italiane ed europee.
 - **Card dei conti collegati**: elenco dei conti attivi con data dell'ultimo sync, azione di sincronizzazione manuale immediata e disconnessione sicura.
 - **Filtro del periodo transazioni**: default dinamico dal 1° giorno del mese corrente alla data odierna, con preset rapidi (*Questo mese*, *Mese scorso*, *Ultimi 30 gg*, *Ultimi 90 gg*, *Tutto*) e selezione date manuale.
-- **Selezione massiva e importazione (`ImportTransactionDialog.tsx`)**: riepilogo finanziario del gruppo selezionato (numero di movimenti, totale entrate e totale spese) e conversione in record di tipo `Transaction` associati al Wallet di destinazione e a una Categoria, con invalidazione automatica della cache TanStack Query (`transactions`, `wallets`, `incomes`, `expenses`). Per un solo movimento la categoria si sceglie a mano ed è filtrata sul tipo atteso dal segno dell'importo. Per un import massivo l'**auto-suggerimento** è attivo di default: a ogni movimento viene proposta una categoria **attiva** del tipo corretto (`.type === "I"` per importi non negativi, `"E"` altrimenti), scelta confrontando descrizione e controparte con il nome della categoria; i movimenti vengono raggruppati per categoria suggerita e inviati al server con una richiesta `POST /bank/import` per gruppo. Disattivando l'interruttore si sceglie un'unica categoria per tutti i movimenti selezionati.
+- **Selezione massiva e importazione (`ImportTransactionDialog.tsx`)**: riepilogo finanziario del gruppo selezionato (numero di movimenti, totale entrate e totale spese) e conversione in record di tipo `Transaction` associati al Wallet di destinazione e a una Categoria, con invalidazione automatica della cache TanStack Query (`transactions`, `wallets`, `incomes`, `expenses`). La categoria si sceglie **per ogni movimento**, con un menu filtrato sul tipo atteso dal segno dell'importo (`"I"` per importi non negativi, `"E"` altrimenti) e precompilato da `suggestBankTransactionCategory` (`lib/bankCategorySuggestion.ts`, coperto da `lib/bankCategorySuggestion.test.ts`). Il suggerimento è *sicuro* solo se il nome di **una sola** categoria attiva del tipo giusto (almeno 3 caratteri) compare come parola intera in descrizione + controparte normalizzate; altrimenti (nessuna corrispondenza o pareggio) il movimento è marcato **incerto** con un'icona di avviso e precompilato con la categoria `Altro` del suo tipo. Se `Altro` manca, all'import il modale propone di crearla; se l'utente rifiuta, la categoria va scelta a mano. All'invio i movimenti vengono raggruppati per categoria e inviati con una `POST /bank/import` per gruppo; se un gruppo fallisce dopo che altri sono passati, il modale segnala l'import parziale e aggiorna comunque gli elenchi.
+- **Saldo del conto**: ogni card dei conti collegati mostra l'ultimo saldo letto dal provider (campo `balance` di `/bank/connections` e `/bank/status`), con tipo e data, oppure "Saldo bancario non disponibile".
 
 ### Stato e dati
 
@@ -209,12 +210,32 @@ corretti.
 Verificato leggendo il codice e lanciando i controlli di build. Da aggiornare
 quando i punti vengono chiusi.
 
+Ultima verifica: 2026-11-05, sui commit `455922b` (client) e `093e46c` (server).
+
 **Difetti aperti**
 
-- **Recupero password poco affidabile**: `requestPasswordReset` usa
-  `supabase.auth.admin.listUsers()` senza paginazione (solo i primi utenti) e,
-  se `SMTP_HOST` non è configurato, l'invio fallisce ma la route risponde
-  comunque `success: true`.
+- **`app/settings/page.tsx` scrive la tabella `Profile` dal browser** con la
+  chiave anon (`supabase.from("Profile")`, in lettura e scrittura), mentre il
+  server espone solo `GET /users/profile`: dipende dalle RLS e fallisce in
+  silenzio se non sono configurate. La scrittura appartiene al server.
+- **La categorizzazione dell'import bancario vive solo nel client**
+  (`lib/bankCategorySuggestion.ts`): `POST /bank/import` accetta un solo
+  `categoryId` per chiamata, quindi il client fa una richiesta per gruppo e un
+  errore a metà lascia un import parziale; `Category` non ha parole chiave
+  salvate, quindi una correzione manuale non migliora i suggerimenti successivi.
+
+**Chiusi**
+
+- **Recupero password** (server, `utils/passwordResetService.js`): la ricerca
+  dell'utente scorre tutte le pagine della Admin API e, se le esaurisce, lancia
+  un errore invece di rispondere "utente inesistente"; senza `SMTP_HOST` la
+  route risponde `502` con il motivo reale, e il token viene salvato solo dopo
+  che la mail è partita. `/forgot-password` e `/reset-password` sono in
+  `PUBLIC_ROUTES`.
+- **Suggerimento di categoria nell'import bancario**: un movimento senza
+  corrispondenza non riceve più in silenzio la prima categoria del suo tipo,
+  ma è marcato come incerto e precompilato con `Altro` (vedi *Integrazione
+  Bancaria* sopra).
 
 **Integrazione bancaria**
 
@@ -247,5 +268,6 @@ Limite noto:
   caption e il wrapper esterno, quindi una correzione alla lista si fa in un
   posto solo.
 - `/budgets` è un placeholder "Work in progress" non linkato in navigazione
-  finche' la feature non esiste (raggiungibile solo per URL diretto);
-  `check-db.mjs` vuoto (nel repo server).
+  finche' la feature non esiste (raggiungibile solo per URL diretto).
+- `check-db.mjs` nel repo server contiene solo un commento: lo script è stato
+  rimosso e il file è rimasto.

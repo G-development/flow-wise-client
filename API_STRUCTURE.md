@@ -30,7 +30,7 @@ Le chiamate bancarie e quelle dell'agente AI passano attraverso `apiFetch`.
 | Categorie | `GET /category`, `/category/active`; CRUD su `/category` e `/category/:id` |
 | Import | `POST /import/csv` |
 | Layout dashboard | `GET /dashboard-layout`, `PUT /dashboard-layout` |
-| Banca - Configurazione | `GET /bank/config`, `GET /bank/institutions`, `GET /bank/status?bank=` |
+| Banca - Configurazione | `GET /bank/config`, `GET /bank/institutions`, `GET /bank/status?bank=`, `GET /bank/connections` (entrambe con `balance` del conto o `null`) |
 | Banca - Connessione | `GET /bank/authorize?bank=`, `POST /bank/disconnect?bank=` |
 | Banca - Movimenti | `GET /bank/transactions?startDate=&endDate=&bank=`, `POST /bank/sync?bank=` |
 | Banca - Importazione | `POST /bank/import` (`{ transactionIds, walletId, categoryId }`) |
@@ -81,7 +81,7 @@ dichiarare parziali, ma la pagina `/category` mostra comunque l'avviso quando
 La pagina `/settings/yourbank` interagisce con il backend tramite:
 1. `GET /bank/transactions?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD`: carica i movimenti bancari sincronizzati per il periodo selezionato.
 2. `POST /bank/import`: invia un payload JSON con gli ID delle transazioni selezionate, il `walletId` e il `categoryId`. Il server inserisce i record nella tabella `Transaction` di Flow Wise, decide il tipo dal segno dell'importo (`amount >= 0` → `"I"`, altrimenti `"E"`; un eventuale `defaultType` inviato dal chiamante ha la precedenza) e contrassegna i movimenti come `imported`.
-3. **Categoria proposta automaticamente nell'import massivo**: `ImportTransactionDialog.tsx` non si limita a inoltrare la categoria scelta dall'utente. Con l'auto-suggerimento attivo (default) assegna a ogni movimento una categoria **attiva** del tipo corretto per il segno dell'importo, scegliendola in base alla somiglianza tra descrizione/controparte e nome della categoria; raggruppa poi i movimenti per categoria suggerita e ripete la chiamata a `POST /bank/import` una volta per gruppo. Per un singolo movimento o con l'auto-suggerimento disattivato invia una sola chiamata con la categoria scelta a mano.
+3. **Una chiamata per categoria**: in `ImportTransactionDialog.tsx` ogni movimento ha la sua categoria, precompilata da un suggerimento calcolato nel client (`lib/bankCategorySuggestion.ts`; i movimenti senza corrispondenza sicura sono marcati incerti e vanno su `Altro`, che il modale propone di creare se manca). Poiché la route accetta un solo `categoryId`, il client raggruppa i movimenti per categoria e ripete `POST /bank/import` una volta per gruppo; un errore a metà lascia un import parziale, che il modale segnala.
 4. Invalida la cache TanStack Query per `transactions`, `wallets`, `expenses` e `incomes`.
 
 ## AI Beta
