@@ -31,6 +31,7 @@ import BankDrawer, { type Institution } from "./BankDrawer";
 import ImportTransactionDialog, {
   type BankTransactionItem,
 } from "./ImportTransactionDialog";
+import AutoImportSettings, { type BankAutoImport } from "./AutoImportSettings";
 import {
   Landmark,
   RefreshCw,
@@ -60,6 +61,7 @@ interface BankConnection {
   account: string | null;
   lastSynced: string | null;
   balance: BankBalance | null;
+  autoImport?: BankAutoImport | null;
 }
 
 interface BankStatusResponse extends BankConnection {
@@ -224,6 +226,7 @@ function YourBank() {
               account: null,
               lastSynced: null,
               balance: null,
+              autoImport: null,
             };
           }
         })
@@ -231,11 +234,12 @@ function YourBank() {
 
       const connectedBanks = bankStatuses
         .filter((status) => status.connected)
-        .map(({ bank, account, lastSynced, balance }) => ({
+        .map(({ bank, account, lastSynced, balance, autoImport }) => ({
           bank,
           account,
           lastSynced,
           balance,
+          autoImport,
         }));
       setConnections(connectedBanks);
 
@@ -393,6 +397,7 @@ function YourBank() {
                   account: status.account,
                   lastSynced: status.lastSynced,
                   balance: status.balance,
+                  autoImport: status.autoImport,
                 }
               : conn
           )
@@ -669,6 +674,18 @@ function YourBank() {
                           : "Mai"}
                       </span>
                     </div>
+
+                    <AutoImportSettings
+                      bank={connection.bank}
+                      autoImport={connection.autoImport}
+                      onSaved={(autoImport) =>
+                        setConnections((current) =>
+                          current.map((conn) =>
+                            conn.bank === connection.bank ? { ...conn, autoImport } : conn
+                          )
+                        )
+                      }
+                    />
 
                     <div className="flex gap-2 pt-1">
                       <Button

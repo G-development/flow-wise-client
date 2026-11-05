@@ -32,6 +32,7 @@ Le chiamate bancarie e quelle dell'agente AI passano attraverso `apiFetch`.
 | Layout dashboard | `GET /dashboard-layout`, `PUT /dashboard-layout` |
 | Banca - Configurazione | `GET /bank/config`, `GET /bank/institutions`, `GET /bank/status?bank=`, `GET /bank/connections` (entrambe con `balance` del conto o `null`) |
 | Banca - Connessione | `GET /bank/authorize?bank=`, `POST /bank/disconnect?bank=` |
+| Banca - Import automatico | `PUT /bank/connections/:bank/auto-import` (`{ walletId \| null, fromDate? }`); stato in `autoImport` di `/bank/status` e `/bank/connections` |
 | Banca - Movimenti | `GET /bank/transactions?startDate=&endDate=&bank=`, `POST /bank/sync?bank=` |
 | Banca - Importazione | `POST /bank/import` (`{ transactionIds, walletId, categoryId }`) |
 | AI Beta | `POST /agents/analytics` con domanda e date `startDate`/`endDate` |

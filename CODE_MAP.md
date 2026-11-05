@@ -5,7 +5,7 @@
 Indice file-per-file generato dal codice, non dalla documentazione. Serve a sapere **dove** sta una
 cosa senza leggere il repo: architettura e regole locali stanno altrove (vedi `AGENTS.md`).
 
-Forma `next`, radice sorgente `.`, commit `455922b`.
+Forma `next`, radice sorgente `.`, commit `255a4d7`.
 
 ```bash
 node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/flow-wise-client \
@@ -39,6 +39,7 @@ Layout: `app/layout.tsx`
 - `app/flow-wise-logo.svg` — asset
 - `app/globals.css` — stile
 *app/settings/yourbank/*
+- `app/settings/yourbank/AutoImportSettings.tsx` — exports: default `AutoImportSettings`; type `BankAutoImport`
 - `app/settings/yourbank/BankDrawer.tsx` — exports: default `BankDrawer`; type `Institution`
 - `app/settings/yourbank/ImportTransactionDialog.tsx` — exports: type `BankTransactionItem`; default `ImportTransactionDialog`
 
@@ -46,6 +47,7 @@ Layout: `app/layout.tsx`
 
 *.claude/*
 - `.claude/settings.json` — dati
+- `.claude/settings.local.json` — dati
 
 ## .githooks/
 
