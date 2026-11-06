@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Logo from "./flow-wise-logo.svg";
+import { LandingChangelog } from "@/components/landing-changelog";
 
 const features = [
   {
@@ -265,16 +266,23 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="bg-[#f5f5ef] px-5 py-6 sm:px-8 lg:px-12">
+      <LandingChangelog />
+
+      <footer className="border-t border-[#dfe5df] bg-[#f5f5ef] px-5 py-6 sm:px-8 lg:px-12">
         <div className="mx-auto flex max-w-[1280px] flex-col gap-3 text-xs text-[#69766f] sm:flex-row sm:items-center sm:justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold text-[#263b33]">
             <Image src={Logo} width={24} height={24} alt="" />
             flow wise
           </Link>
           <p>Gestisci il presente. Guarda avanti.</p>
-          <Link href="/privacy" className="underline decoration-[#aebbb2] underline-offset-4 hover:text-[#153c32]">
-            Privacy &amp; termini
-          </Link>
+          <div className="flex gap-4">
+            <Link href="/terms" className="underline decoration-[#aebbb2] underline-offset-4 hover:text-[#153c32]">
+              Termini di servizio
+            </Link>
+            <Link href="/privacy" className="underline decoration-[#aebbb2] underline-offset-4 hover:text-[#153c32]">
+              Privacy
+            </Link>
+          </div>
         </div>
       </footer>
     </main>

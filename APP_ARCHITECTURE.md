@@ -19,7 +19,7 @@ non committare file contenenti segreti.
 controlla e osserva la sessione Supabase, aggiorna lo stato condiviso e
 reindirizza alla pagina di login quando manca una sessione su una route
 protetta. Le route considerate pubbliche dal provider sono `/`, `/login`,
-`/register`, `/privacy`, `/forgot-password` e `/reset-password`.
+`/register`, `/privacy`, `/terms`, `/forgot-password` e `/reset-password`.
 
 Le pagine `/forgot-password` e `/reset-password` sono implementate e chiamano
 le route pubbliche di reset del server; essendo in `PUBLIC_ROUTES` del provider
@@ -34,14 +34,15 @@ Supabase o `fetch`, a seconda del flusso.
 - `/login`, `/register`, `/forgot-password`, `/reset-password`: accesso,
   registrazione e recupero credenziali.
 - `/dashboard`: griglia widget configurabile e intervallo date condiviso.
-- `/incomes`, `/expenses`: rispettivamente movimenti di tipo entrata e spesa.
-- `/wallets`, `/category`: gestione wallet e categorie.
+- `/incomes`, `/expenses`: rispettivamente movimenti di tipo entrata e spesa, con filtro per periodo e per wallet (il filtro wallet agisce sui movimenti già caricati del periodo).
+- `/wallets`, `/category`: gestione wallet e categorie. Ogni wallet ha un tag "Linked to <banca>" quando è il wallet di destinazione dell'import automatico di una banca (letto da `GET /bank/connections`, hook `useBankConnections`), altrimenti "Not linked".
 - `/budgets`: placeholder "Work in progress", deliberatamente non linkato in
   navigazione finche' la feature non esiste (raggiungibile solo per URL diretto).
 - `/settings`, `/settings/import`, `/settings/yourbank`: profilo, CSV e
   integrazione bancaria completa.
 - `/ai-beta`: interfaccia di prova dell'agente di analisi spese.
-- `/privacy`: informativa.
+- `/privacy`: informativa privacy (GDPR, artt. 13-14). `/terms`: termini di servizio. Titolare, contatto e data di aggiornamento stanno in `lib/legal.ts`, l'impaginazione comune in `components/legal-page.tsx`. Se cambia un trattamento (nuovo fornitore, nuovi dati raccolti) l'informativa va aggiornata.
+- `/` (landing): include il changelog del progetto (`components/landing-changelog.tsx`), da aggiornare a ogni rilascio rilevante.
 
 Il CRUD delle categorie è in `components/category-dialog.tsx`, che invia
 `type: "I"` / `"E"` come il database; in `/category` edit e delete partono
