@@ -86,7 +86,7 @@ export function LoginForm({
               <div className="flex items-center justify-between">
                 <Label htmlFor="password" className="text-sm font-medium text-foreground/80">Password</Label>
                 <a
-                  href="#"
+                  href="/forgot-password"
                   className="text-xs text-primary hover:text-primary/80 hover:underline transition-colors"
                 >
                   Forgot password?
@@ -129,7 +129,7 @@ export function LoginForm({
       <div className="text-balance text-center text-xs text-muted-foreground space-y-1">
         <p>
           By signing in, you agree to our{" "}
-          <a href="#" className="text-primary hover:underline">Terms of Service</a> and{" "}
+          <a href="/terms" className="text-primary hover:underline">Terms of Service</a> and{" "}
           <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>.
         </p>
       </div>

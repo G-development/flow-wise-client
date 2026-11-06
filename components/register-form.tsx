@@ -166,7 +166,7 @@ export function RegisterForm({
       <div className="text-balance text-center text-xs text-muted-foreground space-y-2">
         <p>
           By signing up, you agree to our{" "}
-          <a href="#" className="text-primary hover:underline">Terms of Service</a> and{" "}
+          <a href="/terms" className="text-primary hover:underline">Terms of Service</a> and{" "}
           <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>.
         </p>
       </div>
