@@ -37,6 +37,10 @@ export const queryKeys = {
   dashboardLayout: {
     current: ["dashboard-layout"] as const,
   },
+  bank: {
+    connections: ["bank", "connections"] as const,
+    institutions: ["bank", "institutions"] as const,
+  },
 };
 
 // Types
@@ -224,6 +228,40 @@ export function useWallets() {
       if (!res.ok) throw new Error("Failed to fetch wallets");
       return res.json() as Promise<Wallet[]>;
     },
+  });
+}
+
+// Bank Hooks
+export interface BankConnectionSummary {
+  bank: string;
+  account: string | null;
+  lastSynced: string | null;
+  autoImport: { enabled: boolean; walletId: number | null; fromDate: string | null } | null;
+}
+
+/** Banche collegate dall'utente (GET /bank/connections), con l'import automatico. */
+export function useBankConnections() {
+  return useQuery({
+    queryKey: queryKeys.bank.connections,
+    queryFn: async () => {
+      const res = await apiFetch("/bank/connections");
+      if (!res.ok) throw new Error("Failed to fetch bank connections");
+      const data = (await res.json()) as { connections?: BankConnectionSummary[] };
+      return data.connections ?? [];
+    },
+  });
+}
+
+/** Istituti disponibili (GET /bank/institutions): servono solo per mostrare il nome della banca. */
+export function useBankInstitutions() {
+  return useQuery({
+    queryKey: queryKeys.bank.institutions,
+    queryFn: async () => {
+      const res = await apiFetch("/bank/institutions");
+      if (!res.ok) throw new Error("Failed to fetch bank institutions");
+      return (await res.json()) as Array<{ id: string; name: string }>;
+    },
+    staleTime: 60 * 60 * 1000,
   });
 }
 

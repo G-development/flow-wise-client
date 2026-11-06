@@ -14,7 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { apiFetch } from "@/lib/api";
-import { useWallets } from "@/lib/hooks/useQueries";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys, useWallets } from "@/lib/hooks/useQueries";
 
 export interface BankAutoImport {
   enabled: boolean;
@@ -36,6 +37,7 @@ interface AutoImportSettingsProps {
  * dalla data indicata in poi, con la categoria scelta dal modello o "Altro".
  */
 export default function AutoImportSettings({ bank, autoImport, onSaved }: AutoImportSettingsProps) {
+  const queryClient = useQueryClient();
   const { data: wallets = [], isLoading: loadingWallets } = useWallets();
   const [walletValue, setWalletValue] = useState(DISABLED);
   const [fromDate, setFromDate] = useState("");
@@ -70,6 +72,8 @@ export default function AutoImportSettings({ bank, autoImport, onSaved }: AutoIm
       }
       const saved = (data as { autoImport: BankAutoImport }).autoImport;
       onSaved(saved);
+      // Il tag "collegato alla banca" della pagina Wallets legge /bank/connections.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.bank.connections });
       toast.success(
         saved.enabled
           ? `Import automatico attivo${saved.fromDate ? ` dal ${new Date(`${saved.fromDate}T00:00:00`).toLocaleDateString("it-IT")}` : ""}`

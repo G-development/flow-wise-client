@@ -6,7 +6,15 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/navbar";
-import { useWallets, useUpdateWallet, type Wallet } from "@/lib/hooks/useQueries";
+import {
+  useBankConnections,
+  useBankInstitutions,
+  useUpdateWallet,
+  useWallets,
+  type Wallet,
+} from "@/lib/hooks/useQueries";
+import { Badge } from "@/components/ui/badge";
+import { Landmark } from "lucide-react";
 import { toast } from "sonner";
 
 /**
@@ -157,6 +165,23 @@ export default function Wallets() {
     [updateWallet]
   );
 
+  // Un wallet e' "collegato alla banca" quando e' il wallet di destinazione dell'import
+  // automatico di una banca (Your Bank -> Import automatico giornaliero).
+  const { data: bankConnections = [] } = useBankConnections();
+  const { data: institutions = [] } = useBankInstitutions();
+  const linkedBanksByWallet = useMemo(() => {
+    const nameById = new Map(institutions.map((inst) => [inst.id, inst.name]));
+    const map = new Map<string, string[]>();
+    for (const connection of bankConnections) {
+      const walletId = connection.autoImport?.walletId;
+      if (walletId == null) continue;
+      const names = map.get(String(walletId)) ?? [];
+      names.push(nameById.get(connection.bank) ?? connection.bank);
+      map.set(String(walletId), names);
+    }
+    return map;
+  }, [bankConnections, institutions]);
+
   const rows = useMemo(() => {
     const formatCurrency = (wallet: Wallet) => {
       const currency = wallet.currency || "EUR";
@@ -167,6 +192,22 @@ export default function Wallets() {
     return wallets.map((w, idx) => ({
       "#": idx + 1,
       Name: w.name,
+      Bank: (() => {
+        const banks = linkedBanksByWallet.get(String(w.id));
+        return banks ? (
+          <Badge
+            variant="outline"
+            className="gap-1 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+            title="Bank transactions are auto-imported into this wallet"
+          >
+            <Landmark className="h-3 w-3" /> Linked to {banks.join(", ")}
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="text-muted-foreground">
+            Not linked
+          </Badge>
+        );
+      })(),
       Balance: formatCurrency(w),
       "Opening balance": (
         <OpeningBalanceCell
@@ -183,7 +224,7 @@ export default function Wallets() {
         />
       ),
     }));
-  }, [wallets, changingId, updateWallet.isPending, handleSetDefault, handleOpeningBalanceSave]);
+  }, [wallets, changingId, updateWallet.isPending, handleSetDefault, handleOpeningBalanceSave, linkedBanksByWallet]);
 
   return (
     <>
