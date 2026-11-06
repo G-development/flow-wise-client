@@ -212,7 +212,7 @@ corretti.
 Verificato leggendo il codice e lanciando i controlli di build. Da aggiornare
 quando i punti vengono chiusi.
 
-Ultima verifica: 2026-11-05, sui commit `455922b` (client) e `093e46c` (server).
+Ultima verifica: 2026-11-06, sui commit `de41f49` (client) e `8b4e0f3` (server).
 
 **Difetti aperti**
 
@@ -220,11 +220,19 @@ Ultima verifica: 2026-11-05, sui commit `455922b` (client) e `093e46c` (server).
   chiave anon (`supabase.from("Profile")`, in lettura e scrittura), mentre il
   server espone solo `GET /users/profile`: dipende dalle RLS e fallisce in
   silenzio se non sono configurate. La scrittura appartiene al server.
-- **La categorizzazione dell'import bancario vive solo nel client**
-  (`lib/bankCategorySuggestion.ts`): `POST /bank/import` accetta un solo
-  `categoryId` per chiamata, quindi il client fa una richiesta per gruppo e un
-  errore a metà lascia un import parziale; `Category` non ha parole chiave
-  salvate, quindi una correzione manuale non migliora i suggerimenti successivi.
+- **L'import bancario manuale usa ancora il suggerimento del client**
+  (`lib/bankCategorySuggestion.ts`, confronto con il nome della categoria) e non
+  le regole locali del server (`category_rules`), che valgono solo per l'import
+  automatico. Inoltre `POST /bank/import` accetta un solo `categoryId` per
+  chiamata: il client fa una richiesta per gruppo e un errore a metà lascia un
+  import parziale.
+- **Nessuna schermata per le regole di categoria**: si creano dalle correzioni
+  (`PUT /transaction/:id`) o a mano sul database, ma non si possono vedere né
+  eliminare dall'app.
+- **Giroconti come entrate/spese**: i trasferimenti (salvadanaio, verso altri
+  conti) sono movimenti `I`/`E` nella categoria "Giroconto" e gonfiano i totali;
+  il tipo `T` esiste nell'enum del database ma l'app non lo usa.
+- **`/budgets` è un segnaposto** (vedi sotto).
 
 **Chiusi**
 
