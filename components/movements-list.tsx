@@ -15,6 +15,16 @@ import { Button } from "@/components/ui/button";
 import EditDialog from "@/components/edit-dialog";
 import DeleteDialog from "@/components/delete-dialog";
 import { Pencil, Trash } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+/** Valore del filtro wallet che mostra tutti i movimenti. */
+const ALL_WALLETS = "all";
 import { useDateRange } from "@/lib/providers/DateRangeProvider";
 import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
 import { absoluteAmount } from "@/lib/amount";
@@ -57,6 +67,7 @@ export function MovementsList({
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [walletFilter, setWalletFilter] = useState(ALL_WALLETS);
 
   const { dateRange, setDateRange } = useDateRange();
 
@@ -65,6 +76,19 @@ export function MovementsList({
   // La risposta e' l'envelope di lista: le righe stanno in `rows`.
   const categories = categoryList.rows;
   const deleteTransaction = useDeleteTransaction();
+
+  // Filtro per wallet: lato client, sui movimenti gia' caricati per il periodo.
+  const visibleTransactions = useMemo(
+    () =>
+      walletFilter === ALL_WALLETS
+        ? transactions
+        : transactions.filter((tx) => String(tx.wallet_id ?? "") === walletFilter),
+    [transactions, walletFilter]
+  );
+  const selectedWalletName =
+    walletFilter === ALL_WALLETS
+      ? null
+      : wallets.find((w) => String(w.id) === walletFilter)?.name ?? null;
 
   const rows = useMemo(() => {
     const walletMap = new Map(wallets.map((w) => [String(w.id), w.name]));
@@ -77,7 +101,7 @@ export function MovementsList({
       currency: "EUR",
     });
 
-    return transactions.map((tx) => {
+    return visibleTransactions.map((tx) => {
       // `wallet_id` / `category_id` sono i nomi delle colonne che l'API restituisce: il
       // vecchio fallback a `walletid` / `category` era difesa per una forma di risposta
       // che il server non produce (stessa storia di `Category.type`). Nessun parsing
@@ -113,7 +137,7 @@ export function MovementsList({
         ),
       } as Record<string, unknown>;
     });
-  }, [transactions, wallets, categories]);
+  }, [visibleTransactions, wallets, categories]);
 
   return (
     <main className="app-page">
@@ -124,6 +148,19 @@ export function MovementsList({
           <p className="page-description">{description}</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Select value={walletFilter} onValueChange={setWalletFilter}>
+            <SelectTrigger className="w-full sm:w-44" aria-label="Filter by wallet">
+              <SelectValue placeholder="All wallets" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_WALLETS}>All wallets</SelectItem>
+              {wallets.map((wallet) => (
+                <SelectItem key={wallet.id} value={String(wallet.id)}>
+                  {wallet.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
           <NewTransaction onSuccess={() => onRefetch()} />
         </div>
@@ -150,7 +187,7 @@ export function MovementsList({
         <div className="overflow-x-auto rounded-xl border border-border/70 bg-card shadow-sm">
           <DynamicTable
             data={rows}
-            caption={`${captionPrefix} transactions shown from ${dateRange?.from?.toDateString()} to ${dateRange?.to?.toDateString()}`}
+            caption={`${captionPrefix} transactions${selectedWalletName ? ` in ${selectedWalletName}` : ""} shown from ${dateRange?.from?.toDateString()} to ${dateRange?.to?.toDateString()}`}
             isLoading={isLoading}
             renderActions={(row) => (
               <div className="flex justify-end gap-2">
