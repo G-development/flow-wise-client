@@ -8,7 +8,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import { Bot, Send, Sparkles, Calendar, RotateCcw } from "lucide-react";
+import { Bot, Send, Sparkles, Calendar, RotateCcw, ShieldAlert } from "lucide-react";
 import Navbar from "@/components/navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -281,6 +281,39 @@ export default function AiBetaPage() {
             </Button>
           )}
         </div>
+
+        {/* Informativa sui dati inviati al provider AI (vedi summarizeExpensesForAI nel server) */}
+        <details className="mb-4 rounded-xl border border-border/70 bg-muted/20 px-4 py-2.5 text-xs text-muted-foreground">
+          <summary className="flex cursor-pointer items-center gap-1.5 font-medium text-foreground">
+            <ShieldAlert className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+            Come vengono usati i tuoi dati
+          </summary>
+          <div className="mt-2 space-y-2 leading-relaxed">
+            <p>
+              Per rispondere, Flow-Wise invia a <strong>Groq</strong>, un servizio di intelligenza
+              artificiale esterno, un riepilogo delle sole <strong>spese</strong> del periodo scelto:
+            </p>
+            <ul className="list-disc space-y-0.5 pl-5">
+              <li>la tua domanda e le date del periodo;</li>
+              <li>totale, numero e media delle spese;</li>
+              <li>i totali per categoria e per mese;</li>
+              <li>
+                le 10 spese più alte, con data, importo, categoria e i primi 120 caratteri della
+                descrizione.
+              </li>
+            </ul>
+            <p>
+              Le descrizioni dei movimenti bancari possono contenere nomi di negozi o di persone e
+              codici IBAN. Non vengono inviati il tuo nome, la tua email, le entrate, i saldi o i nomi
+              dei wallet.
+            </p>
+            <p>
+              Ogni domanda è una richiesta a sé: Flow-Wise non salva la conversazione. Il trattamento
+              dei dati da parte di Groq segue le sue condizioni di servizio. Se non vuoi inviare questi
+              dati, non usare questa pagina.
+            </p>
+          </div>
+        </details>
 
         {/* Chat Container a dimensione fissa contenuta */}
         <section
