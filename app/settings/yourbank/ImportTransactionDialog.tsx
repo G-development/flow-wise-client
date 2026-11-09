@@ -158,9 +158,13 @@ export default function ImportTransactionDialog({
         );
         const isCreatedOther =
           createdOtherCategoryIdByType[getBankTransactionType(transaction.amount)] === selectedCategoryId;
+        // "Trasferimento" (tipo T) va bene per entrambi i segni: il server importa il
+        // movimento come trasferimento da assegnare (utils/bankService.js).
         return (
           (!selectedCategory && !isCreatedOther) ||
-          (selectedCategory && selectedCategory.type !== getBankTransactionType(transaction.amount))
+          (selectedCategory &&
+            selectedCategory.type !== "T" &&
+            selectedCategory.type !== getBankTransactionType(transaction.amount))
         );
       }),
     [categories, categoryIdByTxnId, createdOtherCategoryIdByType, transactions]
@@ -397,7 +401,7 @@ export default function ImportTransactionDialog({
                       const suggestion = suggestions[transaction.id];
                       const selectedCategoryId = categoryIdByTxnId[transaction.id] || "";
                       const categoryOptions = [
-                        ...categories.filter((category) => category.type === type),
+                        ...categories.filter((category) => category.type === type || category.type === "T"),
                         ...createdOtherCategories.filter(
                           (category) =>
                             category.type === type &&

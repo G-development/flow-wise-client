@@ -5,7 +5,7 @@
 Indice file-per-file generato dal codice, non dalla documentazione. Serve a sapere **dove** sta una
 cosa senza leggere il repo: architettura e regole locali stanno altrove (vedi `AGENTS.md`).
 
-Forma `next`, radice sorgente `.`, commit `a22bf51`.
+Forma `next`, radice sorgente `.`, commit `28c800b`.
 
 ```bash
 node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/flow-wise-client \
@@ -49,6 +49,7 @@ Layout: `app/layout.tsx`
 
 *.claude/*
 - `.claude/settings.json` — dati
+- `.claude/settings.local.json` — dati
 
 ## .githooks/
 
