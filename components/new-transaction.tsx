@@ -200,7 +200,9 @@ export default function NewTransaction({ onSuccess, trigger, defaultType = "E" }
         <div className="flex-1 overflow-y-auto space-y-6 mt-2 pr-1 sm:pr-2 overscroll-contain">
           <div className="grid gap-3">
             <Label className="text-sm font-medium">Details</Label>
-            <div className="grid gap-3 sm:grid-cols-2">
+            {/* Descrizione e tipo su due righe: con tre tipi la mezza riga non bastava
+                e le etichette dei pulsanti venivano tagliate. */}
+            <div className="grid gap-3">
               <Input
                 placeholder="Description"
                 value={formData.description}
@@ -208,7 +210,9 @@ export default function NewTransaction({ onSuccess, trigger, defaultType = "E" }
                   setFormData({ ...formData, description: e.target.value })
                 }
               />
-              <div className="flex gap-2 rounded-md border p-2 text-sm">
+              {/* Griglia e `min-w-0` sui pulsanti: in flex i tre pulsanti non si restringono
+                  e "Transfer" usciva dal riquadro nelle colonne strette. */}
+              <div className="grid grid-cols-3 gap-2 rounded-md border p-2 text-sm">
                 {TYPE_OPTIONS.map(({ value, label, Icon }) => {
                   const isActive = formData.type === value;
                   return (
@@ -216,14 +220,15 @@ export default function NewTransaction({ onSuccess, trigger, defaultType = "E" }
                       key={value}
                       type="button"
                       variant={isActive ? "default" : "outline"}
-                      className="flex-1 justify-center px-2"
+                      className="min-w-0 justify-center px-2"
                       onClick={() =>
                         // Cambiando tipo la categoria scelta non vale piu': e' filtrata per tipo.
                         setFormData({ ...formData, type: value, category_id: null })
                       }
                     >
-                      <Icon className="mr-1.5 h-4 w-4 shrink-0" />
-                      {label}
+                      {/* Sotto i 640px l'icona toglie lo spazio alla parola: resta solo il testo. */}
+                      <Icon className="mr-1.5 hidden h-4 w-4 shrink-0 sm:inline-block" />
+                      <span className="truncate">{label}</span>
                     </Button>
                   );
                 })}

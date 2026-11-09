@@ -226,7 +226,8 @@ export default function Navbar() {
 
       {/* Mobile Bottom Navigation */}
       <nav aria-label="Mobile navigation" className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_-18px_rgba(15,23,42,0.35)] backdrop-blur-xl lg:hidden">
-        <div className="mx-auto grid max-w-lg grid-cols-4 gap-1 py-1.5">
+        {/* Una colonna per ogni voce di `navLinks` più Wallet: se cambiano le voci, cambia il numero. */}
+        <div className="mx-auto grid max-w-lg grid-cols-5 gap-1 py-1.5">
           {navLinks.map(({ href, icon: Icon, label }) => (
             <Link
               key={href}
