@@ -27,6 +27,11 @@ export default function Categories() {
     useCategories();
   // Il server risponde con l'envelope di lista: le righe stanno in `rows`.
   const categories = categoryList.rows;
+  // La categoria "T" e' quella di sistema dei trasferimenti (server, migrazione 011):
+  // il server rifiuta di eliminarla, disattivarla o cambiarle tipo, quindi qui non ha azioni.
+  const systemCategoryIds = new Set(
+    categories.filter((c) => c.type === "T").map((c) => String(c.id))
+  );
   const updateCategory = useUpdateCategory();
   const deleteCategory = useDeleteCategory();
 
@@ -150,10 +155,13 @@ export default function Categories() {
             <DynamicTable
               data={categories.map((c) => {
                 const isIncome = c.type === "I";
-                const label = isIncome ? "Income" : "Expense";
-                const badgeClass = isIncome
-                  ? "border-0 bg-success/10 text-success hover:bg-success/15"
-                  : "border-0 bg-destructive/10 text-destructive hover:bg-destructive/15";
+                const isTransfer = c.type === "T";
+                const label = isTransfer ? "Transfer" : isIncome ? "Income" : "Expense";
+                const badgeClass = isTransfer
+                  ? "border-0 bg-muted text-foreground hover:bg-muted"
+                  : isIncome
+                    ? "border-0 bg-success/10 text-success hover:bg-success/15"
+                    : "border-0 bg-destructive/10 text-destructive hover:bg-destructive/15";
 
                 return {
                   // Id presente nei dati ma nascosto: serve alle azioni, non all'utente
@@ -163,6 +171,7 @@ export default function Categories() {
                   Active: (
                     <Switch
                       checked={c.active}
+                      disabled={isTransfer}
                       onCheckedChange={() => toggleActive(c)}
                     />
                   ),
@@ -170,7 +179,11 @@ export default function Categories() {
               })}
               hiddenColumns={["Id"]}
               caption={`Hai ${categories.length} categor${categories.length === 1 ? "ia" : "ie"}.`}
-              renderActions={(row) => (
+              renderActions={(row) => systemCategoryIds.has(String(row.Id)) ? (
+                <span className="block text-right text-xs text-muted-foreground">
+                  Gestita dall&apos;app
+                </span>
+              ) : (
                 <div className="flex justify-end gap-2">
                   <Button
                     size="icon"

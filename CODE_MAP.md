@@ -5,7 +5,7 @@
 Indice file-per-file generato dal codice, non dalla documentazione. Serve a sapere **dove** sta una
 cosa senza leggere il repo: architettura e regole locali stanno altrove (vedi `AGENTS.md`).
 
-Forma `next`, radice sorgente `.`, commit `de41f49`.
+Forma `next`, radice sorgente `.`, commit `a22bf51`.
 
 ```bash
 node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/flow-wise-client \
@@ -32,6 +32,7 @@ node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/f
 | `/settings` | `app/settings/page.tsx` | `Settings` |
 | `/settings/yourbank` | `app/settings/yourbank/page.tsx` | `YourBankWithSuspense` |
 | `/terms` | `app/terms/page.tsx` | `TermsPage` |
+| `/transfers` | `app/transfers/page.tsx` | `Transfers` |
 | `/wallets` | `app/wallets/page.tsx` | `Wallets` |
 
 Layout: `app/layout.tsx`
@@ -133,12 +134,14 @@ Layout: `app/layout.tsx`
 - `lib/listResponse.test.ts`
 - `lib/listResponse.ts` — exports: const `EMPTY_LIST_RESPONSE`; type `ListResponse`; fn `parseListResponse`
 - `lib/supabaseClient.ts` — exports: const `supabase`
+- `lib/transfer.test.ts`
+- `lib/transfer.ts` — exports: fn `assignTransferSide`, `findTransferCategory`, `isPendingTransfer`, `isTransfer`, `missingTransferSide`
 - `lib/utils.ts` — exports: fn `cn`
 
 ## lib/hooks/
 
 *lib/hooks/*
-- `lib/hooks/useQueries.ts` — exports: type `BankConnectionSummary`, `Category`, `Transaction`, `Wallet`, `WalletCreateInput`, `WalletUpdateInput`; const `queryKeys`; fn `useActiveCategories`, `useBankConnections`, `useBankInstitutions`, `useCategories`, `useCreateCategory`, `useCreateTransaction`, `useCreateWallet`, `useDashboardLayout`, `useDeleteCategory`, `useDeleteTransaction`, `useDeleteWallet`, `useExpenses`, `useImportCsv`, `useIncomes`, `useSaveDashboardLayout`, `useUpdateCategory`, `useUpdateTransaction`, `useUpdateWallet`, `useWallets`
+- `lib/hooks/useQueries.ts` — exports: type `BankConnectionSummary`, `Category`, `Transaction`, `Wallet`, `WalletCreateInput`, `WalletUpdateInput`; const `queryKeys`; fn `useActiveCategories`, `useBankConnections`, `useBankInstitutions`, `useCategories`, `useCreateCategory`, `useCreateTransaction`, `useCreateWallet`, `useDashboardLayout`, `useDeleteCategory`, `useDeleteTransaction`, `useDeleteWallet`, `useExpenses`, `useImportCsv`, `useIncomes`, `useSaveDashboardLayout`, `useTransfers`, `useUpdateCategory`, `useUpdateTransaction`, `useUpdateWallet`, `useWallets`
 
 ## lib/providers/
 

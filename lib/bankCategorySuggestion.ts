@@ -1,7 +1,8 @@
 interface Category {
   id: string | number;
   name: string;
-  type: "I" | "E";
+  /** "T" e' la categoria di sistema dei trasferimenti: non combacia mai con un tipo I/E. */
+  type: "I" | "E" | "T";
   active: boolean;
 }
 

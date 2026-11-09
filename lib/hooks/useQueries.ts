@@ -51,8 +51,12 @@ export interface Transaction extends Record<string, unknown> {
   description: string;
   note?: string | null;
   date: string;
-  type: "I" | "E";
-  wallet_id: number;
+  /** "I" entrata, "E" spesa, "T" trasferimento (migrazione 011 del server) */
+  type: "I" | "E" | "T";
+  /** Wallet della transazione; per una "T" e' l'origine. Null solo per una "T" da assegnare. */
+  wallet_id: number | null;
+  /** Solo per una "T": la destinazione. Null = lato da assegnare. */
+  to_wallet_id?: number | null;
   category_id: number;
   created_at?: string;
   updated_at?: string;
@@ -118,8 +122,11 @@ export interface Category extends Record<string, unknown> {
   id: string;
   userid: string;
   name: string;
-  /** Il database usa "I" / "E"; questo tipo seguiva "income" | "expense" e non corrispondeva. */
-  type: "I" | "E";
+  /**
+   * Il database usa "I" / "E" / "T". La sola categoria "T" e' quella di sistema
+   * "Trasferimento": si rinomina e basta (server, `routes/category.js`).
+   */
+  type: "I" | "E" | "T";
   active: boolean;
   created_at?: string;
   updated_at?: string;
@@ -417,6 +424,28 @@ export function useDeleteCategory() {
     },
     onError: (error) => {
       toast.error(error.message);
+    },
+  });
+}
+
+// Transfers
+/**
+ * Trasferimenti ("T") dell'utente, completi e da assegnare.
+ *
+ * Il server non filtra `/transaction/all` per tipo, quindi il filtro e' qui. La chiave
+ * sta sotto `transactions`: ogni scrittura su una transazione la invalida
+ * (`invalidateTransactionData`). `truncated` resta quello della lista intera: se il
+ * server ha tagliato le transazioni, anche i trasferimenti possono essere incompleti.
+ */
+export function useTransfers() {
+  return useQuery({
+    queryKey: [...queryKeys.transactions.all, "transfers"] as const,
+    queryFn: async () => {
+      const res = await apiFetch("/transaction/all");
+      if (!res.ok) throw new Error("Failed to fetch transfers");
+      const list = parseListResponse<Transaction>(await res.json());
+      const rows = list.rows.filter((transaction) => transaction.type === "T");
+      return { ...list, rows };
     },
   });
 }

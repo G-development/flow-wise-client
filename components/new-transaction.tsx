@@ -26,24 +26,36 @@ import { toast } from "sonner";
 import { useWallets, useActiveCategories, useCreateTransaction } from "@/lib/hooks/useQueries";
 import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
 import { checkAmountInput } from "@/lib/amountInput";
-import { X, TrendingUp, TrendingDown, Calendar, Wallet as WalletIcon, Tag } from "lucide-react";
+import { findTransferCategory } from "@/lib/transfer";
+import { X, TrendingUp, TrendingDown, ArrowLeftRight, Calendar, Wallet as WalletIcon, Tag } from "lucide-react";
 
 type FormData = {
   description: string;
   note: string;
   amount: number | "";
-  type: "I" | "E";
+  type: "I" | "E" | "T";
+  /** Per un trasferimento ("T") e' il wallet di origine. */
   wallet_id: number | null;
+  /** Solo per un trasferimento: il wallet di destinazione. */
+  to_wallet_id: number | null;
   category_id: number | null;
   date?: string | null;
 };
 
+const TYPE_OPTIONS = [
+  { value: "I", label: "Income", Icon: TrendingUp },
+  { value: "E", label: "Expense", Icon: TrendingDown },
+  { value: "T", label: "Transfer", Icon: ArrowLeftRight },
+] as const;
+
 type NewTransactionProps = {
   onSuccess?: () => void;
   trigger?: ReactNode;
+  /** Tipo con cui si apre il pannello (default: spesa). */
+  defaultType?: FormData["type"];
 };
 
-export default function NewTransaction({ onSuccess, trigger }: NewTransactionProps) {
+export default function NewTransaction({ onSuccess, trigger, defaultType = "E" }: NewTransactionProps) {
   const [open, setOpen] = useState(false);
   const { data: wallets = [] } = useWallets();
   const {
@@ -58,8 +70,9 @@ export default function NewTransaction({ onSuccess, trigger }: NewTransactionPro
     description: "",
     note: "",
     amount: "",
-    type: "E",
+    type: defaultType,
     wallet_id: null,
+    to_wallet_id: null,
     category_id: null,
     date: null,
   });
@@ -88,10 +101,27 @@ export default function NewTransaction({ onSuccess, trigger }: NewTransactionPro
   }, [open, defaultWallet, today]);
 
   const filteredCategories = categories.filter((cat) => cat.type === formData.type);
+  const isTransferForm = formData.type === "T";
+  // Un trasferimento usa sempre la categoria di sistema "Trasferimento" (server,
+  // migrazione 011): non si sceglie, quindi al posto delle categorie c'e' il wallet "To".
+  const transferCategory = findTransferCategory(categories);
 
 
   const handleSubmit = async () => {
-    if (!formData.amount || !formData.wallet_id || !formData.category_id) {
+    if (isTransferForm) {
+      if (!formData.amount || !formData.wallet_id || !formData.to_wallet_id) {
+        toast.error("Please fill amount, from and to");
+        return;
+      }
+      if (formData.wallet_id === formData.to_wallet_id) {
+        toast.error("From and to must be different wallets");
+        return;
+      }
+      if (!transferCategory) {
+        toast.error("Transfer category not found: the database migration may be missing");
+        return;
+      }
+    } else if (!formData.amount || !formData.wallet_id || !formData.category_id) {
       toast.error("Please fill all required fields");
       return;
     }
@@ -105,23 +135,37 @@ export default function NewTransaction({ onSuccess, trigger }: NewTransactionPro
       return;
     }
 
-    createTransaction.mutate({
-      description: formData.description,
-      note: formData.note,
-      amount: check.amount,
-      type: formData.type,
-      wallet_id: formData.wallet_id,
-      category_id: formData.category_id,
-      date: formData.date || undefined,
-    }, {
+    const payload = isTransferForm
+      ? {
+          description: formData.description || "Trasferimento",
+          note: formData.note,
+          amount: check.amount,
+          type: "T" as const,
+          wallet_id: formData.wallet_id,
+          to_wallet_id: formData.to_wallet_id,
+          category_id: Number(transferCategory!.id),
+          date: formData.date || undefined,
+        }
+      : {
+          description: formData.description,
+          note: formData.note,
+          amount: check.amount,
+          type: formData.type,
+          wallet_id: formData.wallet_id,
+          category_id: formData.category_id!,
+          date: formData.date || undefined,
+        };
+
+    createTransaction.mutate(payload, {
       onSuccess: () => {
         onSuccess?.();
         setFormData({
           description: "",
           note: "",
           amount: "",
-          type: "E",
+          type: defaultType,
           wallet_id: null,
+          to_wallet_id: null,
           category_id: null,
           date: null,
         });
@@ -139,7 +183,7 @@ export default function NewTransaction({ onSuccess, trigger }: NewTransactionPro
         <DrawerHeader className="px-0 relative">
           <DrawerTitle className="text-lg sm:text-xl">Add transaction</DrawerTitle>
           <DrawerDescription className="text-sm text-muted-foreground">
-            Capture income or expense with wallet, category, and date.
+            Capture income, expense or a transfer between wallets.
           </DrawerDescription>
           <DrawerClose asChild>
             <Button
@@ -165,19 +209,21 @@ export default function NewTransaction({ onSuccess, trigger }: NewTransactionPro
                 }
               />
               <div className="flex gap-2 rounded-md border p-2 text-sm">
-                {(["I", "E"] as const).map((value) => {
+                {TYPE_OPTIONS.map(({ value, label, Icon }) => {
                   const isActive = formData.type === value;
-                  const Icon = value === "I" ? TrendingUp : TrendingDown;
                   return (
                     <Button
                       key={value}
                       type="button"
                       variant={isActive ? "default" : "outline"}
-                      className="flex-1 justify-center"
-                      onClick={() => setFormData({ ...formData, type: value })}
+                      className="flex-1 justify-center px-2"
+                      onClick={() =>
+                        // Cambiando tipo la categoria scelta non vale piu': e' filtrata per tipo.
+                        setFormData({ ...formData, type: value, category_id: null })
+                      }
                     >
-                      <Icon className="mr-2 h-4 w-4" />
-                      {value === "I" ? "Income" : "Expense"}
+                      <Icon className="mr-1.5 h-4 w-4 shrink-0" />
+                      {label}
                     </Button>
                   );
                 })}
@@ -227,7 +273,7 @@ export default function NewTransaction({ onSuccess, trigger }: NewTransactionPro
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2 min-w-0">
               <Label className="text-sm font-medium flex items-center gap-2">
-                <WalletIcon className="h-4 w-4" /> Wallet
+                <WalletIcon className="h-4 w-4" /> {isTransferForm ? "From" : "Wallet"}
               </Label>
               <Select
                 value={formData.wallet_id?.toString() ?? undefined}
@@ -248,39 +294,66 @@ export default function NewTransaction({ onSuccess, trigger }: NewTransactionPro
               </Select>
             </div>
 
-            <div className="grid gap-2 min-w-0">
-              <Label className="text-sm font-medium flex items-center gap-2">
-                <Tag className="h-4 w-4" /> Category
-              </Label>
-              <Select
-                value={formData.category_id?.toString() ?? undefined}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, category_id: parseInt(value) })
-                }
-                disabled={categoriesLoading}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={categoriesLoading ? "Loading..." : "Select category"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {categoriesLoading && (
-                    <SelectItem value="loading" disabled>
-                      Loading categories...
-                    </SelectItem>
-                  )}
-                  {!categoriesLoading && filteredCategories.length === 0 && (
-                    <SelectItem value="empty" disabled>
-                      No categories available
-                    </SelectItem>
-                  )}
-                  {!categoriesLoading && filteredCategories.map((c) => (
-                    <SelectItem key={c.id} value={c.id.toString()}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {isTransferForm ? (
+              <div className="grid gap-2 min-w-0">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <WalletIcon className="h-4 w-4" /> To
+                </Label>
+                <Select
+                  value={formData.to_wallet_id?.toString() ?? undefined}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, to_wallet_id: parseInt(value) })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select wallet" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {wallets
+                      .filter((w) => Number(w.id) !== formData.wallet_id)
+                      .map((w) => (
+                        <SelectItem key={w.id} value={w.id.toString()}>
+                          {w.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div className="grid gap-2 min-w-0">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <Tag className="h-4 w-4" /> Category
+                </Label>
+                <Select
+                  value={formData.category_id?.toString() ?? undefined}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, category_id: parseInt(value) })
+                  }
+                  disabled={categoriesLoading}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={categoriesLoading ? "Loading..." : "Select category"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categoriesLoading && (
+                      <SelectItem value="loading" disabled>
+                        Loading categories...
+                      </SelectItem>
+                    )}
+                    {!categoriesLoading && filteredCategories.length === 0 && (
+                      <SelectItem value="empty" disabled>
+                        No categories available
+                      </SelectItem>
+                    )}
+                    {!categoriesLoading && filteredCategories.map((c) => (
+                      <SelectItem key={c.id} value={c.id.toString()}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
         </div>
 

@@ -24,6 +24,12 @@ test("absoluteAmount ignora il segno e normalizza a 0 i valori non numerici", ()
   assert.equal(absoluteAmount("non-un-numero"), 0);
 });
 
+test("signedAmount rifiuta ogni tipo che non sia I o E (T compreso)", () => {
+  // Prima tutto cio' che non era "I" diventava una spesa; una "T" non ha un segno unico.
+  assert.throws(() => signedAmount(50, "T"), /non è un'entrata né una spesa/);
+  assert.throws(() => signedAmount(50, undefined), /non è un'entrata né una spesa/);
+});
+
 test("signedAmount usa type come unica fonte del segno", () => {
   assert.equal(signedAmount(50, "I"), 50);
   assert.equal(signedAmount(50, "E"), -50);

@@ -35,7 +35,8 @@ Se una regola vale per entrambi i repo, sta nella skill; qui solo ciò che è lo
   `lib/listResponse.ts` (`parseListResponse`, `EMPTY_LIST_RESPONSE`), non a mano.
 - Le chiamate HTTP passano da `lib/api.ts` (`apiFetch`, `buildQuery`, `getAuthToken`).
 - Importi: `amount` è **sempre >= 0** e il segno lo decide `type` (`"I"` / `"E"`). Le funzioni stanno in
-  `lib/amount.ts`; la validazione dell'input in `lib/amountInput.ts`.
+  `lib/amount.ts`; la validazione dell'input in `lib/amountInput.ts`. Un trasferimento (`"T"`) sposta
+  `amount` da `wallet_id` a `to_wallet_id` e non è né entrata né spesa: helper in `lib/transfer.ts`.
 - `components/ui/*` è shadcn/ui generato: si tocca solo per scelta esplicita, non per rifiniture di
   passaggio.
 

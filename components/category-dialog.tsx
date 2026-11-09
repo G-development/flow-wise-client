@@ -53,7 +53,9 @@ export default function CategoryDialog({
       const category = categories.find(
         (c) => String(c.id) === String(categoryId)
       );
-      if (category) {
+      // La categoria "T" (Trasferimento) e' di sistema: la pagina non apre questo
+      // dialogo per lei, e il dialogo sa scrivere solo categorie I/E.
+      if (category && category.type !== "T") {
         setFormData({
           name: category.name,
           type: category.type,

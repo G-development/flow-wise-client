@@ -12,6 +12,7 @@ import {
   ChartNoAxesCombined,
   Plus,
   Minus,
+  ArrowLeftRight,
   User,
   Upload,
   Banknote,
@@ -42,6 +43,7 @@ const navLinks: NavLink[] = [
   { href: '/dashboard', icon: ChartNoAxesCombined, label: 'Dashboard' },
   { href: '/incomes', icon: Plus, label: 'Incomes' },
   { href: '/expenses', icon: Minus, label: 'Expenses' },
+  { href: '/transfers', icon: ArrowLeftRight, label: 'Transfers' },
 ];
 
 const mainLinks: NavLink[] = [

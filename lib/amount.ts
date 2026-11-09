@@ -1,8 +1,9 @@
 /**
  * Convenzione sugli importi di `Transaction`, lato client.
  *
- * `amount` è **sempre un valore assoluto** (>= 0) e `type` ("I" | "E") è
- * l'**unica** fonte del segno. Il segno non va mai letto dal numero: un
+ * `amount` è **sempre un valore assoluto** (>= 0) e `type` ("I" | "E" | "T") è
+ * l'**unica** fonte del segno. Un trasferimento "T" sposta `amount` da
+ * `wallet_id` a `to_wallet_id` e non è né entrata né spesa (`lib/transfer.ts`). Il segno non va mai letto dal numero: un
  * `amount` negativo non è "un'uscita", è un dato non normalizzato arrivato da un
  * import.
  *
@@ -24,13 +25,22 @@ export function absoluteAmount(amount: unknown): number {
   return Number.isFinite(value) ? Math.abs(value) : 0;
 }
 
-/** Valore firmato della transazione: positivo per "I", negativo per "E". */
+/**
+ * Valore firmato della transazione: positivo per "I", negativo per "E".
+ *
+ * Vale solo per entrate e spese. Un trasferimento ("T") non ha un segno unico
+ * (toglie dall'origine e aggiunge alla destinazione) e ogni altro tipo è un
+ * errore: prima tutto ciò che non era "I" veniva contato come spesa. Stessa
+ * regola di `signedAmountCents` nel server.
+ */
 export function signedAmount(
   amount: unknown,
   type: string | null | undefined
 ): number {
   const magnitude = absoluteAmount(amount);
-  return type === "I" ? magnitude : -magnitude;
+  if (type === "I") return magnitude;
+  if (type === "E") return -magnitude;
+  throw new Error(`signedAmount: tipo ${JSON.stringify(type)} non è un'entrata né una spesa`);
 }
 
 /**

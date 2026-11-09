@@ -51,7 +51,14 @@ crea il wallet con `balance: 0` e apertura `0`.
 Il backend espone l'elenco completo su `GET /transaction/all` e
 `GET /transaction/:id` per una singola transazione; `GET /transaction` non è
 una route lista. Le pagine principali del client usano gli endpoint separati
-`/income/all` e `/expense/all`.
+`/income/all` e `/expense/all`, che non restituiscono i trasferimenti (`type` `"T"`).
+La pagina `/transfers` legge `GET /transaction/all` e filtra le `"T"` lato client
+(`useTransfers`): il server non filtra quella lista per tipo.
+
+Un trasferimento si crea con `POST /transaction` (`type: "T"`, `wallet_id` origine,
+`to_wallet_id` destinazione, `category_id` della categoria di sistema
+"Trasferimento") e si completa, quando un lato è "da assegnare", con
+`PUT /transaction/:id` e la transazione intera (`assignTransferSide` in `lib/transfer.ts`).
 
 Gli endpoint di lista rispondono con un **envelope**, non più con un array nudo:
 `{ data, count, truncated, total }` — `GET /bank/transactions` mantiene la chiave
