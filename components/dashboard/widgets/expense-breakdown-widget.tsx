@@ -106,6 +106,10 @@ export function ExpenseBreakdownWidget({
     return config;
   }, [chartData]);
 
+  // Barre (mobile): stesse categorie e colori della torta, dalla piu' alta; la piu' alta riempie la riga.
+  const barData = useMemo(() => [...chartData].sort((a, b) => b.value - a.value), [chartData]);
+  const maxValue = barData[0]?.value ?? 0;
+
   const totalExpenses = useMemo(() => {
     return chartData.reduce((sum, item) => sum + item.value, 0);
   }, [chartData]);
@@ -133,6 +137,26 @@ export function ExpenseBreakdownWidget({
           </div>
         ) : (
           <div className="w-full space-y-3">
+            {/* Mobile (stessa soglia di dashboard-grid, 768 px): barre orizzontali dalla categoria piu'
+                alta, piu' leggibili della torta su uno schermo stretto (U6, deciso da Gio il 10/11). */}
+            <ul className="space-y-2.5 md:hidden" aria-label="Spese per categoria">
+              {barData.map((item) => (
+                <li key={item.category} className="text-xs">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="min-w-0 truncate">{item.category}</span>
+                    <span className="shrink-0 font-semibold tabular-nums">{formatCurrency.format(item.value)}</span>
+                  </div>
+                  <div className="mt-1 h-2 rounded-full bg-muted">
+                    <div
+                      className="h-2 rounded-full"
+                      style={{ width: `${maxValue > 0 ? Math.max(2, (item.value / maxValue) * 100) : 0}%`, backgroundColor: item.fill }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <div className="hidden space-y-3 md:block">
             {/* Pie Chart */}
             <ChartContainer config={chartConfig} className="w-full aspect-square max-h-[200px] shrink-0">
               <PieChart>
@@ -184,6 +208,7 @@ export function ExpenseBreakdownWidget({
                 ))}
               </div>
             </ScrollArea>
+            </div>
 
             {/* Total */}
             <div className="pt-2 border-t flex items-center justify-between">
