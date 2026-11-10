@@ -1,5 +1,6 @@
 "use client";
 import React, { ReactNode, useEffect } from "react";
+import { CapWarning } from "@/components/movements/cap-warning";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -373,6 +374,9 @@ export default function NewTransaction({
                       ))}
                   </SelectContent>
                 </Select>
+                {!transaction && (
+                  <CapWarning wallets={wallets} toWalletId={formData.to_wallet_id} amountEuro={Number(String(formData.amount).replace(",", "."))} />
+                )}
               </div>
             ) : (
               <div className="grid gap-2 min-w-0">

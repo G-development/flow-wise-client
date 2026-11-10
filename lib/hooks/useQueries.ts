@@ -102,6 +102,10 @@ export interface Wallet extends Record<string, unknown> {
   kind?: "account" | "pot";
   /** Solo per un salvadanaio: il conto a cui appartiene. */
   parent_wallet_id?: number | null;
+  /** Tetto fisso in centesimi (migrazione 013). */
+  cap_cents?: number | null;
+  /** Tetto calcolato dal piano annuale (somma delle rate dei prossimi 12 mesi). */
+  cap_from_plan?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -123,6 +127,8 @@ export type WalletUpdateInput = {
   name?: string;
   is_default?: boolean;
   opening_balance_cents?: number;
+  cap_cents?: number | null;
+  cap_from_plan?: boolean;
 };
 
 export interface Category extends Record<string, unknown> {

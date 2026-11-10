@@ -5,7 +5,7 @@
 Indice file-per-file generato dal codice, non dalla documentazione. Serve a sapere **dove** sta una
 cosa senza leggere il repo: architettura e regole locali stanno altrove (vedi `AGENTS.md`).
 
-Forma `next`, radice sorgente `.`, commit `d774c13`.
+Forma `next`, radice sorgente `.`, commit `47f78f1`.
 
 ```bash
 node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/flow-wise-client \
@@ -17,6 +17,7 @@ node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/f
 | URL | File | Componente |
 | --- | --- | --- |
 | `/ai-beta` | `app/ai-beta/page.tsx` | `AiBetaPage` |
+| `/annual-plan` | `app/annual-plan/page.tsx` | `AnnualPlanPage` |
 | `/budgets` | `app/budgets/page.tsx` | `Budgets` |
 | `/category` | `app/category/page.tsx` | `Categories` |
 | `/dashboard` | `app/dashboard/page.tsx` | `Dashboard` |
@@ -87,6 +88,7 @@ Layout: `app/layout.tsx`
 ## components/movements/
 
 *components/movements/*
+- `components/movements/cap-warning.tsx` — exports: fn `CapWarning`
 - `components/movements/pending-transfers.tsx` — exports: fn `PendingTransfers`
 - `components/movements/wallet-cards.tsx` — exports: fn `parseAmountToCents`, `WalletCards`; type `WalletCardInfo`
 
@@ -137,14 +139,17 @@ Layout: `app/layout.tsx`
 - `lib/listResponse.ts` — exports: const `EMPTY_LIST_RESPONSE`; type `ListResponse`; fn `parseListResponse`
 - `lib/movements.test.ts`
 - `lib/movements.ts` — exports: const `DEFAULT_FILTERS`, `MOVEMENT_TYPES`; fn `filterMovements`, `movementDirection`, `movementTotals`, `parseMovementFilters`, `serializeMovementFilters`, `touchesWallet`, `walletPeriodTotals`; type `MovementFilters`, `MovementTotals`, `MovementType`
+- `lib/potCap.test.ts`
+- `lib/potCap.ts` — exports: fn `effectiveCapCents`, `overCapCents`
 - `lib/supabaseClient.ts` — exports: const `supabase`
 - `lib/transfer.test.ts`
-- `lib/transfer.ts` — exports: fn `assignTransferSide`, `findTransferCategory`, `isPendingTransfer`, `isTransfer`, `missingTransferSide`
+- `lib/transfer.ts` — exports: fn `assignTransferSide`, `findTransferCategory`, `incomeExpenseTypeOf`, `isPendingTransfer`, `isTransfer`, `missingTransferSide`, `transferAsIncomeExpense`
 - `lib/utils.ts` — exports: fn `cn`
 
 ## lib/hooks/
 
 *lib/hooks/*
+- `lib/hooks/useAnnualPlan.ts` — exports: type `AnnualInstallment`, `AnnualItem`, `AnnualPlan`, `AnnualPlanResponse`; fn `useAddInstallment`, `useAnnualPlan`, `useAnnualPlans`, `useCopyNextYear`, `useCreateAnnualItem`, `useDeleteAnnualItem`, `useDeleteInstallment`, `usePotCaps`, `useSetInstallmentPayment`, `useUpdateAnnualItem`, `useUpdateInstallment`
 - `lib/hooks/useQueries.ts` — exports: type `BankConnectionSummary`, `Category`, `Transaction`, `Wallet`, `WalletCreateInput`, `WalletUpdateInput`; const `queryKeys`; fn `useActiveCategories`, `useBankConnections`, `useBankInstitutions`, `useCategories`, `useCreateCategory`, `useCreateTransaction`, `useCreateWallet`, `useDashboardLayout`, `useDeleteCategory`, `useDeleteTransaction`, `useDeleteWallet`, `useExpenses`, `useImportCsv`, `useIncomes`, `useMovements`, `useSaveDashboardLayout`, `useTransfers`, `useUpdateCategory`, `useUpdateTransaction`, `useUpdateWallet`, `useWallets`
 
 ## lib/providers/

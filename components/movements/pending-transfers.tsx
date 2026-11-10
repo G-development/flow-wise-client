@@ -12,6 +12,7 @@ import {
 import { useActiveCategories, useUpdateTransaction, type Transaction, type Wallet } from "@/lib/hooks/useQueries";
 import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
 import { absoluteAmount } from "@/lib/amount";
+import { CapWarning } from "@/components/movements/cap-warning";
 import {
   assignTransferSide,
   incomeExpenseTypeOf,
@@ -180,8 +181,10 @@ export function PendingTransfers({
                     >
                       Assign
                     </Button>
-              
                   </div>
+                  {side === "to" && choice[transfer.id] && (
+                    <CapWarning wallets={wallets} toWalletId={Number(choice[transfer.id])} amountEuro={absoluteAmount(transfer.amount)} />
+                  )}
                   <Button
                     variant="link"
                     size="sm"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ import {
   useUpdateWallet,
   type Wallet,
 } from "@/lib/hooks/useQueries";
+import { usePotCaps } from "@/lib/hooks/useAnnualPlan";
 import { MoreVertical, PiggyBank, Plus, Wallet as WalletIcon } from "lucide-react";
 
 /** Conti massimi per utente: il limite lo impone il database (migrazioni 004 e 012; i salvadanai non contano). */
@@ -77,8 +79,10 @@ export function WalletCards({
   const [creating, setCreating] = useState(false);
   const [creatingPotFor, setCreatingPotFor] = useState<Wallet | null>(null);
   const [deleting, setDeleting] = useState<Wallet | null>(null);
+  const [cappingPot, setCappingPot] = useState<Wallet | null>(null);
   const updateWallet = useUpdateWallet();
   const deleteWallet = useDeleteWallet();
+  const { caps, planById } = usePotCaps(cards.map((card) => card.wallet));
 
   const onlySelected = (walletId: string) =>
     selectedWalletIds !== null && selectedWalletIds.size === 1 && selectedWalletIds.has(walletId);
@@ -211,7 +215,17 @@ export function WalletCards({
                       <PiggyBank className="h-4 w-4 shrink-0 text-muted-foreground" />
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{pot.name}</p>
-                        <p className="text-sm font-semibold tabular-nums">{formatEuro(pot.balance, pot.currency || "EUR")}</p>
+                        <p className="text-sm font-semibold tabular-nums">
+                          {formatEuro(pot.balance, pot.currency || "EUR")}
+                          {caps.get(id) != null && (
+                            <span className="font-normal text-muted-foreground"> / {formatEuro((caps.get(id) ?? 0) / 100)}</span>
+                          )}
+                        </p>
+                        {(planById.get(id)?.items.length ?? 0) > 0 && (
+                          <p className="text-xs text-muted-foreground tabular-nums">
+                            Suggested {formatEuro((planById.get(id)?.plan.suggestedMonthlyCents ?? 0) / 100)} / month
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div onClick={(event) => event.stopPropagation()}>
@@ -223,6 +237,10 @@ export function WalletCards({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onSelect={() => setEditing(pot)}>Edit</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => setCappingPot(pot)}>Set cap</DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/annual-plan?wallet=${id}`}>Annual plan</Link>
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem className="text-destructive" onSelect={() => setDeleting(pot)}>
                             Delete
@@ -248,6 +266,8 @@ export function WalletCards({
           setCreatingPotFor(null);
         }}
       />
+
+      <CapDialog pot={cappingPot} onClose={() => setCappingPot(null)} />
 
       <DeleteDialog
         isOpen={deleting !== null}
@@ -361,6 +381,79 @@ function WalletDialog({
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={save} disabled={createWallet.isPending || updateWallet.isPending}>Save</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/**
+ * Tetto di un salvadanaio: nessuno, fisso (in euro) o "dal piano" (somma delle rate dei
+ * prossimi 12 mesi, calcolata dal server). Superarlo produce solo un avviso.
+ */
+function CapDialog({ pot, onClose }: { pot: Wallet | null; onClose: () => void }) {
+  const updateWallet = useUpdateWallet();
+  const [mode, setMode] = useState<"none" | "fixed" | "plan">("none");
+  const [amount, setAmount] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [lastOpened, setLastOpened] = useState<string | null>(null);
+
+  const openKey = pot ? String(pot.id) : null;
+  if (openKey !== lastOpened) {
+    setLastOpened(openKey);
+    setMode(pot?.cap_from_plan ? "plan" : pot?.cap_cents != null ? "fixed" : "none");
+    setAmount(pot?.cap_cents != null ? (pot.cap_cents / 100).toFixed(2) : "");
+    setError(null);
+  }
+
+  const save = async () => {
+    if (!pot) return;
+    let data: { cap_cents: number | null; cap_from_plan: boolean } = { cap_cents: null, cap_from_plan: false };
+    if (mode === "plan") data = { cap_cents: null, cap_from_plan: true };
+    if (mode === "fixed") {
+      const cents = parseAmountToCents(amount);
+      if (cents === null || cents <= 0) {
+        setError("Enter a positive amount, e.g. 1000");
+        return;
+      }
+      data = { cap_cents: cents, cap_from_plan: false };
+    }
+    try {
+      await updateWallet.mutateAsync({ id: pot.id, data });
+      onClose();
+    } catch {
+      // il messaggio d'errore lo mostra la mutation
+    }
+  };
+
+  const options = [
+    { value: "none", label: "No cap" },
+    { value: "fixed", label: "Fixed amount" },
+    { value: "plan", label: "From the annual plan (next 12 months of installments)" },
+  ] as const;
+
+  return (
+    <Dialog open={pot !== null} onOpenChange={(next) => !next && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Cap for {pot?.name}</DialogTitle>
+          <DialogDescription>The most this pot should hold. Going over it shows a warning, nothing is blocked.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          {options.map((option) => (
+            <label key={option.value} className="flex items-center gap-2 text-sm">
+              <input type="radio" name="cap-mode" checked={mode === option.value} onChange={() => { setMode(option.value); setError(null); }} />
+              {option.label}
+            </label>
+          ))}
+          {mode === "fixed" && (
+            <Input inputMode="decimal" aria-label="Cap (EUR)" placeholder="1000" value={amount} onChange={(event) => { setAmount(event.target.value); setError(null); }} />
+          )}
+          {error && <p className="text-sm text-destructive">{error}</p>}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={save} disabled={updateWallet.isPending}>Save</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

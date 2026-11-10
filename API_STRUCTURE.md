@@ -62,6 +62,13 @@ Un trasferimento si crea con `POST /transaction` (`type: "T"`, `wallet_id` origi
 "Trasferimento") e si completa, quando un lato è "da assegnare", con
 `PUT /transaction/:id` e la transazione intera (`assignTransferSide` in `lib/transfer.ts`).
 
+Il piano annuale (pagina `/annual-plan`, `lib/hooks/useAnnualPlan.ts`) usa `GET /annual-plan?walletId=`
+(voci, rate e calcolo in centesimi: `plan.suggestedMonthlyCents`, `plan.capCents`, `plan.projection`…),
+`POST /annual-items`, `PUT`/`DELETE /annual-items/:id`, `POST /annual-items/:id/installments`,
+`POST /annual-items/:id/copy-next-year`, `PUT`/`DELETE /annual-installments/:id` e
+`PUT /annual-installments/:id/payment` (`{ transaction_id }`, `null` scollega). Il tetto di un
+salvadanaio si scrive con `PUT /wallet/:id` (`cap_cents`, `cap_from_plan`).
+
 Gli endpoint di lista rispondono con un **envelope**, non più con un array nudo:
 `{ data, count, truncated, total }` — `GET /bank/transactions` mantiene la chiave
 `transactions` al posto di `data`. `count` è il numero di righe presenti nella
