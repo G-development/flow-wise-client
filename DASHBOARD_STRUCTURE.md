@@ -6,7 +6,7 @@ un componente in base a `widget.type`.
 
 ## Widget supportati
 
-- `total-balance`: somma i saldi di tutti i wallet dell'utente. Il saldo di ogni wallet non è memorizzato: è **derivato** dalle transazioni lato server (`utils/walletService.js`), e la somma copre tutte le transazioni dell'utente senza filtro di data. Per questo il widget non dipende dall'intervallo date condiviso e cambia anche quando si registra un movimento con data fuori dal periodo selezionato.
+- `total-balance`: somma i saldi di tutti i wallet dell'utente. Il saldo di ogni wallet non è memorizzato: è **derivato** dalle transazioni lato server (`utils/walletService.js`), e la somma copre tutte le transazioni dell'utente senza filtro di data. Per questo il widget non dipende dall'intervallo date condiviso e cambia anche quando si registra un movimento con data fuori dal periodo selezionato. Sotto il totale, in piccolo, quanto sta nei conti e quanto nei salvadanai (es. "6427,47 € in 2 accounts · 310,00 € in 3 pots"); toccandolo si apre un modale con ogni wallet, saldo e percentuale sul totale, i salvadanai sotto il loro conto. Calcolo in centesimi in `lib/balanceBreakdown.ts` (con test).
 - `period-incomes`: totale delle entrate nell'intervallo di date selezionato.
 - `period-expenses`: totale delle spese nell'intervallo di date selezionato.
 - `income-vs-expenses`: confronto dei totali e differenza netta tra entrate e spese.
