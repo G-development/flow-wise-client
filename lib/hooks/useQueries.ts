@@ -266,7 +266,8 @@ export function useBankInstitutions() {
     queryFn: async () => {
       const res = await apiFetch("/bank/institutions");
       if (!res.ok) throw new Error("Failed to fetch bank institutions");
-      return (await res.json()) as Array<{ id: string; name: string }>;
+      // `logo` arriva da GoCardless (assente nella lista di ripiego quando il provider non risponde).
+      return (await res.json()) as Array<{ id: string; name: string; logo?: string | null }>;
     },
     staleTime: 60 * 60 * 1000,
   });
@@ -424,6 +425,24 @@ export function useDeleteCategory() {
     },
     onError: (error) => {
       toast.error(error.message);
+    },
+  });
+}
+
+// Movements
+/**
+ * Entrate, spese e trasferimenti del periodo in una sola lista (`GET /transaction/all` con
+ * le date): la pagina Movements filtra e somma lato client (`lib/movements.ts`). La chiave
+ * sta sotto `transactions`, quindi ogni scrittura su una transazione la invalida.
+ */
+export function useMovements(startDate?: string, endDate?: string) {
+  return useQuery({
+    queryKey: queryKeys.transactions.byDateRange(startDate, endDate),
+    queryFn: async () => {
+      const query = buildQuery({ startDate, endDate });
+      const res = await apiFetch(`/transaction/all${query}`);
+      if (!res.ok) throw new Error("Failed to fetch movements");
+      return parseListResponse<Transaction>(await res.json());
     },
   });
 }

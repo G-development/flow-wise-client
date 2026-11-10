@@ -34,8 +34,8 @@ Supabase o `fetch`, a seconda del flusso.
 - `/login`, `/register`, `/forgot-password`, `/reset-password`: accesso,
   registrazione e recupero credenziali.
 - `/dashboard`: griglia widget configurabile e intervallo date condiviso.
-- `/incomes`, `/expenses`: rispettivamente movimenti di tipo entrata e spesa, con filtro per periodo e per wallet (il filtro wallet agisce sui movimenti già caricati del periodo).
-- `/wallets`, `/category`: gestione wallet e categorie. Ogni wallet ha un tag "Linked to <banca>" quando è il wallet di destinazione dell'import automatico di una banca (letto da `GET /bank/connections`, hook `useBankConnections`), altrimenti "Not linked".
+- `/movements`: wallet, entrate, spese e trasferimenti in una pagina (dal 10/11/2026 sostituisce `/incomes`, `/expenses`, `/transfers` e `/wallets`, che rimandano qui con il filtro giusto: `next.config.ts`). In alto le card dei wallet (logo della banca collegata da `GET /bank/institutions` + `GET /bank/connections`, saldo, entrate e spese del periodo, modifica / default / elimina, "Add wallet"); poi i trasferimenti da assegnare; poi filtri a checkbox per tipo e wallet, salvati nell'indirizzo (`?types=I,E&wallets=1`), totali e tabella. Filtri e totali in `lib/movements.ts`; dati da `GET /transaction/all` con le date (`useMovements`). Creazione e modifica con lo stesso pannello (`components/new-transaction.tsx`, prop `transaction`).
+- `/category`: gestione categorie.
 - `/budgets`: placeholder "Work in progress", deliberatamente non linkato in
   navigazione finche' la feature non esiste (raggiungibile solo per URL diretto).
 - `/settings`, `/settings/import`, `/settings/yourbank`: profilo, CSV e
@@ -171,8 +171,7 @@ total }`. Da qui discendono due regole, entrambe coperte dal codice:
 - quando `truncated` è `true` l'insieme è incompleto: i widget mostrano
   `≥ <totale>` e `components/truncated-notice.tsx` rende "Dati troncati: mostrate
   N righe su M", quindi una somma parziale non viene mai presentata come totale
-  definitivo. Lo stesso avviso compare su `/incomes`, `/expenses`
-  (`components/movements-list.tsx`) e sui movimenti bancari
+  definitivo. Lo stesso avviso compare su `/movements` e sui movimenti bancari
   (`/settings/yourbank`).
 
 `parseListResponse` accetta anche l'array nudo della forma precedente al
@@ -272,11 +271,6 @@ Limite noto:
 
 **Debito tecnico minore**
 
-- `app/incomes/page.tsx` e `app/expenses/page.tsx` sono wrapper sottili attorno
-  alla lista movimenti condivisa (`components/movements-list.tsx`): differiscono
-  solo per l'hook dati usato, il titolo, la descrizione, il prefisso della
-  caption e il wrapper esterno, quindi una correzione alla lista si fa in un
-  posto solo.
 - `/budgets` è un placeholder "Work in progress" non linkato in navigazione
   finche' la feature non esiste (raggiungibile solo per URL diretto).
 - `check-db.mjs` nel repo server contiene solo un commento: lo script è stato

@@ -55,8 +55,9 @@ rosso anche quando `tsc --noEmit` passa.
 
 - **Push solo con l'ok di Gio**: commit liberi, push mai senza il suo ok esplicito in conversazione.
   `.githooks/pre-push` esegue i test e rifiuta il push se falliscono; non c'è più un'approvazione per SHA.
-- `app/incomes/page.tsx` e `app/expenses/page.tsx` sono due wrapper sottili sulla lista condivisa
-  `components/movements-list.tsx`: un fix alla lista si fa lì, una volta. Solo ciò che sta nei wrapper
-  (hook dati, testi, contenitore esterno) va toccato in entrambi.
+- Entrate, spese, trasferimenti e wallet vivono in **una pagina sola**, `app/movements/page.tsx`
+  (componenti in `components/movements/`, logica pura in `lib/movements.ts`). I vecchi indirizzi
+  `/incomes`, `/expenses`, `/transfers`, `/wallets` sono solo rimandi in `next.config.ts`: non ricreare
+  quelle pagine. Creare e modificare un movimento passa da un solo pannello, `components/new-transaction.tsx`.
 - `app/settings/page.tsx` scrive la tabella `Profile` dal browser con la chiave anon: dipende dalle RLS
   e fallisce in silenzio se non configurate. La scrittura appartiene al server.

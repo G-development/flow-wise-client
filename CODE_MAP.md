@@ -5,7 +5,7 @@
 Indice file-per-file generato dal codice, non dalla documentazione. Serve a sapere **dove** sta una
 cosa senza leggere il repo: architettura e regole locali stanno altrove (vedi `AGENTS.md`).
 
-Forma `next`, radice sorgente `.`, commit `28c800b`.
+Forma `next`, radice sorgente `.`, commit `d774c13`.
 
 ```bash
 node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/flow-wise-client \
@@ -20,10 +20,9 @@ node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/f
 | `/budgets` | `app/budgets/page.tsx` | `Budgets` |
 | `/category` | `app/category/page.tsx` | `Categories` |
 | `/dashboard` | `app/dashboard/page.tsx` | `Dashboard` |
-| `/expenses` | `app/expenses/page.tsx` | `Expenses` |
 | `/forgot-password` | `app/forgot-password/page.tsx` | `ForgotPasswordPage` |
-| `/incomes` | `app/incomes/page.tsx` | `Incomes` |
 | `/login` | `app/login/page.tsx` | `LoginPage` |
+| `/movements` | `app/movements/page.tsx` | `MovementsPage` |
 | `/` | `app/page.tsx` | `Home` |
 | `/privacy` | `app/privacy/page.tsx` | `PrivacyPage` |
 | `/register` | `app/register/page.tsx` | `RegisterPage` |
@@ -32,8 +31,6 @@ node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/f
 | `/settings` | `app/settings/page.tsx` | `Settings` |
 | `/settings/yourbank` | `app/settings/yourbank/page.tsx` | `YourBankWithSuspense` |
 | `/terms` | `app/terms/page.tsx` | `TermsPage` |
-| `/transfers` | `app/transfers/page.tsx` | `Transfers` |
-| `/wallets` | `app/wallets/page.tsx` | `Wallets` |
 
 Layout: `app/layout.tsx`
 
@@ -63,12 +60,10 @@ Layout: `app/layout.tsx`
 - `components/date-picker.tsx` — exports: default `DatePickerWithRange`
 - `components/delete-dialog.tsx` — exports: default `DeleteDialog`
 - `components/dynamic-table.tsx` — exports: fn `DynamicTable`
-- `components/edit-dialog.tsx` — exports: default `EditDialog`
 - `components/landing-changelog.tsx` — exports: fn `LandingChangelog`
 - `components/legal-page.tsx` — exports: fn `LegalList`, `LegalPage`, `LegalSection`
 - `components/loading-spinner.tsx` — exports: default `LoadingSpinner`
 - `components/login-form.tsx` — exports: fn `LoginForm`
-- `components/movements-list.tsx` — exports: fn `MovementsList`; type `MovementsListProps`
 - `components/nav-user.tsx` — exports: fn `NavUser`
 - `components/navbar.tsx` — exports: default `Navbar`
 - `components/new-transaction.tsx` — exports: default `NewTransaction`
@@ -88,6 +83,12 @@ Layout: `app/layout.tsx`
 - `components/dashboard/widgets/period-expenses-widget.tsx` — exports: fn `PeriodExpensesWidget`
 - `components/dashboard/widgets/period-incomes-widget.tsx` — exports: fn `PeriodIncomesWidget`
 - `components/dashboard/widgets/total-balance-widget.tsx` — exports: fn `TotalBalanceWidget`
+
+## components/movements/
+
+*components/movements/*
+- `components/movements/pending-transfers.tsx` — exports: fn `PendingTransfers`
+- `components/movements/wallet-cards.tsx` — exports: fn `parseAmountToCents`, `WalletCards`; type `WalletCardInfo`
 
 ## components/ui/
 
@@ -134,6 +135,8 @@ Layout: `app/layout.tsx`
 - `lib/legal.ts` — exports: const `LEGAL`
 - `lib/listResponse.test.ts`
 - `lib/listResponse.ts` — exports: const `EMPTY_LIST_RESPONSE`; type `ListResponse`; fn `parseListResponse`
+- `lib/movements.test.ts`
+- `lib/movements.ts` — exports: const `DEFAULT_FILTERS`, `MOVEMENT_TYPES`; fn `filterMovements`, `movementDirection`, `movementTotals`, `parseMovementFilters`, `serializeMovementFilters`, `touchesWallet`, `walletPeriodTotals`; type `MovementFilters`, `MovementTotals`, `MovementType`
 - `lib/supabaseClient.ts` — exports: const `supabase`
 - `lib/transfer.test.ts`
 - `lib/transfer.ts` — exports: fn `assignTransferSide`, `findTransferCategory`, `isPendingTransfer`, `isTransfer`, `missingTransferSide`
@@ -142,7 +145,7 @@ Layout: `app/layout.tsx`
 ## lib/hooks/
 
 *lib/hooks/*
-- `lib/hooks/useQueries.ts` — exports: type `BankConnectionSummary`, `Category`, `Transaction`, `Wallet`, `WalletCreateInput`, `WalletUpdateInput`; const `queryKeys`; fn `useActiveCategories`, `useBankConnections`, `useBankInstitutions`, `useCategories`, `useCreateCategory`, `useCreateTransaction`, `useCreateWallet`, `useDashboardLayout`, `useDeleteCategory`, `useDeleteTransaction`, `useDeleteWallet`, `useExpenses`, `useImportCsv`, `useIncomes`, `useSaveDashboardLayout`, `useTransfers`, `useUpdateCategory`, `useUpdateTransaction`, `useUpdateWallet`, `useWallets`
+- `lib/hooks/useQueries.ts` — exports: type `BankConnectionSummary`, `Category`, `Transaction`, `Wallet`, `WalletCreateInput`, `WalletUpdateInput`; const `queryKeys`; fn `useActiveCategories`, `useBankConnections`, `useBankInstitutions`, `useCategories`, `useCreateCategory`, `useCreateTransaction`, `useCreateWallet`, `useDashboardLayout`, `useDeleteCategory`, `useDeleteTransaction`, `useDeleteWallet`, `useExpenses`, `useImportCsv`, `useIncomes`, `useMovements`, `useSaveDashboardLayout`, `useTransfers`, `useUpdateCategory`, `useUpdateTransaction`, `useUpdateWallet`, `useWallets`
 
 ## lib/providers/
 

@@ -52,8 +52,10 @@ Il backend espone l'elenco completo su `GET /transaction/all` e
 `GET /transaction/:id` per una singola transazione; `GET /transaction` non è
 una route lista. Le pagine principali del client usano gli endpoint separati
 `/income/all` e `/expense/all`, che non restituiscono i trasferimenti (`type` `"T"`).
-La pagina `/transfers` legge `GET /transaction/all` e filtra le `"T"` lato client
-(`useTransfers`): il server non filtra quella lista per tipo.
+La pagina `/movements` legge `GET /transaction/all?startDate&endDate` (`useMovements`) e filtra
+per tipo e wallet lato client (`lib/movements.ts`); i trasferimenti da assegnare vengono da
+`GET /transaction/all` senza date (`useTransfers`), così un accantonamento vecchio non sparisce
+cambiando periodo. Il server non filtra quella lista per tipo.
 
 Un trasferimento si crea con `POST /transaction` (`type: "T"`, `wallet_id` origine,
 `to_wallet_id` destinazione, `category_id` della categoria di sistema
@@ -74,7 +76,7 @@ ancora aggiornato. Gli hook `useIncomes` / `useExpenses` restituiscono questo
 oggetto: le righe si leggono da `rows` (non dal body) e le somme si calcolano su
 `rows`, così il totale di periodo usa lo stesso insieme di righe contato dal
 server. Quando `truncated` è `true` la somma è parziale: i widget mostrano
-`≥ <totale>` e, come le pagine `/incomes`, `/expenses` e i movimenti bancari,
+`≥ <totale>` e, come la pagina `/movements` e i movimenti bancari,
 rendono l'avviso di `components/truncated-notice.tsx` ("Dati troncati: mostrate N
 righe su M").
 

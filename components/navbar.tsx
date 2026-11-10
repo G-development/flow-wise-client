@@ -11,12 +11,10 @@ import {
   LogOut,
   ChartNoAxesCombined,
   Plus,
-  Minus,
   ArrowLeftRight,
   User,
   Upload,
   Banknote,
-  Wallet,
   Boxes,
   Menu,
   Bot,
@@ -32,6 +30,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { NavUser } from "./nav-user";
+import NewTransaction from "./new-transaction";
 
 interface NavLink {
   href: string;
@@ -41,14 +40,13 @@ interface NavLink {
 
 const navLinks: NavLink[] = [
   { href: '/dashboard', icon: ChartNoAxesCombined, label: 'Dashboard' },
-  { href: '/incomes', icon: Plus, label: 'Incomes' },
-  { href: '/expenses', icon: Minus, label: 'Expenses' },
-  { href: '/transfers', icon: ArrowLeftRight, label: 'Transfers' },
+  // Movements sostituisce Incomes, Expenses, Transfers e Wallets (i vecchi indirizzi
+  // rimandano qui con il filtro giusto: next.config.ts).
+  { href: '/movements', icon: ArrowLeftRight, label: 'Movements' },
 ];
 
 const mainLinks: NavLink[] = [
   { href: '/ai-beta', icon: Bot, label: 'AI Beta' },
-  { href: '/wallets', icon: Wallet, label: 'Wallets' },
   { href: '/category', icon: Boxes, label: 'Categories' },
 ];
 
@@ -226,8 +224,8 @@ export default function Navbar() {
 
       {/* Mobile Bottom Navigation */}
       <nav aria-label="Mobile navigation" className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_-18px_rgba(15,23,42,0.35)] backdrop-blur-xl lg:hidden">
-        {/* Una colonna per ogni voce di `navLinks` più Wallet: se cambiano le voci, cambia il numero. */}
-        <div className="mx-auto grid max-w-lg grid-cols-5 gap-1 py-1.5">
+        {/* Una colonna per ogni voce di `navLinks` più "New": se cambiano le voci, cambia il numero. */}
+        <div className="mx-auto grid max-w-lg grid-cols-3 gap-1 py-1.5">
           {navLinks.map(({ href, icon: Icon, label }) => (
             <Link
               key={href}
@@ -245,20 +243,18 @@ export default function Navbar() {
               <span>{label}</span>
             </Link>
           ))}
-          <Link
-            href="/wallets"
-            prefetch={false}
-            className={`flex min-w-0 flex-col items-center justify-center rounded-xl px-1 py-2.5 gap-1 text-[10px] font-medium transition-colors duration-200 ${
-              isActive('/wallets')
-                ? 'text-primary bg-primary/10'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-            aria-label="Wallets"
-            aria-current={isActive('/wallets') ? "page" : undefined}
-          >
-            <Wallet className="h-5 w-5" />
-            <span>Wallet</span>
-          </Link>
+          <NewTransaction
+            trigger={
+              <button
+                type="button"
+                className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2.5 text-[10px] font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                aria-label="New transaction"
+              >
+                <Plus className="h-5 w-5" />
+                <span>New</span>
+              </button>
+            }
+          />
         </div>
       </nav>
     </>
