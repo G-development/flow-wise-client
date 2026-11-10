@@ -93,18 +93,21 @@ export default function Dashboard() {
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
               <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
               <div className="flex flex-wrap gap-2">
+                {/* Su mobile c'e' gia' il + della barra in basso (navbar): qui solo da desktop. */}
                 {!isEditMode && (
-                  <NewTransaction
-                    trigger={
-                      <Button
-                        className="gap-2 font-semibold shadow-md hover:shadow-lg transition-shadow"
-                        aria-label="Add transaction"
-                      >
-                        <Plus className="h-4 w-4" />
-                        <span>Add Transaction</span>
-                      </Button>
-                    }
-                  />
+                  <div className="hidden lg:block">
+                    <NewTransaction
+                      trigger={
+                        <Button
+                          className="gap-2 font-semibold shadow-md hover:shadow-lg transition-shadow"
+                          aria-label="Add transaction"
+                        >
+                          <Plus className="h-4 w-4" />
+                          <span>Add Transaction</span>
+                        </Button>
+                      }
+                    />
+                  </div>
                 )}
                 {isEditMode && (
                   <AddWidgetDialog

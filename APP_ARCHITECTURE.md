@@ -25,7 +25,7 @@ Le pagine `/forgot-password` e `/reset-password` sono implementate e chiamano
 le route pubbliche di reset del server; essendo in `PUBLIC_ROUTES` del provider
 sono raggiungibili anche senza sessione.
 
-La barra di navigazione è in `components/navbar.tsx`: su desktop una riga di link (Import e Account nel menu utente); su mobile un menu laterale a sezioni (`mobileSections`: Main, Management, Settings) e una barra in basso con Dashboard, Movements, + New, Annual plan. Il + della barra è l'unico "aggiungi" su mobile: in `/movements` il pulsante in alto compare solo da `lg`. `lib/api.ts` centralizza
+La barra di navigazione è in `components/navbar.tsx`: su desktop una riga di link (Import e Account nel menu utente); su mobile un menu laterale a sezioni (`mobileSections`: Main, Management, Settings) e una barra in basso con Dashboard, Movements, + New, Annual plan. Il + della barra è l'unico "aggiungi" su mobile: in `/movements` e in `/dashboard` il pulsante "Add Transaction" in alto compare solo da `lg`. `lib/api.ts` centralizza
 le chiamate autenticate; i form di autenticazione usano anche direttamente
 Supabase o `fetch`, a seconda del flusso.
 
