@@ -102,7 +102,7 @@ export function LandingChangelog() {
 
         <ol className="mt-10 space-y-8 border-l border-[#cfd8d1] pl-6 sm:pl-8">
           {CHANGELOG.map((entry) => (
-            <li key={entry.period} className="relative">
+            <li key={`${entry.period}-${entry.title}`} className="relative">
               <span className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full border-2 border-[#f5f5ef] bg-[#173e33] sm:-left-[39px]" />
               <p className="font-mono text-xs text-[#5f7a6d]">{entry.period}</p>
               <h3 className="mt-1 text-lg font-semibold text-[#142c26]">{entry.title}</h3>

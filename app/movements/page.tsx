@@ -184,7 +184,10 @@ function Movements() {
           <h1 className="page-title">Movements</h1>
           <p className="page-description">Wallets, income, expenses and transfers in one place</p>
         </div>
-        <NewTransaction />
+        {/* Su mobile c'e' gia' il + della barra in basso (navbar): qui solo da desktop. */}
+        <div className="hidden lg:block">
+          <NewTransaction />
+        </div>
       </div>
 
       <WalletCards cards={cards} selectedWalletIds={filters.wallets} onToggleWallet={focusWallet} />

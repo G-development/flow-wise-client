@@ -52,10 +52,22 @@ const mainLinks: NavLink[] = [
   { href: '/category', icon: Boxes, label: 'Categories' },
 ];
 
-const settingsLinks: NavLink[] = [
-  { href: '/settings', icon: User, label: 'Account' },
-  { href: '/settings/import', icon: Upload, label: 'Import' },
-  { href: '/settings/yourbank', icon: Banknote, label: 'Your Bank' },
+const yourBankLink: NavLink = { href: '/settings/yourbank', icon: Banknote, label: 'Your Bank' };
+
+/**
+ * Sezioni del menu laterale mobile (scelte di Gio, 10/11/2026). La barra desktop non le usa: mostra
+ * `navLinks`, `mainLinks` e Your Bank in riga, mentre Import e Account stanno nel menu utente.
+ */
+const mobileSections: { title: string; links: NavLink[] }[] = [
+  { title: 'Main', links: [...navLinks, { href: '/ai-beta', icon: Bot, label: 'AI Beta' }] },
+  { title: 'Management', links: [{ href: '/category', icon: Boxes, label: 'Categories' }, yourBankLink] },
+  {
+    title: 'Settings',
+    links: [
+      { href: '/settings/import', icon: Upload, label: 'Import' },
+      { href: '/settings', icon: User, label: 'Account' },
+    ],
+  },
 ];
 
 export default function Navbar() {
@@ -77,6 +89,24 @@ export default function Navbar() {
         ? 'bg-primary/10 text-primary'
         : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
     }`;
+
+  const renderBottomLink = ({ href, icon: Icon, label }: NavLink) => (
+    <Link
+      key={href}
+      href={href}
+      prefetch={false}
+      className={`flex min-w-0 flex-col items-center justify-center rounded-xl px-1 py-2.5 gap-1 text-[10px] font-medium transition-colors duration-200 ${
+        isActive(href)
+          ? 'text-primary bg-primary/10'
+          : 'text-muted-foreground hover:text-foreground'
+      }`}
+      aria-label={label}
+      aria-current={isActive(href) ? "page" : undefined}
+    >
+      <Icon className="h-5 w-5" />
+      <span>{label}</span>
+    </Link>
+  );
 
   return (
     <>
@@ -102,50 +132,22 @@ export default function Navbar() {
                 <SheetTitle className="text-lg">Flow Wise</SheetTitle>
               </div>
               <nav className="space-y-6 px-4 py-6">
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">Main</p>
-                  {navLinks.map(({ href, icon: Icon, label }) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={navLinkClass(isActive(href))}
-                      prefetch={false}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {label}
-                    </Link>
-                  ))}
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">Management</p>
-                  {mainLinks.map(({ href, icon: Icon, label }) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={navLinkClass(isActive(href))}
-                      prefetch={false}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {label}
-                    </Link>
-                  ))}
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">Settings</p>
-                  {settingsLinks.map(({ href, icon: Icon, label }) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={navLinkClass(isActive(href))}
-                      prefetch={false}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {label}
-                    </Link>
-                  ))}
-                </div>
+                {mobileSections.map(({ title, links }) => (
+                  <div key={title} className="space-y-2">
+                    <p className="text-xs font-semibold uppercase text-muted-foreground">{title}</p>
+                    {links.map(({ href, icon: Icon, label }) => (
+                      <Link
+                        key={href}
+                        href={href}
+                        className={navLinkClass(isActive(href))}
+                        prefetch={false}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {label}
+                      </Link>
+                    ))}
+                  </div>
+                ))}
 
                 <Separator />
                 <Button
@@ -228,23 +230,8 @@ export default function Navbar() {
       <nav aria-label="Mobile navigation" className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_-18px_rgba(15,23,42,0.35)] backdrop-blur-xl lg:hidden">
         {/* Una colonna per ogni voce di `navLinks` più "New": se cambiano le voci, cambia il numero. */}
         <div className="mx-auto grid max-w-lg grid-cols-4 gap-1 py-1.5">
-          {navLinks.map(({ href, icon: Icon, label }) => (
-            <Link
-              key={href}
-              href={href}
-              prefetch={false}
-              className={`flex min-w-0 flex-col items-center justify-center rounded-xl px-1 py-2.5 gap-1 text-[10px] font-medium transition-colors duration-200 ${
-                isActive(href)
-                  ? 'text-primary bg-primary/10'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-              aria-label={label}
-              aria-current={isActive(href) ? "page" : undefined}
-            >
-              <Icon className="h-5 w-5" />
-              <span>{label}</span>
-            </Link>
-          ))}
+          {/* Ordine (Gio, 10/11): Dashboard, Movements, + New, poi il resto di `navLinks`. */}
+          {navLinks.slice(0, 2).map(renderBottomLink)}
           <NewTransaction
             trigger={
               <button
@@ -257,6 +244,7 @@ export default function Navbar() {
               </button>
             }
           />
+          {navLinks.slice(2).map(renderBottomLink)}
         </div>
       </nav>
     </>
