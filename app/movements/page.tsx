@@ -37,12 +37,22 @@ import {
   type MovementFilters,
   type MovementType,
 } from "@/lib/movements";
+import { format, startOfMonth, subMonths } from "date-fns";
 import { ArrowRight, Pencil, Trash } from "lucide-react";
 
 const TYPE_LABELS: Record<MovementType, string> = { I: "Income", E: "Expense", T: "Transfer" };
 const formatEuro = (value: number) =>
   new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(value);
-const toIsoDay = (date?: Date) => date?.toISOString().split("T")[0];
+// Giorno locale, non UTC: `toISOString()` sposta la mezzanotte italiana al giorno prima
+// (1 novembre 00:00 CET = 31 ottobre 23:00 UTC) e allargava il periodo di un giorno.
+const toIsoDay = (date?: Date) => (date ? format(date, "yyyy-MM-dd") : undefined);
+
+/** Scorciatoie per il periodo. "All" toglie le date: il server restituisce tutto. */
+const PERIOD_PRESETS = [
+  { label: "This month", range: () => ({ from: startOfMonth(new Date()), to: new Date() }) },
+  { label: "Last 3 months", range: () => ({ from: startOfMonth(subMonths(new Date(), 2)), to: new Date() }) },
+  { label: "All", range: () => undefined },
+] as const;
 
 /**
  * Movements: wallet, entrate, spese e trasferimenti in una pagina sola (sostituisce
@@ -209,7 +219,16 @@ function Movements() {
             })}
           </fieldset>
         </div>
-        <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="flex gap-1">
+            {PERIOD_PRESETS.map((preset) => (
+              <Button key={preset.label} variant="outline" size="sm" onClick={() => setDateRange(preset.range())}>
+                {preset.label}
+              </Button>
+            ))}
+          </div>
+          <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
+        </div>
       </section>
 
       {/* Totali della selezione */}
