@@ -7,7 +7,8 @@ TypeScript, Tailwind CSS, TanStack Query e autenticazione Supabase.
 
 - **Autenticazione**: Registrazione, login, recupero e reset password via email con token temporaneo.
 - **Dashboard Personalizzabile**: Griglia widget interattiva (saldo totale, entrate, spese, confronto entrate/uscite, grafico a torta per categoria) con supporto drag & drop, resize e salvataggio persistente del layout per utente.
-- **Gestione Finanziaria**: Pagine dedicate per entrate (`/incomes`), spese (`/expenses`), wallet (`/wallets`) e categorie (`/category`). Entrate e spese si filtrano per periodo e per wallet. Il saldo di ogni wallet è calcolato dalle transazioni a partire da un saldo di apertura modificabile; un tag indica i wallet collegati a una banca.
+- **Gestione Finanziaria**: una pagina `/movements` con wallet, entrate, spese e trasferimenti (filtri per tipo, wallet e periodo; trasferimenti da assegnare in cima), e `/category` per le categorie. Il saldo di ogni wallet è calcolato dalle transazioni a partire da un saldo di apertura modificabile; i salvadanai stanno sotto il loro conto, con un tetto facoltativo.
+- **Piano annuale (`/annual-plan`)**: spese annuali con rate esplicite pagate da un salvadanaio, quota mensile consigliata, tetto e proiezione a 12 mesi.
 - **Importazione CSV**: Caricamento massivo e parsing automatico di file CSV di transazioni.
 - **Integrazione Bancaria Completa (`/settings/yourbank`)**:
   - Connessione a conti bancari reali tramite **Open Banking PSD2 (GoCardless)** o in modalità **Sandbox Mock interattiva**.

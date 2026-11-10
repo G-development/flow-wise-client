@@ -43,8 +43,9 @@ un campo scrivibile: `GET /wallet` restituisce ogni wallet con il `balance`
 apertura del wallet (vedi [APP_ARCHITECTURE.md](./APP_ARCHITECTURE.md)).
 `PUT /wallet/:id` accetta `name`, `is_default` e `opening_balance_cents` — il
 saldo di apertura, in **centesimi interi** con segno ammesso, reso modificabile
-dalla pagina `/wallets` — ma non `balance`. `POST /wallet` accetta solo `name` e
-crea il wallet con `balance: 0` e apertura `0`.
+dalla card del wallet in `/movements` — e, per un salvadanaio, `cap_cents` / `cap_from_plan`, ma non
+`balance`. `POST /wallet` accetta `name` e, per un salvadanaio, `kind: "pot"` con `parent_wallet_id`;
+il wallet nasce con apertura `0`.
 
 ### Elenco transazioni
 

@@ -27,7 +27,7 @@ Se una regola vale per entrambi i repo, sta nella skill; qui solo ciò che è lo
 
 ## Convenzioni del repo
 
-- App Router: il percorso della cartella è l'URL (`app/wallets/page.tsx` → `/wallets`). I componenti
+- App Router: il percorso della cartella è l'URL (`app/movements/page.tsx` → `/movements`). I componenti
   accanto a una pagina ma senza `page.tsx` non sono route (es. `app/settings/yourbank/BankDrawer.tsx`).
 - Dati server via TanStack Query: gli hook stanno in `lib/hooks/useQueries.ts`, le chiavi in
   `queryKeys`. Una mutazione che cambia una lista deve invalidare la sua chiave.

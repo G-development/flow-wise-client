@@ -150,7 +150,7 @@ NULL default 0, in centesimi, `migrations/003_wallet_opening_balance.sql`):
 `sumBalancesInCents` parte da lì invece che da zero, altrimenti il saldo è
 corretto solo se ogni movimento dalla nascita del wallet è in `Transaction`.
 `PUT /wallet/:id` accetta anche `opening_balance_cents` (intero, segno ammesso) e
-la pagina `/wallets` lo mostra e lo rende modificabile per wallet: l'input è in
+la card del wallet in `/movements` (menu "Edit") lo mostra e lo rende modificabile: l'input è in
 EUR e viene convertito in centesimi prima della chiamata.
 
 ### Liste e troncamento
