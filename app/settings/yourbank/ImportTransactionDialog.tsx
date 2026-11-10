@@ -415,7 +415,7 @@ export default function ImportTransactionDialog({
                       return (
                         <div
                           key={transaction.id}
-                          className="grid grid-cols-[minmax(0,1fr)_minmax(150px,200px)] items-center gap-3 rounded-md bg-muted/50 p-2"
+                          className="grid grid-cols-1 items-center gap-2 rounded-md bg-muted/50 p-2 sm:grid-cols-[minmax(0,1fr)_minmax(150px,200px)] sm:gap-3"
                         >
                           <div className="min-w-0">
                             <div className="flex items-start gap-1.5">
@@ -424,7 +424,7 @@ export default function ImportTransactionDialog({
                                   <AlertTriangle aria-label="Suggerimento incerto" className="h-4 w-4" />
                                 </span>
                               )}
-                              <p className="truncate text-sm font-medium" title={transaction.description}>
+                              <p className="line-clamp-2 break-words text-sm font-medium sm:truncate" title={transaction.description}>
                                 {transaction.description || "Movimento senza descrizione"}
                               </p>
                             </div>

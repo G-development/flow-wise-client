@@ -124,7 +124,7 @@ export default function AutoImportSettings({ bank, autoImport, onSaved }: AutoIm
         </div>
       </div>
       <p className="text-[11px] text-muted-foreground">
-        Solo movimenti contabilizzati. Categoria scelta dall&apos;AI, altrimenti &quot;Altro&quot;.
+        Solo movimenti contabilizzati. Categoria dalle tue regole, altrimenti &quot;Altro&quot;.
       </p>
       {dirty && (
         <Button size="sm" className="h-8 w-full" onClick={() => void save()} disabled={saving}>

@@ -85,6 +85,36 @@ interface BankSetupStatus {
 }
 
 // Calcola primo giorno del mese corrente e oggi in formato YYYY-MM-DD
+/** Importo di un movimento bancario: verde con freccia in entrata, rosso in uscita. */
+function MovementAmount({ amount, currency }: { amount: number | string; currency?: string | null }) {
+  const isIncome = Number(amount) >= 0;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 whitespace-nowrap font-semibold text-sm ${
+        isIncome ? "text-emerald-500" : "text-rose-500"
+      }`}
+    >
+      {isIncome ? <ArrowDownLeft className="h-3.5 w-3.5" /> : <ArrowUpRight className="h-3.5 w-3.5" />}
+      {Number(amount).toLocaleString("it-IT", { style: "currency", currency: currency || "EUR" })}
+    </span>
+  );
+}
+
+function ImportStatusBadge({ imported }: { imported: boolean }) {
+  return imported ? (
+    <Badge variant="outline" className="text-[10px] py-0 px-2 text-emerald-500 border-emerald-500/30 bg-emerald-500/10 gap-1">
+      <CheckCircle2 className="h-3 w-3" /> Importato
+    </Badge>
+  ) : (
+    <Badge variant="secondary" className="text-[10px] py-0 px-2 text-muted-foreground">
+      Sincronizzato
+    </Badge>
+  );
+}
+
+const formatBankDate = (date: string) =>
+  new Date(date).toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit", year: "numeric" });
+
 function getDefaultDateRange() {
   const now = new Date();
   const year = now.getFullYear();
@@ -896,7 +926,66 @@ function YourBank() {
                   Nessun movimento trovato per il periodo e i filtri selezionati.
                 </div>
               ) : (
-                <div className="rounded-xl border border-border/70 overflow-hidden">
+                <>
+                {/* Mobile: una scheda per movimento, niente tabella da scorrere di lato (U4, 10/11). */}
+                <div className="space-y-2 lg:hidden">
+                  <label className="flex items-center gap-2 px-1 text-xs text-muted-foreground">
+                    <Checkbox
+                      checked={filteredTransactions.length > 0 && selectedTxnIds.size === filteredTransactions.length}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Seleziona tutte le transazioni"
+                    />
+                    Seleziona tutti ({filteredTransactions.length})
+                  </label>
+                  <ul className="space-y-2">
+                    {filteredTransactions.map((transaction) => {
+                      const isSelected = selectedTxnIds.has(transaction.id);
+                      const isImported = transaction.status === "imported";
+                      return (
+                        <li
+                          key={transaction.id}
+                          className={`rounded-xl border p-3 ${isSelected ? "border-primary/40 bg-primary/5" : "border-border/70"}`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <Checkbox
+                              className="mt-0.5"
+                              checked={isSelected}
+                              onCheckedChange={() => handleToggleSelectTxn(transaction.id)}
+                              aria-label={`Seleziona movimento ${transaction.description}`}
+                            />
+                            <div className="min-w-0 flex-1 space-y-1.5">
+                              <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                                <span className="truncate">
+                                  {formatBankDate(transaction.date)} · {institutionName(transaction.bank_id)}
+                                </span>
+                                <MovementAmount amount={transaction.amount} currency={transaction.currency} />
+                              </div>
+                              <p className="line-clamp-2 break-words text-sm font-medium" title={transaction.description}>
+                                {transaction.description || "—"}
+                              </p>
+                              {transaction.counterparty && (
+                                <p className="truncate text-xs text-muted-foreground">{transaction.counterparty}</p>
+                              )}
+                              <div className="flex items-center justify-between gap-2 pt-0.5">
+                                <ImportStatusBadge imported={isImported} />
+                                <Button
+                                  size="sm"
+                                  variant={isImported ? "ghost" : "outline"}
+                                  className="h-8 text-xs font-medium"
+                                  onClick={() => openImportSingle(transaction)}
+                                >
+                                  {isImported ? "Re-importa" : "Importa"}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+
+                <div className="hidden rounded-xl border border-border/70 overflow-hidden lg:block">
                   <Table>
                     <TableHeader className="bg-muted/40">
                       <TableRow>
@@ -921,7 +1010,6 @@ function YourBank() {
                     </TableHeader>
                     <TableBody>
                       {filteredTransactions.map((transaction) => {
-                        const isIncome = Number(transaction.amount) >= 0;
                         const isSelected = selectedTxnIds.has(transaction.id);
                         const isImported = transaction.status === "imported";
 
@@ -938,11 +1026,7 @@ function YourBank() {
                               />
                             </TableCell>
                             <TableCell className="font-medium text-xs whitespace-nowrap">
-                              {new Date(transaction.date).toLocaleDateString("it-IT", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                              })}
+                              {formatBankDate(transaction.date)}
                             </TableCell>
                             <TableCell className="text-xs font-medium text-muted-foreground whitespace-nowrap">
                               {institutionName(transaction.bank_id)}
@@ -954,32 +1038,10 @@ function YourBank() {
                               {transaction.counterparty || "—"}
                             </TableCell>
                             <TableCell className="text-right whitespace-nowrap">
-                              <span
-                                className={`inline-flex items-center gap-1 font-semibold text-sm ${
-                                  isIncome ? "text-emerald-500" : "text-rose-500"
-                                }`}
-                              >
-                                {isIncome ? (
-                                  <ArrowDownLeft className="h-3.5 w-3.5" />
-                                ) : (
-                                  <ArrowUpRight className="h-3.5 w-3.5" />
-                                )}
-                                {Number(transaction.amount).toLocaleString("it-IT", {
-                                  style: "currency",
-                                  currency: transaction.currency || "EUR",
-                                })}
-                              </span>
+                              <MovementAmount amount={transaction.amount} currency={transaction.currency} />
                             </TableCell>
                             <TableCell className="text-center whitespace-nowrap">
-                              {isImported ? (
-                                <Badge variant="outline" className="text-[10px] py-0 px-2 text-emerald-500 border-emerald-500/30 bg-emerald-500/10 gap-1">
-                                  <CheckCircle2 className="h-3 w-3" /> Importato
-                                </Badge>
-                              ) : (
-                                <Badge variant="secondary" className="text-[10px] py-0 px-2 text-muted-foreground">
-                                  Sincronizzato
-                                </Badge>
-                              )}
+                              <ImportStatusBadge imported={isImported} />
                             </TableCell>
                             <TableCell className="text-right whitespace-nowrap">
                               <Button
@@ -997,6 +1059,7 @@ function YourBank() {
                     </TableBody>
                   </Table>
                 </div>
+                </>
               )}
             </div>
           </div>
