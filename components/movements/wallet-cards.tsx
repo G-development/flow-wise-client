@@ -129,12 +129,13 @@ export function WalletCards({
                   )}
                   <div className="min-w-0">
                     <p className="truncate font-medium">{wallet.name}</p>
-                    <p className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+                    {/* div, non p: il Badge e' un div e dentro un <p> rompe l'idratazione di React. */}
+                    <div className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
                       <span className="truncate">{bank ? bank.name : "Not linked"}</span>
                       {wallet.is_default && (
                         <Badge variant="outline" className="px-1.5 py-0 text-[10px] font-normal">Default</Badge>
                       )}
-                    </p>
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-1" onClick={(event) => event.stopPropagation()}>

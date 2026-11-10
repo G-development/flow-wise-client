@@ -11,9 +11,11 @@ import assert from "node:assert/strict";
 import {
   assignTransferSide,
   findTransferCategory,
+  incomeExpenseTypeOf,
   isPendingTransfer,
   isTransfer,
   missingTransferSide,
+  transferAsIncomeExpense,
 } from "./transfer.ts";
 
 const base = {
@@ -68,4 +70,23 @@ test("assignTransferSide completa l'origine di una riunione somme", () => {
 test("assignTransferSide rifiuta una T completa e lo stesso wallet sui due lati", () => {
   assert.throws(() => assignTransferSide({ ...base, type: "T", wallet_id: 1, to_wallet_id: 2 }, 5), /non ha lati/);
   assert.throws(() => assignTransferSide({ ...base, type: "T", wallet_id: 1, to_wallet_id: null }, 1), /diverse/);
+});
+
+test("transferAsIncomeExpense: una ricarica uscita dal conto diventa una spesa sul conto", () => {
+  const body = transferAsIncomeExpense({ ...base, type: "T", wallet_id: 1, to_wallet_id: null }, 70);
+  assert.deepEqual(body, { ...base, type: "E", wallet_id: 1, to_wallet_id: null, category_id: 70 });
+  assert.equal(incomeExpenseTypeOf({ type: "T", wallet_id: 1, to_wallet_id: null }), "E");
+});
+
+test("transferAsIncomeExpense: un rientro nel conto diventa un'entrata sul conto", () => {
+  const body = transferAsIncomeExpense({ ...base, type: "T", wallet_id: null, to_wallet_id: 1 }, 71);
+  assert.equal(body.type, "I");
+  assert.equal(body.wallet_id, 1);
+  assert.equal(body.to_wallet_id, null);
+  assert.equal(incomeExpenseTypeOf({ type: "T", wallet_id: null, to_wallet_id: 1 }), "I");
+});
+
+test("transferAsIncomeExpense rifiuta un trasferimento gia' completo", () => {
+  assert.throws(() => transferAsIncomeExpense({ ...base, type: "T", wallet_id: 1, to_wallet_id: 2 }, 70), /da assegnare/);
+  assert.equal(incomeExpenseTypeOf({ type: "T", wallet_id: 1, to_wallet_id: 2 }), null);
 });

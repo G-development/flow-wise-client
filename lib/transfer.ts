@@ -68,3 +68,40 @@ export function assignTransferSide<T extends TransferLike & {
     category_id: transaction.category_id,
   };
 }
+
+/**
+ * Corpo di `PUT /transaction/:id` che trasforma un trasferimento "da assegnare" in una
+ * spesa o un'entrata ("Not a transfer"): per un conto che non si traccia (es. una ricarica
+ * verso un Revolut non collegato) i soldi usciti sono spesi, quelli entrati sono entrate.
+ *
+ * Il lato noto resta il wallet della transazione: se è l'origine (uscita dal conto) diventa
+ * una spesa, se è la destinazione (entrata nel conto) un'entrata. Il server impara la
+ * correzione come regola (`learnRuleFromCorrection`), quindi i movimenti simili successivi
+ * arrivano già con quella categoria.
+ */
+export function transferAsIncomeExpense<T extends TransferLike & {
+  description?: string | null;
+  note?: string | null;
+  amount: number;
+  date: string;
+}>(transaction: T, categoryId: number) {
+  const side = missingTransferSide(transaction);
+  if (side === null) throw new Error("transferAsIncomeExpense: solo un trasferimento da assegnare");
+  const outgoing = side === "to";
+  return {
+    description: transaction.description || (outgoing ? "Spesa" : "Entrata"),
+    note: transaction.note ?? null,
+    amount: transaction.amount,
+    date: transaction.date,
+    type: outgoing ? ("E" as const) : ("I" as const),
+    wallet_id: Number(outgoing ? transaction.wallet_id : transaction.to_wallet_id),
+    to_wallet_id: null,
+    category_id: categoryId,
+  };
+}
+
+/** Il tipo che avrà un trasferimento da assegnare se diventa spesa o entrata. */
+export function incomeExpenseTypeOf(transaction: TransferLike): "I" | "E" | null {
+  const side = missingTransferSide(transaction);
+  return side === null ? null : side === "to" ? "E" : "I";
+}
