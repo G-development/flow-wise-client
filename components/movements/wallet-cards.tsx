@@ -27,9 +27,9 @@ import {
   useUpdateWallet,
   type Wallet,
 } from "@/lib/hooks/useQueries";
-import { MoreVertical, Plus, Wallet as WalletIcon } from "lucide-react";
+import { MoreVertical, PiggyBank, Plus, Wallet as WalletIcon } from "lucide-react";
 
-/** Wallet massimi per utente: il limite lo impone il database (migrazione 004). */
+/** Conti massimi per utente: il limite lo impone il database (migrazioni 004 e 012; i salvadanai non contano). */
 const MAX_WALLETS = 3;
 
 const formatEuro = (value: number, currency = "EUR") =>
@@ -54,10 +54,15 @@ export type WalletCardInfo = {
   expense: number;
 };
 
+const isPot = (wallet: Wallet) => wallet.kind === "pot";
+
 /**
  * Card dei wallet in cima alla pagina Movements: logo della banca, saldo, entrate e spese
  * del periodo, azioni (modifica, default, elimina). Cliccare una card filtra la tabella
  * su quel wallet; cliccarla di nuovo torna a tutti.
+ *
+ * I salvadanai (migrazione 012) non hanno una card grande: compaiono come card piccole sotto
+ * il loro conto, e si creano dal menu del conto ("Add savings pot").
  */
 export function WalletCards({
   cards,
@@ -70,6 +75,7 @@ export function WalletCards({
 }) {
   const [editing, setEditing] = useState<Wallet | null>(null);
   const [creating, setCreating] = useState(false);
+  const [creatingPotFor, setCreatingPotFor] = useState<Wallet | null>(null);
   const [deleting, setDeleting] = useState<Wallet | null>(null);
   const updateWallet = useUpdateWallet();
   const deleteWallet = useDeleteWallet();
@@ -77,10 +83,26 @@ export function WalletCards({
   const onlySelected = (walletId: string) =>
     selectedWalletIds !== null && selectedWalletIds.size === 1 && selectedWalletIds.has(walletId);
 
+  const accounts = cards.filter((card) => !isPot(card.wallet));
+  const potsByAccount = new Map<string, Wallet[]>();
+  for (const { wallet } of cards) {
+    if (!isPot(wallet) || wallet.parent_wallet_id == null) continue;
+    const list = potsByAccount.get(String(wallet.parent_wallet_id)) ?? [];
+    list.push(wallet);
+    potsByAccount.set(String(wallet.parent_wallet_id), list);
+  }
+
+  const cardKeyHandler = (id: string) => (event: React.KeyboardEvent) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onToggleWallet(id);
+    }
+  };
+
   return (
     <>
       <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {cards.map(({ wallet, bank, income, expense }) => {
+        {accounts.map(({ wallet, bank, income, expense }) => {
           const id = String(wallet.id);
           const selected = onlySelected(id);
           return (
@@ -90,12 +112,7 @@ export function WalletCards({
               tabIndex={0}
               aria-pressed={selected}
               onClick={() => onToggleWallet(id)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  onToggleWallet(id);
-                }
-              }}
+              onKeyDown={cardKeyHandler(id)}
               className={`flex cursor-pointer flex-col gap-3 rounded-xl border bg-card p-4 shadow-sm transition-colors hover:border-primary/50 ${
                 selected ? "border-primary ring-2 ring-primary/30" : "border-border/70"
               }`}
@@ -129,6 +146,7 @@ export function WalletCards({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onSelect={() => setEditing(wallet)}>Edit</DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => setCreatingPotFor(wallet)}>Add savings pot</DropdownMenuItem>
                       <DropdownMenuItem
                         disabled={wallet.is_default || updateWallet.isPending}
                         onSelect={() => updateWallet.mutate({ id: wallet.id, data: { is_default: true } })}
@@ -156,16 +174,79 @@ export function WalletCards({
         <button
           type="button"
           onClick={() => setCreating(true)}
-          disabled={cards.length >= MAX_WALLETS}
-          title={cards.length >= MAX_WALLETS ? `You can create up to ${MAX_WALLETS} wallets` : undefined}
+          disabled={accounts.length >= MAX_WALLETS}
+          title={accounts.length >= MAX_WALLETS ? `You can create up to ${MAX_WALLETS} wallets` : undefined}
           className="flex min-h-[132px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/70 p-4 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Plus className="h-5 w-5" />
-          {cards.length >= MAX_WALLETS ? `Limit of ${MAX_WALLETS} wallets reached` : "Add wallet"}
+          {accounts.length >= MAX_WALLETS ? `Limit of ${MAX_WALLETS} wallets reached` : "Add wallet"}
         </button>
       </div>
 
-      <WalletDialog wallet={editing} open={editing !== null || creating} onClose={() => { setEditing(null); setCreating(false); }} />
+      {/* Salvadanai, raggruppati sotto il loro conto */}
+      {accounts.map(({ wallet: account }) => {
+        const pots = potsByAccount.get(String(account.id)) ?? [];
+        if (pots.length === 0) return null;
+        return (
+          <section key={`pots-${account.id}`} className="mb-6">
+            <h2 className="mb-2 text-sm font-medium text-muted-foreground">Savings pots · {account.name}</h2>
+            <div className="grid gap-2 sm:grid-cols-3 xl:grid-cols-4">
+              {pots.map((pot) => {
+                const id = String(pot.id);
+                const selected = onlySelected(id);
+                return (
+                  <div
+                    key={id}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={selected}
+                    onClick={() => onToggleWallet(id)}
+                    onKeyDown={cardKeyHandler(id)}
+                    className={`flex cursor-pointer items-center justify-between gap-2 rounded-lg border bg-card px-3 py-2 shadow-sm transition-colors hover:border-primary/50 ${
+                      selected ? "border-primary ring-2 ring-primary/30" : "border-border/70"
+                    }`}
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
+                      <PiggyBank className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{pot.name}</p>
+                        <p className="text-sm font-semibold tabular-nums">{formatEuro(pot.balance, pot.currency || "EUR")}</p>
+                      </div>
+                    </div>
+                    <div onClick={(event) => event.stopPropagation()}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={`Actions for ${pot.name}`}>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onSelect={() => setEditing(pot)}>Edit</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-destructive" onSelect={() => setDeleting(pot)}>
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        );
+      })}
+
+      <WalletDialog
+        wallet={editing}
+        parentAccount={creatingPotFor}
+        open={editing !== null || creating || creatingPotFor !== null}
+        onClose={() => {
+          setEditing(null);
+          setCreating(false);
+          setCreatingPotFor(null);
+        }}
+      />
 
       <DeleteDialog
         isOpen={deleting !== null}
@@ -188,8 +269,21 @@ export function WalletCards({
   );
 }
 
-/** Crea un wallet (solo il nome) o ne modifica nome e saldo di apertura. */
-function WalletDialog({ wallet, open, onClose }: { wallet: Wallet | null; open: boolean; onClose: () => void }) {
+/**
+ * Crea un conto o un salvadanaio (con `parentAccount`), oppure modifica nome e saldo di
+ * apertura di un wallet esistente.
+ */
+function WalletDialog({
+  wallet,
+  parentAccount,
+  open,
+  onClose,
+}: {
+  wallet: Wallet | null;
+  parentAccount: Wallet | null;
+  open: boolean;
+  onClose: () => void;
+}) {
   const createWallet = useCreateWallet();
   const updateWallet = useUpdateWallet();
   const [name, setName] = useState("");
@@ -198,7 +292,7 @@ function WalletDialog({ wallet, open, onClose }: { wallet: Wallet | null; open: 
   const [lastOpened, setLastOpened] = useState<string | null>(null);
 
   // Ripopola il modulo ogni volta che si apre (per un wallet diverso o per uno nuovo).
-  const openKey = open ? (wallet ? `edit-${wallet.id}` : "new") : null;
+  const openKey = open ? (wallet ? `edit-${wallet.id}` : parentAccount ? `pot-${parentAccount.id}` : "new") : null;
   if (openKey !== lastOpened) {
     setLastOpened(openKey);
     setName(wallet?.name ?? "");
@@ -219,6 +313,8 @@ function WalletDialog({ wallet, open, onClose }: { wallet: Wallet | null; open: 
           return;
         }
         await updateWallet.mutateAsync({ id: wallet.id, data: { name: name.trim(), opening_balance_cents: cents } });
+      } else if (parentAccount) {
+        await createWallet.mutateAsync({ name: name.trim(), kind: "pot", parent_wallet_id: Number(parentAccount.id) });
       } else {
         await createWallet.mutateAsync({ name: name.trim() });
       }
@@ -232,11 +328,15 @@ function WalletDialog({ wallet, open, onClose }: { wallet: Wallet | null; open: 
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{wallet ? "Edit wallet" : "Add wallet"}</DialogTitle>
+          <DialogTitle>
+            {wallet ? "Edit wallet" : parentAccount ? `Add savings pot to ${parentAccount.name}` : "Add wallet"}
+          </DialogTitle>
           <DialogDescription>
             {wallet
               ? "The balance is derived from movements, starting from the opening balance."
-              : "You can set the opening balance after creating it."}
+              : parentAccount
+                ? "Money moves in and out of a savings pot with transfers. Pots don't count toward the 3-wallet limit."
+                : "You can set the opening balance after creating it."}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">

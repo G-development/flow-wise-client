@@ -98,6 +98,10 @@ export interface Wallet extends Record<string, unknown> {
   opening_balance_cents: number;
   currency: string;
   is_default: boolean;
+  /** "account" = conto; "pot" = salvadanaio di un conto (migrazione 012 del server). Assente prima della 012. */
+  kind?: "account" | "pot";
+  /** Solo per un salvadanaio: il conto a cui appartiene. */
+  parent_wallet_id?: number | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -105,6 +109,9 @@ export interface Wallet extends Record<string, unknown> {
 /** Input di `POST /wallet`: il saldo e' derivato, quindi non e' accettato. */
 export type WalletCreateInput = {
   name: string;
+  /** Per un salvadanaio: `kind: "pot"` e il conto padre. Un conto non manda nessuno dei due. */
+  kind?: "pot";
+  parent_wallet_id?: number;
 };
 
 /**
