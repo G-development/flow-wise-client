@@ -23,7 +23,13 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { useWallets, useActiveCategories, useCreateTransaction } from "@/lib/hooks/useQueries";
+import {
+  useWallets,
+  useActiveCategories,
+  useCreateTransaction,
+  useUpdateTransaction,
+  type Transaction,
+} from "@/lib/hooks/useQueries";
 import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
 import { checkAmountInput } from "@/lib/amountInput";
 import { findTransferCategory } from "@/lib/transfer";
@@ -53,10 +59,55 @@ type NewTransactionProps = {
   trigger?: ReactNode;
   /** Tipo con cui si apre il pannello (default: spesa). */
   defaultType?: FormData["type"];
+  /**
+   * Transazione da modificare. Con questa il pannello e' lo stesso modulo di "Add
+   * transaction" (stessi campi e regole, trasferimenti inclusi) ma precompilato e
+   * salvato con `PUT /transaction/:id`.
+   */
+  transaction?: Transaction | null;
+  /** Apertura controllata dal chiamante (es. la riga della tabella); senza, la gestisce il trigger. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
-export default function NewTransaction({ onSuccess, trigger, defaultType = "E" }: NewTransactionProps) {
-  const [open, setOpen] = useState(false);
+const emptyForm = (type: FormData["type"]): FormData => ({
+  description: "",
+  note: "",
+  amount: "",
+  type,
+  wallet_id: null,
+  to_wallet_id: null,
+  category_id: null,
+  date: null,
+});
+
+/** Valori del modulo per una transazione esistente (date ISO -> yyyy-MM-dd). */
+const formFromTransaction = (transaction: Transaction): FormData => ({
+  description: transaction.description ?? "",
+  note: transaction.note ?? "",
+  amount: Number(transaction.amount),
+  type: transaction.type,
+  wallet_id: transaction.wallet_id == null ? null : Number(transaction.wallet_id),
+  to_wallet_id: transaction.to_wallet_id == null ? null : Number(transaction.to_wallet_id),
+  category_id: transaction.category_id == null ? null : Number(transaction.category_id),
+  date: transaction.date ? String(transaction.date).slice(0, 10) : null,
+});
+
+export default function NewTransaction({
+  onSuccess,
+  trigger,
+  defaultType = "E",
+  transaction = null,
+  open: controlledOpen,
+  onOpenChange,
+}: NewTransactionProps) {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const open = controlledOpen ?? uncontrolledOpen;
+  const setOpen = (next: boolean) => {
+    setUncontrolledOpen(next);
+    onOpenChange?.(next);
+  };
+  const isEdit = transaction != null;
   const { data: wallets = [] } = useWallets();
   const {
     data: categoryList = EMPTY_LIST_RESPONSE,
@@ -65,23 +116,21 @@ export default function NewTransaction({ onSuccess, trigger, defaultType = "E" }
   // La risposta e' l'envelope di lista: le righe stanno in `rows`.
   const categories = categoryList.rows;
   const createTransaction = useCreateTransaction();
-  
-  const [formData, setFormData] = useState<FormData>({
-    description: "",
-    note: "",
-    amount: "",
-    type: defaultType,
-    wallet_id: null,
-    to_wallet_id: null,
-    category_id: null,
-    date: null,
-  });
+  const updateTransaction = useUpdateTransaction();
+
+  const [formData, setFormData] = useState<FormData>(emptyForm(defaultType));
+
+  // In modifica il modulo riparte dalla transazione ogni volta che si apre.
+  useEffect(() => {
+    if (open && transaction) setFormData(formFromTransaction(transaction));
+  }, [open, transaction]);
 
   const defaultWallet = wallets.find((wallet) => wallet.is_default);
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
-    if (!open) return;
+    // In modifica niente default: un trasferimento da assegnare ha un lato vuoto di proposito.
+    if (!open || isEdit) return;
 
     setFormData((current) => {
       const updatedDate = current.date ?? today;
@@ -98,7 +147,7 @@ export default function NewTransaction({ onSuccess, trigger, defaultType = "E" }
         wallet_id: updatedWalletId,
       };
     });
-  }, [open, defaultWallet, today]);
+  }, [open, isEdit, defaultWallet, today]);
 
   const filteredCategories = categories.filter((cat) => cat.type === formData.type);
   const isTransferForm = formData.type === "T";
@@ -156,32 +205,33 @@ export default function NewTransaction({ onSuccess, trigger, defaultType = "E" }
           date: formData.date || undefined,
         };
 
-    createTransaction.mutate(payload, {
-      onSuccess: () => {
-        onSuccess?.();
-        setFormData({
-          description: "",
-          note: "",
-          amount: "",
-          type: defaultType,
-          wallet_id: null,
-          to_wallet_id: null,
-          category_id: null,
-          date: null,
-        });
-        setOpen(false);
-      },
-    });
+    const done = () => {
+      onSuccess?.();
+      setFormData(emptyForm(defaultType));
+      setOpen(false);
+    };
+
+    if (isEdit) {
+      // Il PUT vuole la transazione intera; una spesa/entrata manda `to_wallet_id: null`.
+      updateTransaction.mutate(
+        { id: String(transaction.id), data: { to_wallet_id: null, ...payload } },
+        { onSuccess: done }
+      );
+    } else {
+      createTransaction.mutate(payload, { onSuccess: done });
+    }
   };
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>
-        {trigger ?? <Button>Add Transaction</Button>}
-      </DrawerTrigger>
+      {(trigger || controlledOpen === undefined) && (
+        <DrawerTrigger asChild>
+          {trigger ?? <Button>Add Transaction</Button>}
+        </DrawerTrigger>
+      )}
       <DrawerContent className="h-[85vh] px-3 sm:px-6 py-4 sm:py-6 lg:px-[22%] max-w-full overflow-x-hidden">
         <DrawerHeader className="px-0 relative">
-          <DrawerTitle className="text-lg sm:text-xl">Add transaction</DrawerTitle>
+          <DrawerTitle className="text-lg sm:text-xl">{isEdit ? "Edit transaction" : "Add transaction"}</DrawerTitle>
           <DrawerDescription className="text-sm text-muted-foreground">
             Capture income, expense or a transfer between wallets.
           </DrawerDescription>
