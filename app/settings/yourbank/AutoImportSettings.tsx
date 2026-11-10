@@ -38,7 +38,10 @@ interface AutoImportSettingsProps {
  */
 export default function AutoImportSettings({ bank, autoImport, onSaved }: AutoImportSettingsProps) {
   const queryClient = useQueryClient();
-  const { data: wallets = [], isLoading: loadingWallets } = useWallets();
+  const { data: allWallets = [], isLoading: loadingWallets } = useWallets();
+  // Una banca importa sempre in un conto: i movimenti dei salvadanai arrivano come trasferimenti
+  // da assegnare (U5, deciso da Gio il 10/11). Il server rifiuta comunque un salvadanaio.
+  const wallets = allWallets.filter((wallet) => wallet.kind !== "pot");
   const [walletValue, setWalletValue] = useState(DISABLED);
   const [fromDate, setFromDate] = useState("");
   const [saving, setSaving] = useState(false);
