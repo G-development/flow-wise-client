@@ -7,6 +7,17 @@
 const CHANGELOG: Array<{ period: string; title: string; items: string[] }> = [
   {
     period: "Novembre 2026",
+    title: "Salvadanai e piano delle spese annuali",
+    items: [
+      "Trasferimenti tra wallet: spostare soldi da un conto a un altro non conta più come entrata o spesa.",
+      "Una sola pagina Movements per wallet, entrate, spese e trasferimenti, con filtri combinabili per tipo, wallet e periodo.",
+      "I trasferimenti arrivati dalla banca senza destinazione si completano in un clic, oppure si registrano come spesa o entrata se il conto non è tracciato.",
+      "Salvadanai dentro un conto, con un tetto massimo facoltativo e un avviso quando un versamento lo supererebbe.",
+      "Piano annuale: spese con rate e scadenze, quota da versare ogni mese consigliata e proiezione del fondo sui prossimi 12 mesi.",
+    ],
+  },
+  {
+    period: "Novembre 2026",
     title: "Import automatico e dati che restano tuoi",
     items: [
       "I movimenti della banca arrivano da soli ogni mattina, solo quando sono contabilizzati e senza doppioni.",
