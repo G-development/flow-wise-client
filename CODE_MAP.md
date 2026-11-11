@@ -5,7 +5,7 @@
 Indice file-per-file generato dal codice, non dalla documentazione. Serve a sapere **dove** sta una
 cosa senza leggere il repo: architettura e regole locali stanno altrove (vedi `AGENTS.md`).
 
-Forma `next`, radice sorgente `.`, commit `7b87f99`.
+Forma `next`, radice sorgente `.`, commit `71536e4`.
 
 ```bash
 node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/flow-wise-client \
@@ -145,7 +145,7 @@ Layout: `app/layout.tsx`
 - `lib/potCap.ts` — exports: fn `effectiveCapCents`, `overCapCents`
 - `lib/supabaseClient.ts` — exports: const `supabase`
 - `lib/transfer.test.ts`
-- `lib/transfer.ts` — exports: fn `assignTransferSide`, `findTransferCategory`, `incomeExpenseTypeOf`, `isPendingTransfer`, `isTransfer`, `missingTransferSide`, `transferAsIncomeExpense`
+- `lib/transfer.ts` — exports: fn `assignTransferSide`, `canTransferBetween`, `findTransferCategory`, `incomeExpenseTypeOf`, `isPendingTransfer`, `isTransfer`, `missingTransferSide`, `transferAsIncomeExpense`
 - `lib/utils.ts` — exports: fn `cn`
 
 ## lib/hooks/

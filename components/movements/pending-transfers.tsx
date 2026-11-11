@@ -14,6 +14,7 @@ import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
 import { absoluteAmount } from "@/lib/amount";
 import { CapWarning } from "@/components/movements/cap-warning";
 import {
+  canTransferBetween,
   assignTransferSide,
   incomeExpenseTypeOf,
   isPendingTransfer,
@@ -167,7 +168,11 @@ export function PendingTransfers({
                       </SelectTrigger>
                       <SelectContent>
                         {wallets
-                          .filter((w) => Number(w.id) !== Number(known))
+                          .filter((w) => {
+                            // Solo le coppie ammesse dal server: un salvadanaio solo con il suo conto.
+                            const knownWallet = wallets.find((x) => Number(x.id) === Number(known));
+                            return knownWallet ? canTransferBetween(knownWallet, w) : Number(w.id) !== Number(known);
+                          })
                           .map((w) => (
                             <SelectItem key={w.id} value={String(w.id)}>
                               {w.name}

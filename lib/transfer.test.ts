@@ -10,6 +10,7 @@ import assert from "node:assert/strict";
 
 import {
   assignTransferSide,
+  canTransferBetween,
   findTransferCategory,
   incomeExpenseTypeOf,
   isPendingTransfer,
@@ -89,4 +90,19 @@ test("transferAsIncomeExpense: un rientro nel conto diventa un'entrata sul conto
 test("transferAsIncomeExpense rifiuta un trasferimento gia' completo", () => {
   assert.throws(() => transferAsIncomeExpense({ ...base, type: "T", wallet_id: 1, to_wallet_id: 2 }, 70), /da assegnare/);
   assert.equal(incomeExpenseTypeOf({ type: "T", wallet_id: 1, to_wallet_id: 2 }), null);
+});
+
+test("canTransferBetween: un salvadanaio solo con il suo conto, due conti liberi", () => {
+  const isp = { id: "1", kind: "account" };
+  const tr = { id: "11", kind: "account" };
+  const emergenze = { id: "18", kind: "pot", parent_wallet_id: 1 };
+  const potTr = { id: "30", kind: "pot", parent_wallet_id: "11" };
+  assert.equal(canTransferBetween(isp, emergenze), true);
+  assert.equal(canTransferBetween(emergenze, isp), true);
+  assert.equal(canTransferBetween(isp, tr), true);
+  assert.equal(canTransferBetween(emergenze, tr), false);
+  assert.equal(canTransferBetween(tr, emergenze), false);
+  assert.equal(canTransferBetween(emergenze, potTr), false);
+  assert.equal(canTransferBetween(isp, isp), false);
+  assert.equal(canTransferBetween({ id: 2 }, { id: 3 }), true, "wallet senza kind (prima della 012) = conto");
 });

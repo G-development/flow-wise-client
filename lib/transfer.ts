@@ -105,3 +105,17 @@ export function incomeExpenseTypeOf(transaction: TransferLike): "I" | "E" | null
   const side = missingTransferSide(transaction);
   return side === null ? null : side === "to" ? "E" : "I";
 }
+
+type PairWallet = { id: string | number; kind?: string | null; parent_wallet_id?: string | number | null };
+
+/**
+ * Un trasferimento tra questi due wallet e' ammesso? Un salvadanaio scambia soldi solo con il
+ * suo conto (regola del server, `routes/transaction.js`, decisa da Gio l'11/11/2026); due wallet
+ * uguali mai. Serve a non proporre nei menu una coppia che il server rifiuterebbe.
+ */
+export function canTransferBetween(a: PairWallet, b: PairWallet): boolean {
+  if (String(a.id) === String(b.id)) return false;
+  const potOk = (pot: PairWallet, other: PairWallet) =>
+    pot.kind !== "pot" || String(pot.parent_wallet_id) === String(other.id);
+  return potOk(a, b) && potOk(b, a);
+}

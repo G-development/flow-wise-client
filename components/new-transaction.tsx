@@ -33,7 +33,7 @@ import {
 } from "@/lib/hooks/useQueries";
 import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
 import { checkAmountInput } from "@/lib/amountInput";
-import { findTransferCategory } from "@/lib/transfer";
+import { canTransferBetween, findTransferCategory } from "@/lib/transfer";
 import { X, TrendingUp, TrendingDown, ArrowLeftRight, Calendar, Wallet as WalletIcon, Tag } from "lucide-react";
 
 type FormData = {
@@ -333,9 +333,14 @@ export default function NewTransaction({
               </Label>
               <Select
                 value={formData.wallet_id?.toString() ?? undefined}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, wallet_id: parseInt(value) })
-                }
+                onValueChange={(value) => {
+                  // Cambiando l'origine, una destinazione non piu' ammessa (es. il salvadanaio di un
+                  // altro conto) si azzera invece di arrivare al server e farsi rifiutare.
+                  const from = wallets.find((w) => Number(w.id) === parseInt(value));
+                  const to = wallets.find((w) => Number(w.id) === formData.to_wallet_id);
+                  const keepTo = !from || !to || canTransferBetween(from, to);
+                  setFormData({ ...formData, wallet_id: parseInt(value), to_wallet_id: keepTo ? formData.to_wallet_id : null });
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select wallet" />
@@ -366,7 +371,10 @@ export default function NewTransaction({
                   </SelectTrigger>
                   <SelectContent>
                     {wallets
-                      .filter((w) => Number(w.id) !== formData.wallet_id)
+                      .filter((w) => {
+                        const from = wallets.find((x) => Number(x.id) === formData.wallet_id);
+                        return from ? canTransferBetween(from, w) : true;
+                      })
                       .map((w) => (
                         <SelectItem key={w.id} value={w.id.toString()}>
                           {w.name}
