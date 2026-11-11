@@ -33,7 +33,7 @@ export function PeriodExpensesWidget({ config, dateFilter }: PeriodExpensesWidge
   // l'insieme è incompleto e il totale va presentato come parziale.
   const totalExpenses = totalForType(expenses.rows, "E");
 
-  const formatCurrency = new Intl.NumberFormat("en-US", {
+  const formatCurrency = new Intl.NumberFormat("it-IT", {
     style: "currency",
     currency: "EUR",
   });

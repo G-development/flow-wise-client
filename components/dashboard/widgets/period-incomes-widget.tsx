@@ -33,7 +33,7 @@ export function PeriodIncomesWidget({ config, dateFilter }: PeriodIncomesWidgetP
   // l'insieme è incompleto e il totale va presentato come parziale.
   const totalIncomes = totalForType(incomes.rows, "I");
 
-  const formatCurrency = new Intl.NumberFormat("en-US", {
+  const formatCurrency = new Intl.NumberFormat("it-IT", {
     style: "currency",
     currency: "EUR",
   });
