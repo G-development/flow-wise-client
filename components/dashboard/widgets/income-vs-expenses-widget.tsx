@@ -113,7 +113,7 @@ export function IncomeVsExpensesWidget({
             {/* Difference */}
             <div className="pt-2 border-t">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">Bilancio</span>
+                <span className="text-xs font-medium">Balance</span>
                 <span
                   className={`text-xs font-bold ${
                     difference >= 0 ? "text-green-600" : "text-red-600"
