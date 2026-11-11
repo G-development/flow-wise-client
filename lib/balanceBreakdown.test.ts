@@ -40,3 +40,14 @@ test("balanceBreakdown: totale nullo o negativo, quote a 0 invece di numeri senz
   assert.equal(b.totalCents, -5000);
   assert.equal(b.groups[0].share, 0);
 });
+
+test("balanceBreakdown: un conto collegato usa il saldo della banca e tiene quello dell'app", () => {
+  const bank = new Map([["1", { amount: 104.08, fetchedAt: "2026-11-11T20:59:34Z" }]]);
+  const b = balanceBreakdown(wallets, bank);
+  assert.equal(b.totalCents, 10408 + 634715 + 31000);
+  assert.equal(b.accounts.cents, 10408 + 634715);
+  const isp = b.groups.find((g) => g.id === "1")!;
+  assert.equal(isp.cents, 10408);
+  assert.deepEqual(isp.bank, { appCents: 8032, fetchedAt: "2026-11-11T20:59:34Z" });
+  assert.equal(b.groups.find((g) => g.id === "11")!.bank, undefined, "Trade Republic non e' collegato");
+});

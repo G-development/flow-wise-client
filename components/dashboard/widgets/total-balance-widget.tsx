@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -9,9 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useWallets } from "@/lib/hooks/useQueries";
-import { balanceBreakdown, type BreakdownRow } from "@/lib/balanceBreakdown";
-import { ChevronRight, PiggyBank, Wallet as WalletIcon, Wallet2 } from "lucide-react";
+import { useBankConnections, useWallets } from "@/lib/hooks/useQueries";
+import { balanceBreakdown, type BankBalances, type BreakdownRow } from "@/lib/balanceBreakdown";
+import { ChevronRight, Landmark, PiggyBank, Wallet as WalletIcon, Wallet2 } from "lucide-react";
 
 const euro = (cents: number) =>
   new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(cents / 100);
@@ -21,14 +21,27 @@ const plural = (count: number, one: string, many: string) => `${count} ${count =
 
 /**
  * Saldo totale di tutti i wallet. Sotto, in piccolo, quanto sta nei conti e quanto nei
- * salvadanai; toccandolo si apre la ripartizione wallet per wallet. `wallet.balance` e' il
+ * salvadanai; toccandolo si apre la ripartizione wallet per wallet. Per un conto collegato a una
+ * banca conta il saldo letto dalla banca (`GET /bank/connections`); il saldo dell'app resta nel
+ * dettaglio, cosi' una differenza si vede. Per gli altri wallet `wallet.balance` e' il
  * saldo derivato di `GET /wallet` (server, `utils/walletService.js`); i conti si fanno in
  * centesimi in `lib/balanceBreakdown.ts`.
  */
 export function TotalBalanceWidget() {
   const { data: wallets = [], isLoading } = useWallets();
+  const { data: connections = [] } = useBankConnections();
   const [open, setOpen] = useState(false);
-  const breakdown = balanceBreakdown(wallets);
+  const bankBalances: BankBalances = useMemo(() => {
+    const map = new Map<string, { amount: number; fetchedAt: string | null }>();
+    for (const connection of connections) {
+      const walletId = connection.autoImport?.walletId;
+      if (walletId != null && connection.balance) {
+        map.set(String(walletId), { amount: Number(connection.balance.amount), fetchedAt: connection.balance.fetchedAt });
+      }
+    }
+    return map;
+  }, [connections]);
+  const breakdown = balanceBreakdown(wallets, bankBalances);
 
   return (
     <Card className="h-full flex flex-col overflow-hidden border-border/70 shadow-sm transition-shadow hover:shadow-md min-h-0">
@@ -99,8 +112,11 @@ export function TotalBalanceWidget() {
   );
 }
 
+const readAt = (iso: string | null) =>
+  iso ? new Date(iso).toLocaleString("it-IT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
+
 function Row({ row, icon }: { row: BreakdownRow; icon: "account" | "pot" }) {
-  const Icon = icon === "pot" ? PiggyBank : WalletIcon;
+  const Icon = row.bank ? Landmark : icon === "pot" ? PiggyBank : WalletIcon;
   return (
     <div className={icon === "pot" ? "text-sm" : "text-sm font-medium"}>
       <div className="flex items-center justify-between gap-3">
@@ -113,6 +129,14 @@ function Row({ row, icon }: { row: BreakdownRow; icon: "account" | "pot" }) {
           <span className="ml-2 inline-block w-12 text-right text-xs font-normal text-muted-foreground">{percent(row.share)}</span>
         </span>
       </div>
+      {row.bank && (
+        <p className="mt-0.5 text-xs font-normal text-muted-foreground">
+          Bank balance, read {readAt(row.bank.fetchedAt)}
+          {row.bank.appCents !== row.cents && (
+            <span className="text-amber-700 dark:text-amber-400"> · app says {euro(row.bank.appCents)}</span>
+          )}
+        </p>
+      )}
       <div className="mt-1 h-1 rounded-full bg-muted">
         <div className="h-1 rounded-full bg-primary/70" style={{ width: `${Math.min(100, Math.max(0, row.share * 100))}%` }} />
       </div>

@@ -12,7 +12,18 @@ type BalanceWallet = {
   parent_wallet_id?: number | string | null;
 };
 
-export type BreakdownRow = { id: string; name: string; cents: number; share: number };
+export type BreakdownRow = {
+  id: string;
+  name: string;
+  /** Saldo usato nel totale: quello della banca se il wallet e' collegato, altrimenti quello dell'app. */
+  cents: number;
+  share: number;
+  /** Solo per un wallet collegato a una banca: saldo calcolato dall'app e ora della lettura della banca. */
+  bank?: { appCents: number; fetchedAt: string | null };
+};
+
+/** Saldo letto dalla banca per i wallet collegati (id wallet -> saldo in euro e ora della lettura). */
+export type BankBalances = ReadonlyMap<string, { amount: number; fetchedAt: string | null }>;
 export type AccountGroup = BreakdownRow & { pots: BreakdownRow[] };
 
 export type BalanceBreakdown = {
@@ -28,12 +39,28 @@ const toCents = (euro: number) => (Number.isFinite(euro) ? Math.round(euro * 100
 /** Quota sul totale, 0…1. Con un totale nullo o negativo la quota non ha senso: 0. */
 const shareOf = (cents: number, totalCents: number) => (totalCents > 0 ? cents / totalCents : 0);
 
-export function balanceBreakdown(wallets: BalanceWallet[]): BalanceBreakdown {
+/**
+ * Per un conto collegato a una banca il saldo e' quello letto dalla banca (deciso da Gio
+ * l'11/11/2026): e' il numero vero del conto. Il saldo calcolato dall'app resta nella riga,
+ * cosi' una differenza si vede invece di sparire. I salvadanai non sono mai collegati.
+ */
+export function balanceBreakdown(wallets: BalanceWallet[], bankBalances: BankBalances = new Map()): BalanceBreakdown {
   const isPot = (wallet: BalanceWallet) => wallet.kind === "pot";
-  const totalCents = wallets.reduce((sum, wallet) => sum + toCents(wallet.balance), 0);
+  const effectiveCents = (wallet: BalanceWallet) => {
+    const bank = isPot(wallet) ? undefined : bankBalances.get(String(wallet.id));
+    return bank && Number.isFinite(bank.amount) ? toCents(bank.amount) : toCents(wallet.balance);
+  };
+  const totalCents = wallets.reduce((sum, wallet) => sum + effectiveCents(wallet), 0);
   const row = (wallet: BalanceWallet): BreakdownRow => {
-    const cents = toCents(wallet.balance);
-    return { id: String(wallet.id), name: wallet.name, cents, share: shareOf(cents, totalCents) };
+    const cents = effectiveCents(wallet);
+    const bank = isPot(wallet) ? undefined : bankBalances.get(String(wallet.id));
+    return {
+      id: String(wallet.id),
+      name: wallet.name,
+      cents,
+      share: shareOf(cents, totalCents),
+      ...(bank && Number.isFinite(bank.amount) ? { bank: { appCents: toCents(wallet.balance), fetchedAt: bank.fetchedAt } } : {}),
+    };
   };
 
   const accounts = wallets.filter((wallet) => !isPot(wallet));
@@ -51,7 +78,7 @@ export function balanceBreakdown(wallets: BalanceWallet[]): BalanceBreakdown {
     groups.push({ id: "orphans", name: "Other savings pots", cents: 0, share: 0, pots: orphans.map(row).sort(byCents) });
   }
 
-  const sum = (list: BalanceWallet[]) => list.reduce((total, wallet) => total + toCents(wallet.balance), 0);
+  const sum = (list: BalanceWallet[]) => list.reduce((total, wallet) => total + effectiveCents(wallet), 0);
   return {
     totalCents,
     accounts: { count: accounts.length, cents: sum(accounts) },

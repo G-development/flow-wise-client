@@ -259,6 +259,8 @@ export interface BankConnectionSummary {
   account: string | null;
   lastSynced: string | null;
   autoImport: { enabled: boolean; walletId: number | null; fromDate: string | null } | null;
+  /** Ultimo saldo letto dalla banca (migrazione 008 del server), o null. */
+  balance?: { amount: number; currency: string; type?: string | null; fetchedAt: string | null } | null;
 }
 
 /** Banche collegate dall'utente (GET /bank/connections), con l'import automatico. */
