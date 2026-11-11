@@ -67,7 +67,7 @@ export function IncomeVsExpensesWidget({
     <Card className="h-full flex flex-col overflow-hidden min-h-0">
       <CardHeader className="flex-shrink-0 flex items-center p-4 pb-2">
         <CardTitle className="text-xs sm:text-sm font-medium">
-          Entrate vs Uscite
+          Income vs expenses
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 p-4 pt-0 space-y-4 overflow-hidden flex flex-col justify-center min-h-0">
@@ -81,7 +81,7 @@ export function IncomeVsExpensesWidget({
             {/* Income Bar */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">Entrate</span>
+                <span className="text-xs font-medium">Income</span>
                 <span className="text-xs font-semibold text-green-600">
                   +{formatCurrency.format(totalIncomes)}
                 </span>
@@ -97,7 +97,7 @@ export function IncomeVsExpensesWidget({
             {/* Expense Bar */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">Uscite</span>
+                <span className="text-xs font-medium">Expenses</span>
                 <span className="text-xs font-semibold text-red-600">
                   -{formatCurrency.format(totalExpenses)}
                 </span>

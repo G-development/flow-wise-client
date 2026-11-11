@@ -28,11 +28,11 @@ export function LegalPage({
 
       <footer className="flex flex-col gap-2 border-t pt-6 text-sm text-muted-foreground sm:flex-row sm:justify-between">
         <span>
-          Contatti: <a className="text-primary hover:underline" href={`mailto:${LEGAL.contactEmail}`}>{LEGAL.contactEmail}</a>
+          Contact: <a className="text-primary hover:underline" href={`mailto:${LEGAL.contactEmail}`}>{LEGAL.contactEmail}</a>
         </span>
         <span className="flex gap-4">
-          <Link href="/terms" className="hover:underline">Termini di servizio</Link>
-          <Link href="/privacy" className="hover:underline">Informativa privacy</Link>
+          <Link href="/terms" className="hover:underline">Terms of Service</Link>
+          <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
         </span>
       </footer>
     </main>

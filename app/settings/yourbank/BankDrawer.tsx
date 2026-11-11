@@ -62,18 +62,18 @@ export default function BankDrawer({
       <DrawerTrigger asChild>
         <Button type="button" className="gap-2 shadow-sm font-medium">
           <Plus size={18} />
-          Collega banca
+          Link bank
         </Button>
       </DrawerTrigger>
 
       <DrawerContent className="max-w-2xl mx-auto p-4 md:p-6">
         <DrawerHeader className="text-left px-2 pt-2">
           <DrawerTitle className="text-xl font-bold tracking-tight">
-            Collega il tuo conto bancario
+            Link your bank account
           </DrawerTitle>
           <DrawerDescription className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1">
             <ShieldCheck className="h-4 w-4 text-emerald-500" />
-            Connessione sicura in sola lettura tramite protocollo PSD2 / Open Banking.
+            Secure read-only connection through PSD2 / Open Banking.
           </DrawerDescription>
         </DrawerHeader>
 
@@ -82,7 +82,7 @@ export default function BankDrawer({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Cerca la tua banca..."
+              placeholder="Search your bank..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-11 bg-background"
@@ -93,11 +93,11 @@ export default function BankDrawer({
           <div className="max-h-[340px] overflow-y-auto space-y-2 pr-1">
             {loading ? (
               <p className="text-center py-8 text-sm text-muted-foreground">
-                Caricamento degli istituti disponibili...
+                Loading available banks...
               </p>
             ) : filteredInstitutions.length === 0 ? (
               <div className="text-center py-8 text-sm text-muted-foreground">
-                Nessun istituto trovato per &quot;{searchQuery}&quot;
+                No bank found for &quot;{searchQuery}&quot;
               </div>
             ) : (
               filteredInstitutions.map((institution) => {
@@ -138,8 +138,8 @@ export default function BankDrawer({
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {isSandbox
-                            ? "Ambiente di prova istantaneo con movimenti realistici"
-                            : "Accesso sicuro a conti e movimenti"}
+                            ? "Instant test environment with realistic movements"
+                            : "Secure access to accounts and movements"}
                         </p>
                       </div>
                     </div>
@@ -170,15 +170,15 @@ export default function BankDrawer({
               disabled={!selectedInstitution || loading || connecting}
             >
               {connecting ? (
-                "Preparazione del collegamento..."
+                "Preparing the link..."
               ) : (
                 <>
-                  Continua e Autorizza <ArrowRight className="h-4 w-4" />
+                  Continue and authorize <ArrowRight className="h-4 w-4" />
                 </>
               )}
             </Button>
             <p className="text-center text-[11px] text-muted-foreground mt-2">
-              Verrai reindirizzato all&apos;interfaccia di autorizzazione per confermare l&apos;accesso in sola lettura.
+              You will be redirected to your bank to confirm read-only access.
             </p>
           </div>
         </div>

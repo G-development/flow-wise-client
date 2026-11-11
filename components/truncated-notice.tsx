@@ -21,7 +21,7 @@ export function TruncatedNotice({
   total,
   className = "",
 }: TruncatedNoticeProps) {
-  const detail = total === null ? `${shown} righe` : `${shown} righe su ${total}`;
+  const detail = total === null ? `${shown} rows` : `${shown} of ${total} rows`;
 
   return (
     <p
@@ -29,8 +29,8 @@ export function TruncatedNotice({
       className={`flex items-start gap-1.5 text-xs font-medium text-warning ${className}`}
     >
       <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0" />
-      Dati troncati: mostrate {detail}. Il totale non comprende tutte le
-      transazioni del periodo.
+      Truncated data: showing {detail}. The total does not include every
+      movement of the period.
     </p>
   );
 }

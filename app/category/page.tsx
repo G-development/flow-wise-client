@@ -192,7 +192,7 @@ export default function Categories() {
                     onClick={() => handleEditOpen(String(row.Id))}
                   >
                     <Pencil className="h-4 w-4" />
-                    <span className="sr-only">Modifica</span>
+                    <span className="sr-only">Edit</span>
                   </Button>
                   <Button
                     size="icon"
@@ -201,7 +201,7 @@ export default function Categories() {
                     onClick={() => handleDelete(String(row.Id))}
                   >
                     <Trash className="h-4 w-4" />
-                    <span className="sr-only">Elimina</span>
+                    <span className="sr-only">Delete</span>
                   </Button>
                 </div>
               )}

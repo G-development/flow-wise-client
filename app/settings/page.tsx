@@ -186,7 +186,7 @@ export default function Settings() {
         <div className="app-page-header">
           <div>
             <h1 className="page-title">Account Settings</h1>
-            <p className="page-description">Gestisci profilo, notifiche e preferenze</p>
+            <p className="page-description">Manage your profile, notifications and preferences</p>
           </div>
         </div>
 
@@ -304,10 +304,10 @@ export default function Settings() {
 
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={resetForm} disabled={loading}>
-                Annulla
+                Cancel
               </Button>
               <Button onClick={handleSubmit} disabled={loading}>
-                Aggiorna profilo
+                Update profile
               </Button>
             </div>
           </div>

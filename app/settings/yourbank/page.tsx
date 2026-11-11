@@ -103,11 +103,11 @@ function MovementAmount({ amount, currency }: { amount: number | string; currenc
 function ImportStatusBadge({ imported }: { imported: boolean }) {
   return imported ? (
     <Badge variant="outline" className="text-[10px] py-0 px-2 text-emerald-500 border-emerald-500/30 bg-emerald-500/10 gap-1">
-      <CheckCircle2 className="h-3 w-3" /> Importato
+      <CheckCircle2 className="h-3 w-3" /> Imported
     </Badge>
   ) : (
     <Badge variant="secondary" className="text-[10px] py-0 px-2 text-muted-foreground">
-      Sincronizzato
+      Synced
     </Badge>
   );
 }
@@ -197,7 +197,7 @@ function YourBank() {
       const response = await apiFetch(`/bank/transactions${query}`);
       const data = await readJson<BankTransactionsResponse>(
         response,
-        "Impossibile caricare i movimenti bancari."
+        "Could not load bank movements."
       );
       const parsed = parseListResponse<BankTransactionItem>(data, "transactions");
       setTransactions(parsed.rows);
@@ -217,14 +217,14 @@ function YourBank() {
       const configResponse = await apiFetch("/bank/config");
       const setup = await readJson<BankSetupStatus>(
         configResponse,
-        "Impossibile verificare la configurazione bancaria."
+        "Could not check the bank configuration."
       );
       setSetupStatus(setup);
 
       if (!setup.ready) {
         const message = setup.issues.map((i) => i.message).join(" ");
         setErrorMessage(
-          message || "L'integrazione bancaria non è ancora configurata."
+          message || "Bank integration is not configured yet."
         );
         setConnections([]);
         return;
@@ -234,7 +234,7 @@ function YourBank() {
       const institutionsResponse = await apiFetch("/bank/institutions");
       const availableBanks = await readJson<Institution[]>(
         institutionsResponse,
-        "Impossibile caricare le banche disponibili."
+        "Could not load the available banks."
       );
       setInstitutions(availableBanks);
 
@@ -247,7 +247,7 @@ function YourBank() {
             );
             return await readJson<BankStatusResponse>(
               statusResponse,
-              `Impossibile verificare lo stato di ${institution.name}.`
+              `Could not check the status of ${institution.name}.`
             );
           } catch {
             return {
@@ -283,18 +283,18 @@ function YourBank() {
         const linkedBank = availableBanks.find((b) => b.id === callbackBank);
         toast.success(
           linkedBank
-            ? `Conto ${linkedBank.name} collegato e sincronizzato con successo!`
-            : "Banca collegata con successo!"
+            ? `${linkedBank.name} account linked and synced.`
+            : "Bank linked."
         );
         if (callbackSyncError) {
-          toast.error("Conto collegato. Clicca su «Sincronizza» per aggiornare lo storico.");
+          toast.error("Account linked. Click Sync to load the history.");
         }
       }
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
-          : "Errore durante il caricamento dei dati bancari.";
+          : "Error while loading bank data.";
       console.error("Errore nel caricamento delle connessioni bancarie:", error);
       setErrorMessage(message);
       toast.error(message);
@@ -370,10 +370,10 @@ function YourBank() {
       );
       const data = await readJson<{ authUrl?: string }>(
         response,
-        "Impossibile avviare il collegamento bancario."
+        "Could not start the bank link."
       );
       if (!data.authUrl) {
-        throw new Error("Il server non ha restituito il link di autorizzazione.");
+        throw new Error("The server did not return the authorization link.");
       }
       window.location.assign(data.authUrl);
       return true;
@@ -381,7 +381,7 @@ function YourBank() {
       const message =
         error instanceof Error
           ? error.message
-          : "Errore durante il collegamento della banca.";
+          : "Error while linking the bank.";
       setErrorMessage(message);
       toast.error(message);
       return false;
@@ -393,7 +393,7 @@ function YourBank() {
   const syncBank = async (bankId: string) => {
     setSyncingBank(bankId);
     setErrorMessage("");
-    const toastId = toast.loading("Sincronizzazione dei movimenti in corso...");
+    const toastId = toast.loading("Syncing movements...");
 
     try {
       const response = await apiFetch(
@@ -402,9 +402,9 @@ function YourBank() {
       );
       const result = await readJson<{ synced: number }>(
         response,
-        "Impossibile sincronizzare i movimenti bancari."
+        "Could not sync bank movements."
       );
-      toast.success(`Sincronizzati ${result.synced} movimenti con successo!`, {
+      toast.success(`${result.synced} movements synced.`, {
         id: toastId,
       });
 
@@ -416,7 +416,7 @@ function YourBank() {
       );
       const status = await readJson<BankStatusResponse>(
         statusResponse,
-        "Impossibile aggiornare lo stato del conto."
+        "Could not refresh the account status."
       );
       if (status.connected) {
         setConnections((current) =>
@@ -437,7 +437,7 @@ function YourBank() {
       const message =
         error instanceof Error
           ? error.message
-          : "Errore durante la sincronizzazione bancaria.";
+          : "Error while syncing the bank.";
       setErrorMessage(message);
       toast.error(message, { id: toastId });
     } finally {
@@ -449,7 +449,7 @@ function YourBank() {
     const instName = institutionName(bankId);
     if (
       !window.confirm(
-        `Sei sicuro di voler disconnettere ${instName}? I movimenti già sincronizzati rimarranno conservati nello storico.`
+        `Disconnect ${instName}? Movements already synced stay in the history.`
       )
     ) {
       return;
@@ -463,17 +463,17 @@ function YourBank() {
       );
       await readJson<{ success: boolean }>(
         response,
-        "Impossibile disconnettere la banca."
+        "Could not disconnect the bank."
       );
 
       setConnections((current) => current.filter((conn) => conn.bank !== bankId));
       setSelectedTxnIds(new Set());
-      toast.success(`${instName} disconnessa con successo.`, { id: toastId });
+      toast.success(`${instName} disconnected.`, { id: toastId });
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
-          : "Errore durante la disconnessione della banca.";
+          : "Error while disconnecting the bank.";
       setErrorMessage(message);
       toast.error(message, { id: toastId });
     }
@@ -569,7 +569,7 @@ function YourBank() {
         <div className="app-page-header">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h1 className="page-title">La tua banca</h1>
+              <h1 className="page-title">Your Bank</h1>
               {setupStatus?.isRealBankEnabled ? (
                 <Badge variant="outline" className="gap-1 border-emerald-500/30 text-emerald-500 bg-emerald-500/10 text-xs">
                   <ShieldCheck className="h-3 w-3" /> PSD2 Open Banking
@@ -581,7 +581,7 @@ function YourBank() {
               )}
             </div>
             <p className="page-description">
-              Collega i tuoi conti correnti Open Banking e importa con selezione massiva le transazioni nei tuoi wallet Flow Wise.
+              Link your current accounts through Open Banking and import their movements into your Flow Wise wallets.
             </p>
           </div>
 
@@ -605,7 +605,7 @@ function YourBank() {
               size="sm"
               onClick={() => void loadBanksAndConnections()}
             >
-              Riprova
+              Retry
             </Button>
           </div>
         )}
@@ -613,7 +613,7 @@ function YourBank() {
         {/* Stato Caricamento */}
         {loading ? (
           <div className="surface-card flex items-center justify-center p-12 text-sm text-muted-foreground">
-            <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Caricamento dei dati bancari...
+            <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Loading bank data...
           </div>
         ) : connections.length === 0 ? (
           /* Nessun conto collegato */
@@ -622,9 +622,9 @@ function YourBank() {
               <Landmark className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-foreground">Nessun conto bancario collegato</h2>
+              <h2 className="text-lg font-semibold text-foreground">No bank account linked</h2>
               <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
-                Collega la tua banca per sincronizzare automaticamente i movimenti, visualizzare i saldi e importarli nei tuoi budget Flow Wise.
+                Link your bank to sync movements automatically, see the balance and import them into Flow Wise.
               </p>
             </div>
             {connectableInstitutions.length > 0 && (
@@ -659,7 +659,7 @@ function YourBank() {
                         <div>
                           <h3 className="font-semibold text-foreground">{instName}</h3>
                           <p className="text-xs text-muted-foreground">
-                            Conto: {connection.account ? `${connection.account.slice(-8)}` : "Attivo"}
+                            Account: {connection.account ? `${connection.account.slice(-8)}` : "Active"}
                           </p>
                           <p className="mt-1 text-sm font-semibold text-foreground">
                             {connection.balance
@@ -667,13 +667,13 @@ function YourBank() {
                                   style: "currency",
                                   currency: connection.balance.currency || "EUR",
                                 })
-                              : "Saldo bancario non disponibile"}
+                              : "Bank balance not available"}
                           </p>
                           {connection.balance && (
                             <p className="text-[11px] text-muted-foreground">
-                              {connection.balance.type && `Saldo ${connection.balance.type}`}
+                              {connection.balance.type && `Balance ${connection.balance.type}`}
                               {(connection.balance.referenceDate || connection.balance.fetchedAt) &&
-                                ` · aggiornato ${new Date(
+                                ` · updated ${new Date(
                                   connection.balance.referenceDate || connection.balance.fetchedAt || ""
                                 ).toLocaleString("it-IT", {
                                   day: "2-digit",
@@ -687,12 +687,12 @@ function YourBank() {
                         </div>
                       </div>
                       <Badge variant="outline" className="text-emerald-500 border-emerald-500/30 bg-emerald-500/10 gap-1 text-[11px]">
-                        <ShieldCheck className="h-3 w-3" /> Connesso
+                        <ShieldCheck className="h-3 w-3" /> Connected
                       </Badge>
                     </div>
 
                     <div className="text-xs text-muted-foreground border-t border-border/70 pt-3 flex justify-between items-center">
-                      <span>Ultimo sync:</span>
+                      <span>Last sync:</span>
                       <span className="font-medium text-foreground">
                         {connection.lastSynced
                           ? new Date(connection.lastSynced).toLocaleString("it-IT", {
@@ -701,7 +701,7 @@ function YourBank() {
                               hour: "2-digit",
                               minute: "2-digit",
                             })
-                          : "Mai"}
+                          : "Never"}
                       </span>
                     </div>
 
@@ -726,7 +726,7 @@ function YourBank() {
                         disabled={isSyncing}
                       >
                         <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin" : ""}`} />
-                        {isSyncing ? "Sincronizzo..." : "Sincronizza"}
+                        {isSyncing ? "Syncing..." : "Sync"}
                       </Button>
                       <Button
                         variant="ghost"
@@ -734,7 +734,7 @@ function YourBank() {
                         className="text-muted-foreground hover:text-destructive h-9 px-2.5"
                         onClick={() => void disconnectBank(connection.bank)}
                         disabled={isSyncing}
-                        title="Disconnetti banca"
+                        title="Disconnect bank"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -750,7 +750,7 @@ function YourBank() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h2 className="text-lg font-bold text-foreground">
-                      Movimenti Bancari ({filteredTransactions.length})
+                      Bank movements ({filteredTransactions.length})
                     </h2>
                     {selectedTxnIds.size > 0 && (
                       <Badge variant="secondary" className="font-semibold text-primary">
@@ -759,7 +759,7 @@ function YourBank() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Filtra per periodo e seleziona le transazioni per importarle in blocco nei tuoi Wallet.
+                    Filter by period and select movements to import them into your wallets in one go.
                   </p>
                   {transactionsTruncated && (
                     <TruncatedNotice
@@ -776,7 +776,7 @@ function YourBank() {
                     className="gap-2 shadow-sm font-semibold animate-in fade-in"
                   >
                     <Layers className="h-4 w-4" />
-                    Importa selezionate ({selectedTxnIds.size})
+                    Import selected ({selectedTxnIds.size})
                   </Button>
                 )}
               </div>
@@ -786,7 +786,7 @@ function YourBank() {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <Calendar className="h-4 w-4 text-primary" />
-                    <span>Periodo Transazioni</span>
+                    <span>Period</span>
                   </div>
 
                   {/* Preset Veloci */}
@@ -797,7 +797,7 @@ function YourBank() {
                       className="h-7 text-xs px-2.5"
                       onClick={() => handleQuickRangeChange("this_month")}
                     >
-                      Questo mese
+                      This month
                     </Button>
                     <Button
                       variant={quickRange === "last_month" ? "default" : "outline"}
@@ -805,7 +805,7 @@ function YourBank() {
                       className="h-7 text-xs px-2.5"
                       onClick={() => handleQuickRangeChange("last_month")}
                     >
-                      Mese scorso
+                      Last month
                     </Button>
                     <Button
                       variant={quickRange === "last_30_days" ? "default" : "outline"}
@@ -813,7 +813,7 @@ function YourBank() {
                       className="h-7 text-xs px-2.5"
                       onClick={() => handleQuickRangeChange("last_30_days")}
                     >
-                      Ultimi 30 gg
+                      Last 30 days
                     </Button>
                     <Button
                       variant={quickRange === "last_90_days" ? "default" : "outline"}
@@ -821,7 +821,7 @@ function YourBank() {
                       className="h-7 text-xs px-2.5"
                       onClick={() => handleQuickRangeChange("last_90_days")}
                     >
-                      Ultimi 90 gg
+                      Last 90 days
                     </Button>
                     <Button
                       variant={quickRange === "all" ? "default" : "outline"}
@@ -829,7 +829,7 @@ function YourBank() {
                       className="h-7 text-xs px-2.5"
                       onClick={() => handleQuickRangeChange("all")}
                     >
-                      Tutto
+                      All
                     </Button>
                   </div>
                 </div>
@@ -838,7 +838,7 @@ function YourBank() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 items-end pt-1">
                   <div className="space-y-1">
                     <Label htmlFor="start-date" className="text-xs text-muted-foreground">
-                      Data Inizio
+                      Start date
                     </Label>
                     <Input
                       id="start-date"
@@ -850,7 +850,7 @@ function YourBank() {
                   </div>
                   <div className="space-y-1">
                     <Label htmlFor="end-date" className="text-xs text-muted-foreground">
-                      Data Fine
+                      End date
                     </Label>
                     <Input
                       id="end-date"
@@ -866,7 +866,7 @@ function YourBank() {
                     className="h-9 text-xs font-medium gap-1.5"
                     onClick={handleApplyDateRange}
                   >
-                    <Filter className="h-3.5 w-3.5" /> Applica Filtro Date
+                    <Filter className="h-3.5 w-3.5" /> Apply dates
                   </Button>
                 </div>
               </div>
@@ -876,7 +876,7 @@ function YourBank() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Cerca descrizione o controparte..."
+                    placeholder="Search description or counterparty..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9 h-10 text-sm"
@@ -885,10 +885,10 @@ function YourBank() {
 
                 <Select value={filterBank} onValueChange={setFilterBank}>
                   <SelectTrigger className="h-10 text-sm">
-                    <SelectValue placeholder="Filtra per banca" />
+                    <SelectValue placeholder="Filter by bank" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tutte le banche</SelectItem>
+                    <SelectItem value="all">All banks</SelectItem>
                     {connections.map((c) => (
                       <SelectItem key={c.bank} value={c.bank}>
                         {institutionName(c.bank)}
@@ -899,23 +899,23 @@ function YourBank() {
 
                 <Select value={filterType} onValueChange={setFilterType}>
                   <SelectTrigger className="h-10 text-sm">
-                    <SelectValue placeholder="Filtra per tipo" />
+                    <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tutti i tipi</SelectItem>
-                    <SelectItem value="expense">Solo Spese</SelectItem>
-                    <SelectItem value="income">Solo Entrate</SelectItem>
+                    <SelectItem value="all">All types</SelectItem>
+                    <SelectItem value="expense">Expenses only</SelectItem>
+                    <SelectItem value="income">Income only</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                   <SelectTrigger className="h-10 text-sm">
-                    <SelectValue placeholder="Stato importazione" />
+                    <SelectValue placeholder="Import status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tutti gli stati</SelectItem>
-                    <SelectItem value="synced">Da importare</SelectItem>
-                    <SelectItem value="imported">Già importati</SelectItem>
+                    <SelectItem value="all">All statuses</SelectItem>
+                    <SelectItem value="synced">To import</SelectItem>
+                    <SelectItem value="imported">Already imported</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -923,7 +923,7 @@ function YourBank() {
               {/* Tabella Movimenti */}
               {filteredTransactions.length === 0 ? (
                 <div className="text-center py-12 text-sm text-muted-foreground border rounded-xl border-dashed">
-                  Nessun movimento trovato per il periodo e i filtri selezionati.
+                  No movements for the selected period and filters.
                 </div>
               ) : (
                 <>
@@ -933,9 +933,9 @@ function YourBank() {
                     <Checkbox
                       checked={filteredTransactions.length > 0 && selectedTxnIds.size === filteredTransactions.length}
                       onCheckedChange={handleSelectAll}
-                      aria-label="Seleziona tutte le transazioni"
+                      aria-label="Select all movements"
                     />
-                    Seleziona tutti ({filteredTransactions.length})
+                    Select all ({filteredTransactions.length})
                   </label>
                   <ul className="space-y-2">
                     {filteredTransactions.map((transaction) => {
@@ -951,7 +951,7 @@ function YourBank() {
                               className="mt-0.5"
                               checked={isSelected}
                               onCheckedChange={() => handleToggleSelectTxn(transaction.id)}
-                              aria-label={`Seleziona movimento ${transaction.description}`}
+                              aria-label={`Select movement ${transaction.description}`}
                             />
                             <div className="min-w-0 flex-1 space-y-1.5">
                               <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
@@ -974,7 +974,7 @@ function YourBank() {
                                   className="h-8 text-xs font-medium"
                                   onClick={() => openImportSingle(transaction)}
                                 >
-                                  {isImported ? "Re-importa" : "Importa"}
+                                  {isImported ? "Re-import" : "Import"}
                                 </Button>
                               </div>
                             </div>
@@ -996,16 +996,16 @@ function YourBank() {
                               selectedTxnIds.size === filteredTransactions.length
                             }
                             onCheckedChange={handleSelectAll}
-                            aria-label="Seleziona tutte le transazioni"
+                            aria-label="Select all movements"
                           />
                         </TableHead>
-                        <TableHead>Data</TableHead>
-                        <TableHead>Banca</TableHead>
-                        <TableHead>Descrizione</TableHead>
-                        <TableHead>Controparte</TableHead>
-                        <TableHead className="text-right">Importo</TableHead>
-                        <TableHead className="text-center">Stato</TableHead>
-                        <TableHead className="text-right">Azione</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Bank</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Counterparty</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead className="text-center">Status</TableHead>
+                        <TableHead className="text-right">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1022,7 +1022,7 @@ function YourBank() {
                               <Checkbox
                                 checked={isSelected}
                                 onCheckedChange={() => handleToggleSelectTxn(transaction.id)}
-                                aria-label={`Seleziona movimento ${transaction.description}`}
+                                aria-label={`Select movement ${transaction.description}`}
                               />
                             </TableCell>
                             <TableCell className="font-medium text-xs whitespace-nowrap">
@@ -1050,7 +1050,7 @@ function YourBank() {
                                 className="h-8 text-xs font-medium"
                                 onClick={() => openImportSingle(transaction)}
                               >
-                                {isImported ? "Re-importa" : "Importa"}
+                                {isImported ? "Re-import" : "Import"}
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -1082,7 +1082,7 @@ export default function YourBankWithSuspense() {
     <Suspense
       fallback={
         <div className="flex h-64 items-center justify-center text-muted-foreground">
-          Caricamento...
+          Loading...
         </div>
       }
     >

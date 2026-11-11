@@ -139,7 +139,7 @@ export function DashboardGrid({ widgets, onLayoutChange, dateFilter, isEditMode 
     resized.position.y = Math.min(resized.position.y, GRID_ROWS - resized.position.h);
 
     if (!isValidPosition(resized, widgets)) {
-      toast.error("Impossibile ridimensionare: collisione con un altro widget");
+      toast.error("Cannot resize: it would overlap another widget");
       return;
     }
 

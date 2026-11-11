@@ -169,10 +169,10 @@ function MarkdownContent({ content }: { content: string }) {
 }
 
 const SAMPLE_QUESTIONS = [
-  "Quali sono le mie spese principali?",
-  "Quanto ho speso questo mese e qual è la media giornaliera?",
-  "Quali sono le categorie in cui spendo di più?",
-  "Consigli per ottimizzare il mio budget?",
+  "What are my main expenses?",
+  "How much did I spend this month, and what is the daily average?",
+  "Which categories do I spend the most on?",
+  "Any advice to improve my budget?",
 ];
 
 export default function AiBetaPage() {
@@ -201,7 +201,7 @@ export default function AiBetaPage() {
     const content = (customQuestion || question).trim();
     if (!content || isSending) return;
     if (!startDate || !endDate || startDate > endDate) {
-      setError("Seleziona un intervallo di date valido.");
+      setError("Pick a valid date range.");
       return;
     }
 
@@ -218,11 +218,11 @@ export default function AiBetaPage() {
       const result = (await response.json()) as AnalyticsResponse;
 
       if (!response.ok) {
-        throw new Error(result.error || "Non è stato possibile contattare l'agente.");
+        throw new Error(result.error || "Could not reach the agent.");
       }
       const analysis = result.analysis;
       if (!analysis) {
-        throw new Error("L'agente ha restituito una risposta vuota.");
+        throw new Error("The agent returned an empty answer.");
       }
 
       setMessages((current) => [
@@ -232,10 +232,10 @@ export default function AiBetaPage() {
     } catch (requestError) {
       setError(
         requestError instanceof TypeError
-          ? "Non riesco a raggiungere il server. Avvia flow-wise-server su http://localhost:5030 e verifica che CORS consenta l'origine del client."
+          ? "Cannot reach the server. Start flow-wise-server on http://localhost:5030 and check that CORS allows the client origin."
           : requestError instanceof Error
             ? requestError.message
-            : "Si è verificato un errore durante la richiesta."
+            : "Something went wrong with the request."
       );
     } finally {
       setIsSending(false);
@@ -263,11 +263,11 @@ export default function AiBetaPage() {
             <div className="flex items-center gap-2 mb-1">
               <h1 className="page-title">AI Beta</h1>
               <Badge variant="outline" className="border-primary/30 text-primary bg-primary/10 gap-1 text-xs">
-                <Sparkles className="h-3 w-3" /> Assistente Spese
+                <Sparkles className="h-3 w-3" /> Spending assistant
               </Badge>
             </div>
             <p className="page-description">
-              Chiedi all&apos;agente AI di analizzare le tue spese, individuare trend e consigliarti come risparmiare.
+              Ask the AI agent to analyse your spending, spot trends and suggest how to save.
             </p>
           </div>
           {messages.length > 0 && (
@@ -277,7 +277,7 @@ export default function AiBetaPage() {
               onClick={clearChat}
               className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
             >
-              <RotateCcw className="h-3.5 w-3.5" /> Nuova conversazione
+              <RotateCcw className="h-3.5 w-3.5" /> New conversation
             </Button>
           )}
         </div>
@@ -286,38 +286,37 @@ export default function AiBetaPage() {
         <details className="mb-4 rounded-xl border border-border/70 bg-muted/20 px-4 py-2.5 text-xs text-muted-foreground">
           <summary className="flex cursor-pointer items-center gap-1.5 font-medium text-foreground">
             <ShieldAlert className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-            Come vengono usati i tuoi dati
+            How your data is used
           </summary>
           <div className="mt-2 space-y-2 leading-relaxed">
             <p>
-              Per rispondere, Flow-Wise invia a <strong>Groq</strong>, un servizio di intelligenza
-              artificiale esterno, un riepilogo delle sole <strong>spese</strong> del periodo scelto:
+              To answer, Flow-Wise sends <strong>Groq</strong>, an external artificial intelligence
+              service, a summary of the <strong>expenses</strong> only, for the chosen period:
             </p>
             <ul className="list-disc space-y-0.5 pl-5">
-              <li>la tua domanda e le date del periodo;</li>
-              <li>totale, numero e media delle spese;</li>
-              <li>i totali per categoria e per mese;</li>
+              <li>your question and the dates of the period;</li>
+              <li>total, count and average of the expenses;</li>
+              <li>totals by category and by month;</li>
               <li>
-                le 10 spese più alte, con data, importo, categoria e i primi 120 caratteri della
-                descrizione.
+                the 10 largest expenses, with date, amount, category and the first 120 characters of
+                the description.
               </li>
             </ul>
             <p>
-              Le descrizioni dei movimenti bancari possono contenere nomi di negozi o di persone e
-              codici IBAN. Non vengono inviati il tuo nome, la tua email, le entrate, i saldi o i nomi
-              dei wallet.
+              Bank movement descriptions may contain shop or people names and IBAN codes. Your name,
+              your email, your income, your balances and your wallet names are not sent.
             </p>
             <p>
-              Ogni domanda è una richiesta a sé: Flow-Wise non salva la conversazione. Il trattamento
-              dei dati da parte di Groq segue le sue condizioni di servizio. Se non vuoi inviare questi
-              dati, non usare questa pagina.
+              Each question is a separate request: Flow-Wise does not store the conversation. Groq processes
+              the data under its own terms of service. If you do not want to send this data, do not use
+              this page.
             </p>
           </div>
         </details>
 
         {/* Chat Container a dimensione fissa contenuta */}
         <section
-          aria-label="Chat con assistente finanziario AI"
+          aria-label="Chat with the AI finance assistant"
           className="surface-card mx-auto flex h-[calc(100dvh-14rem)] min-h-[500px] max-h-[760px] w-full flex-col overflow-hidden border border-border/80 shadow-sm rounded-2xl"
         >
           {/* Header e Filtro Periodo compatto */}
@@ -327,9 +326,9 @@ export default function AiBetaPage() {
                 <Bot className="h-5 w-5" aria-hidden="true" />
               </div>
               <div>
-                <h2 className="font-semibold text-sm text-foreground">Analisi Spese AI</h2>
+                <h2 className="font-semibold text-sm text-foreground">AI spending analysis</h2>
                 <p className="text-[11px] text-muted-foreground">
-                  Modello AI con riepilogo finanziario del periodo
+                  AI model with a financial summary of the period
                 </p>
               </div>
             </div>
@@ -373,9 +372,9 @@ export default function AiBetaPage() {
                   <Bot className="h-6 w-6" aria-hidden="true" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground text-base">Cosa vuoi sapere sulle tue spese?</h3>
+                  <h3 className="font-semibold text-foreground text-base">What do you want to know about your spending?</h3>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Seleziona una delle domande rapide qui sotto oppure scrivi la tua richiesta:
+                    Pick one of the quick questions below or write your own:
                   </p>
                 </div>
 
@@ -431,7 +430,7 @@ export default function AiBetaPage() {
                 </div>
                 <div className="rounded-2xl border border-border/70 bg-card px-4 py-3 text-xs text-muted-foreground rounded-bl-xs flex items-center gap-2">
                   <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" />
-                  L&apos;agente sta analizzando le tue spese...
+                  The agent is analysing your spending...
                 </div>
               </div>
             )}
@@ -448,7 +447,7 @@ export default function AiBetaPage() {
           {/* Form Invio Messaggio fisso in basso */}
           <form onSubmit={(e) => void sendMessage(e)} className="border-t border-border/70 bg-background/50 p-3 sm:p-4">
             <label htmlFor="agent-question" className="sr-only">
-              Scrivi un messaggio
+              Write a message
             </label>
             <div className="flex items-end gap-2">
               <Textarea
@@ -456,7 +455,7 @@ export default function AiBetaPage() {
                 value={question}
                 onChange={(event) => setQuestion(event.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Scrivi una domanda sulle tue spese… (Invio per inviare, Shift+Invio per a capo)"
+                placeholder="Ask about your spending… (Enter to send, Shift+Enter for a new line)"
                 maxLength={1000}
                 rows={1}
                 disabled={isSending}
@@ -465,7 +464,7 @@ export default function AiBetaPage() {
               <Button
                 type="submit"
                 size="icon"
-                aria-label="Invia messaggio"
+                aria-label="Send message"
                 disabled={
                   isSending ||
                   !question.trim() ||

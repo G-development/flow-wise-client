@@ -205,9 +205,9 @@ export default function ImportTransactionDialog({
       setIsCreateOtherOpen(false);
       setCreateOtherTypes([]);
       setDeclinedOtherTypes([]);
-      toast.success("Categorie Altro create. Controlla i suggerimenti prima di importare.");
+      toast.success("\"Altro\" categories created. Check the suggestions before importing.");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Impossibile creare le categorie Altro");
+      toast.error(error instanceof Error ? error.message : "Could not create the \"Altro\" categories");
     } finally {
       setIsCreatingOther(false);
     }
@@ -215,11 +215,11 @@ export default function ImportTransactionDialog({
 
   const handleImport = async () => {
     if (!effectiveWalletId) {
-      toast.error("Seleziona un wallet di destinazione");
+      toast.error("Pick a target wallet");
       return;
     }
     if (loadingCategories) {
-      toast.error("Attendi il caricamento delle categorie");
+      toast.error("Wait for the categories to load");
       return;
     }
 
@@ -242,7 +242,7 @@ export default function ImportTransactionDialog({
         declinedOtherTypes.includes(getBankTransactionType(transaction.amount))
       )
     ) {
-      toast.error("Scegli una categoria valida per ogni movimento prima di importare");
+      toast.error("Pick a valid category for every movement before importing");
       return;
     }
 
@@ -255,7 +255,7 @@ export default function ImportTransactionDialog({
     }
 
     setIsSubmitting(true);
-    const toastId = toast.loading("Importazione dei movimenti in corso...");
+    const toastId = toast.loading("Importing movements...");
     let importedTotal = 0;
     let groupCount = 0;
     try {
@@ -270,7 +270,7 @@ export default function ImportTransactionDialog({
         });
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || "Errore durante l'importazione");
+          throw new Error(errorData.error || "Error while importing");
         }
         const data = await response.json().catch(() => null);
         importedTotal +=
@@ -280,16 +280,16 @@ export default function ImportTransactionDialog({
 
       await invalidateImportedData(queryClient);
       toast.success(
-        `${importedTotal} ${importedTotal === 1 ? "movimento importato" : "movimenti importati"} con successo (${groupCount} gruppi).`,
+        `${importedTotal} ${importedTotal === 1 ? "movement" : "movements"} imported (${groupCount} ${groupCount === 1 ? "group" : "groups"}).`,
         { id: toastId }
       );
       onOpenChange(false);
       onSuccess();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Errore durante l'importazione";
+      const message = error instanceof Error ? error.message : "Error while importing";
       if (importedTotal > 0) {
         await invalidateImportedData(queryClient);
-        toast.error(`${message}. Importati parzialmente ${importedTotal} movimenti; aggiorno l'elenco.`, {
+        toast.error(`${message}. ${importedTotal} movements were imported anyway; refreshing the list.`, {
           id: toastId,
         });
         onOpenChange(false);
@@ -303,8 +303,8 @@ export default function ImportTransactionDialog({
   };
 
   const createTypesLabel = createOtherTypes
-    .map((type) => (type === "I" ? "entrate" : "spese"))
-    .join(" e ");
+    .map((type) => (type === "I" ? "income" : "expenses"))
+    .join(" and ");
   const unresolvedTypes = Array.from(
     new Set(unresolvedTransactions.map((transaction) => getBankTransactionType(transaction.amount)))
   );
@@ -317,12 +317,12 @@ export default function ImportTransactionDialog({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg">
               <CheckCircle2 className="h-5 w-5 text-primary" />
-              Importa in Flow Wise
+              Import into Flow Wise
             </DialogTitle>
             <DialogDescription>
               {transactions.length === 1
-                ? "Controlla e conferma la categoria suggerita per questo movimento."
-                : `Rivedi le categorie suggerite per i ${stats.totalCount} movimenti selezionati.`}
+                ? "Check and confirm the suggested category for this movement."
+                : `Review the suggested categories for the ${stats.totalCount} selected movements.`}
             </DialogDescription>
           </DialogHeader>
 
@@ -334,13 +334,13 @@ export default function ImportTransactionDialog({
               </div>
               {stats.totalExpense > 0 && (
                 <div className="flex justify-between text-rose-500">
-                  <span>Totale spese</span>
+                  <span>Total expenses</span>
                   <span>−{stats.totalExpense.toLocaleString("it-IT", { style: "currency", currency: "EUR" })}</span>
                 </div>
               )}
               {stats.totalIncome > 0 && (
                 <div className="flex justify-between text-emerald-500">
-                  <span>Totale entrate</span>
+                  <span>Total income</span>
                   <span>+{stats.totalIncome.toLocaleString("it-IT", { style: "currency", currency: "EUR" })}</span>
                 </div>
               )}
@@ -348,7 +348,7 @@ export default function ImportTransactionDialog({
 
             <div className="space-y-2">
               <Label htmlFor="target-wallet" className="text-sm font-medium">
-                Wallet di destinazione
+                Target wallet
               </Label>
               <Select
                 value={effectiveWalletId}
@@ -356,7 +356,7 @@ export default function ImportTransactionDialog({
                 disabled={loadingWallets || wallets.length === 0}
               >
                 <SelectTrigger id="target-wallet" className="w-full">
-                  <SelectValue placeholder="Seleziona un wallet" />
+                  <SelectValue placeholder="Pick a wallet" />
                 </SelectTrigger>
                 <SelectContent>
                   {wallets.map((wallet) => (
@@ -376,14 +376,14 @@ export default function ImportTransactionDialog({
               </Select>
               {wallets.length === 0 && !loadingWallets && (
                 <p className="text-xs text-destructive">
-                  Nessun wallet trovato. Creane uno nella sezione Wallet prima di importare.
+                  No wallet found. Create one in Movements before importing.
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <Label className="text-sm font-medium">Categoria per movimento</Label>
+                <Label className="text-sm font-medium">Category per movement</Label>
                 {uncertainCount > 0 && (
                   <span className="text-xs text-amber-600 dark:text-amber-400">
                     {uncertainCount} da controllare
@@ -391,10 +391,10 @@ export default function ImportTransactionDialog({
                 )}
               </div>
               {loadingCategories ? (
-                <p className="text-xs text-muted-foreground">Caricamento categorie…</p>
+                <p className="text-xs text-muted-foreground">Loading categories…</p>
               ) : categories.length === 0 ? (
                 <p className="text-xs text-destructive">
-                  Nessuna categoria attiva. Creane una nella sezione Categorie prima di importare.
+                  No active category. Create one in Categories before importing.
                 </p>
               ) : (
                 <ScrollArea className="h-[min(40vh,320px)] rounded-md border">
@@ -420,8 +420,8 @@ export default function ImportTransactionDialog({
                           <div className="min-w-0">
                             <div className="flex items-start gap-1.5">
                               {suggestion?.uncertain && (
-                                <span title="Suggerimento incerto: controlla la categoria" className="mt-0.5 text-amber-600 dark:text-amber-400">
-                                  <AlertTriangle aria-label="Suggerimento incerto" className="h-4 w-4" />
+                                <span title="Uncertain suggestion: check the category" className="mt-0.5 text-amber-600 dark:text-amber-400">
+                                  <AlertTriangle aria-label="Uncertain suggestion" className="h-4 w-4" />
                                 </span>
                               )}
                               <p className="line-clamp-2 break-words text-sm font-medium sm:truncate" title={transaction.description}>
@@ -449,10 +449,10 @@ export default function ImportTransactionDialog({
                             disabled={categoryOptions.length === 0 || isSubmitting}
                           >
                             <SelectTrigger
-                              aria-label={`Categoria per ${transaction.description || "movimento"}`}
+                              aria-label={`Category for ${transaction.description || "movement"}`}
                               className={needsChoice ? "border-amber-500" : ""}
                             >
-                              <SelectValue placeholder="Scegli categoria" />
+                              <SelectValue placeholder="Pick a category" />
                             </SelectTrigger>
                             <SelectContent>
                               {categoryOptions.map((category) => (
@@ -470,7 +470,7 @@ export default function ImportTransactionDialog({
               )}
               {mustChooseManually && unresolvedTransactions.length > 0 && !loadingCategories && (
                 <p className="text-xs text-amber-600 dark:text-amber-400">
-                  Hai scelto di non creare “Altro”. Seleziona una categoria per {unresolvedTransactions.length} {unresolvedTransactions.length === 1 ? "movimento" : "movimenti"} senza proposta.
+                  You chose not to create “Altro”. Pick a category for {unresolvedTransactions.length} {unresolvedTransactions.length === 1 ? "movement" : "movements"} without a suggestion.
                 </p>
               )}
             </div>
@@ -478,7 +478,7 @@ export default function ImportTransactionDialog({
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-              Annulla
+              Cancel
             </Button>
             <Button
               type="button"
@@ -490,7 +490,7 @@ export default function ImportTransactionDialog({
                 transactions.length === 0
               }
             >
-              {isSubmitting ? "Importazione in corso..." : "Conferma importazione"}
+              {isSubmitting ? "Importing..." : "Confirm import"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -499,9 +499,9 @@ export default function ImportTransactionDialog({
       <AlertDialog open={isCreateOtherOpen} onOpenChange={(nextOpen) => !isCreatingOther && setIsCreateOtherOpen(nextOpen)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Crea la categoria “Altro”?</AlertDialogTitle>
+            <AlertDialogTitle>Create the “Altro” category?</AlertDialogTitle>
             <AlertDialogDescription>
-              Non hai una categoria attiva “Altro” per {createTypesLabel}. Vuoi crearla e usarla come proposta per i movimenti senza una corrispondenza sicura? Potrai rivedere e modificare le categorie prima di importare.
+              You have no active “Altro” category for {createTypesLabel}. Create it and use it as the suggestion for movements without a sure match? You can still review the categories before importing.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -509,10 +509,10 @@ export default function ImportTransactionDialog({
             disabled={isCreatingOther}
             onClick={() => setDeclinedOtherTypes((previous) => Array.from(new Set([...previous, ...createOtherTypes])))}
           >
-            No, scelgo io
+            No, I&apos;ll pick
           </AlertDialogCancel>
             <AlertDialogAction onClick={(event) => { event.preventDefault(); void createMissingOtherCategories(); }} disabled={isCreatingOther}>
-              {isCreatingOther ? "Creazione…" : "Crea categoria"}
+              {isCreatingOther ? "Creating…" : "Create category"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

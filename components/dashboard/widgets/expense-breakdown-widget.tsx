@@ -129,7 +129,7 @@ export function ExpenseBreakdownWidget({
     <Card className="h-full flex flex-col overflow-hidden min-h-0">
       <CardHeader className="flex-shrink-0 p-4 pb-2">
         <CardTitle className="text-xs sm:text-sm font-medium">
-          Spese per Categoria
+          Spending by category
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 p-4 pt-0 overflow-hidden flex flex-col items-center justify-center min-h-0">
@@ -143,7 +143,7 @@ export function ExpenseBreakdownWidget({
           <div className="w-full space-y-3">
             {/* Mobile (stessa soglia di dashboard-grid, 768 px): barre orizzontali dalla categoria piu'
                 alta, piu' leggibili della torta su uno schermo stretto (U6, deciso da Gio il 10/11). */}
-            <ul className="space-y-2.5 md:hidden" aria-label="Spese per categoria">
+            <ul className="space-y-2.5 md:hidden" aria-label="Spending by category">
               {barData.map((item) => (
                 <li key={item.category} className="text-xs">
                   <div className="flex items-baseline justify-between gap-3">
@@ -216,7 +216,7 @@ export function ExpenseBreakdownWidget({
 
             {/* Total */}
             <div className="pt-2 border-t flex items-center justify-between">
-              <span className="text-xs font-medium">Totale</span>
+              <span className="text-xs font-medium">Total</span>
               <span className="text-xs font-bold">
                 {expenses.truncated ? "≥ " : ""}
                 {formatCurrency.format(totalExpenses)}

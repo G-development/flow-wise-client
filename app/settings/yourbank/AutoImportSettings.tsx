@@ -70,7 +70,7 @@ export default function AutoImportSettings({ bank, autoImport, onSaved }: AutoIm
         const message =
           data && typeof data === "object" && "error" in data && typeof data.error === "string"
             ? data.error
-            : "Impossibile salvare l'import automatico";
+            : "Could not save the auto-import";
         throw new Error(message);
       }
       const saved = (data as { autoImport: BankAutoImport }).autoImport;
@@ -79,11 +79,11 @@ export default function AutoImportSettings({ bank, autoImport, onSaved }: AutoIm
       void queryClient.invalidateQueries({ queryKey: queryKeys.bank.connections });
       toast.success(
         saved.enabled
-          ? `Import automatico attivo${saved.fromDate ? ` dal ${new Date(`${saved.fromDate}T00:00:00`).toLocaleDateString("it-IT")}` : ""}`
-          : "Import automatico disattivato"
+          ? `Auto-import on${saved.fromDate ? ` from ${new Date(`${saved.fromDate}T00:00:00`).toLocaleDateString("it-IT")}` : ""}`
+          : "Auto-import off"
       );
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Impossibile salvare l'import automatico");
+      toast.error(error instanceof Error ? error.message : "Could not save the auto-import");
     } finally {
       setSaving(false);
     }
@@ -93,17 +93,17 @@ export default function AutoImportSettings({ bank, autoImport, onSaved }: AutoIm
     <div className="border-t border-border/70 pt-3 space-y-2">
       <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
         <Bot className="h-3.5 w-3.5 text-primary" />
-        Import automatico giornaliero
+        Daily auto-import
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
           <Label className="text-[11px] text-muted-foreground">Wallet</Label>
           <Select value={walletValue} onValueChange={setWalletValue} disabled={loadingWallets || saving}>
             <SelectTrigger className="h-8 text-xs">
-              <SelectValue placeholder="Disattivato" />
+              <SelectValue placeholder="Off" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={DISABLED}>Disattivato</SelectItem>
+              <SelectItem value={DISABLED}>Off</SelectItem>
               {wallets.map((wallet) => (
                 <SelectItem key={wallet.id} value={String(wallet.id)}>
                   {wallet.name}
@@ -113,7 +113,7 @@ export default function AutoImportSettings({ bank, autoImport, onSaved }: AutoIm
           </Select>
         </div>
         <div className="space-y-1">
-          <Label className="text-[11px] text-muted-foreground">Dal</Label>
+          <Label className="text-[11px] text-muted-foreground">From</Label>
           <Input
             type="date"
             value={fromDate}
@@ -124,11 +124,11 @@ export default function AutoImportSettings({ bank, autoImport, onSaved }: AutoIm
         </div>
       </div>
       <p className="text-[11px] text-muted-foreground">
-        Solo movimenti contabilizzati. Categoria dalle tue regole, altrimenti &quot;Altro&quot;.
+        Booked movements only. Category from your rules, otherwise &quot;Altro&quot;.
       </p>
       {dirty && (
         <Button size="sm" className="h-8 w-full" onClick={() => void save()} disabled={saving}>
-          {saving ? "Salvo..." : "Salva"}
+          {saving ? "Saving..." : "Save"}
         </Button>
       )}
     </div>

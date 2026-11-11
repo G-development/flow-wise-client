@@ -19,23 +19,23 @@ import { LandingChangelog } from "@/components/landing-changelog";
 const features = [
   {
     icon: ChartNoAxesCombined,
-    title: "Vedi il quadro, non solo i numeri",
+    title: "See the big picture, not just the numbers",
     description:
-      "Un riepilogo chiaro di entrate, uscite e saldo, con widget che puoi organizzare come vuoi.",
+      "A clear summary of income, expenses and balance, with widgets you can arrange as you like.",
     number: "01",
   },
   {
     icon: Wallet,
-    title: "Ogni euro al suo posto",
+    title: "Every euro in its place",
     description:
-      "Tieni insieme portafogli, categorie e transazioni, senza fogli sparsi o calcoli a mano.",
+      "Wallets, savings pots, categories and movements together, without scattered spreadsheets or manual sums.",
     number: "02",
   },
   {
     icon: CreditCard,
-    title: "Parti dai dati che hai già",
+    title: "Start from the data you already have",
     description:
-      "Importa le tue transazioni da CSV e ritrova la tua storia finanziaria in un solo posto.",
+      "Link your bank or import a CSV and find your financial history in one place.",
     number: "03",
   },
 ];
@@ -54,14 +54,14 @@ export default function Home() {
             href="/login"
             className="rounded-full px-3 py-2 text-sm font-medium text-[#41524d] transition-colors hover:text-[#142c26] sm:px-4"
           >
-            Accedi
+            Sign in
           </Link>
           <Button
             asChild
             className="h-10 rounded-full bg-[#153c32] px-4 text-white shadow-none hover:bg-[#205545] sm:px-5"
           >
             <Link href="/register">
-              Inizia gratis <ArrowRight className="ml-1 h-4 w-4" />
+              Start for free <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
         </nav>
@@ -71,20 +71,20 @@ export default function Home() {
         <div className="relative z-10 max-w-2xl">
           <Badge className="mb-7 gap-2 rounded-full border border-[#c8ded3] bg-white/70 px-3.5 py-1.5 text-xs font-medium text-[#23604b] shadow-sm hover:bg-white/70">
             <Sparkles className="h-3.5 w-3.5" />
-            Gratis da usare, senza complicazioni
+            Free to use, no strings attached
           </Badge>
 
           <h1 className="max-w-[760px] text-[clamp(3.5rem,8vw,7.25rem)] font-medium leading-[0.91] tracking-[-0.075em] text-[#142c26]">
-            I tuoi soldi.
+            Your money.
             <br />
             <span className="font-serif italic font-normal text-[#378369]">
-              Più in chiaro.
+              Clearer.
             </span>
           </h1>
 
           <p className="mt-7 max-w-lg text-base leading-7 text-[#53645d] sm:text-lg sm:leading-8">
-            Entrate, spese e obiettivi in un unico posto. Flow Wise ti aiuta a
-            capire dove va il tuo denaro — senza costarti nulla.
+            Income, expenses and goals in one place. Flow Wise helps you
+            see where your money goes — at no cost.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -94,12 +94,12 @@ export default function Home() {
               className="h-12 rounded-full bg-[#153c32] px-6 text-base text-white shadow-[0_12px_28px_-14px_rgba(21,60,50,0.75)] hover:bg-[#205545]"
             >
               <Link href="/register">
-                Crea il tuo spazio gratuito
+                Create your free space
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
             <span className="px-2 text-sm text-[#687771]">
-              Gratis oggi. Nessun abbonamento.
+              Free today. No subscription.
             </span>
           </div>
 
@@ -109,7 +109,7 @@ export default function Home() {
               <span className="grid h-8 w-8 place-items-center rounded-full border-2 border-[#f5f5ef] bg-[#f5dfbf] text-xs">↗</span>
               <span className="grid h-8 w-8 place-items-center rounded-full border-2 border-[#f5f5ef] bg-[#d9e6e2] text-xs">✓</span>
             </div>
-            <span>Un modo più sereno di gestire il quotidiano.</span>
+            <span>A calmer way to handle everyday money.</span>
           </div>
         </div>
 
@@ -123,7 +123,7 @@ export default function Home() {
             className="absolute left-[17%] top-[13%] h-[64%] w-[64%] rounded-full border border-dashed border-[#d0ddd4]"
           />
           <div className="absolute right-[6%] top-[8%] rotate-[-9deg] rounded-full bg-[#e8b46d] px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#3b2d1b] shadow-md sm:right-[2%] sm:top-[10%]">
-            Il tuo denaro, in movimento
+            Your money, in motion
           </div>
 
           <Card className="relative z-10 w-[min(100%,430px)] rotate-[-3deg] overflow-hidden rounded-[1.6rem] border-[#dbe3dc] bg-white shadow-[0_35px_90px_-45px_rgba(22,52,42,0.42)] transition-transform duration-500 hover:rotate-0">
@@ -134,14 +134,14 @@ export default function Home() {
                   <span className="text-sm font-semibold tracking-tight">flow wise</span>
                 </div>
                 <span className="rounded-full bg-[#edf5ef] px-3 py-1 text-[11px] font-medium text-[#34715a]">
-                  ANTEPRIMA
+                  PREVIEW
                 </span>
               </div>
 
               <div className="space-y-5 p-5 sm:space-y-6 sm:p-7">
                 <div>
                   <p className="text-xs font-medium uppercase tracking-[0.13em] text-[#7d8981]">
-                    Disponibile questo mese
+                    Available this month
                   </p>
                   <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <span className="text-4xl font-medium tracking-[-0.06em] text-[#182f28] sm:text-5xl">
@@ -156,7 +156,7 @@ export default function Home() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-2xl bg-[#eef6ef] p-3.5 sm:p-4">
                     <div className="flex items-center justify-between text-[#438262]">
-                      <span className="text-xs font-medium">Entrate</span>
+                      <span className="text-xs font-medium">Income</span>
                       <ArrowDownLeft className="h-4 w-4" />
                     </div>
                     <p className="mt-3 text-xl font-semibold tracking-tight text-[#244f3d] sm:text-2xl">
@@ -165,7 +165,7 @@ export default function Home() {
                   </div>
                   <div className="rounded-2xl bg-[#fbf1e8] p-3.5 sm:p-4">
                     <div className="flex items-center justify-between text-[#b56c43]">
-                      <span className="text-xs font-medium">Uscite</span>
+                      <span className="text-xs font-medium">Expenses</span>
                       <ArrowUpRight className="h-4 w-4" />
                     </div>
                     <p className="mt-3 text-xl font-semibold tracking-tight text-[#75452e] sm:text-2xl">
@@ -177,12 +177,12 @@ export default function Home() {
                 <div className="rounded-2xl border border-[#edf0ec] p-4 sm:p-5">
                   <div className="mb-5 flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-[#263b33]">Il tuo ritmo</p>
-                      <p className="mt-1 text-xs text-[#87928b]">Entrate e uscite · esempio</p>
+                      <p className="text-sm font-semibold text-[#263b33]">Your rhythm</p>
+                      <p className="mt-1 text-xs text-[#87928b]">Income and expenses · example</p>
                     </div>
                     <span className="rounded-full bg-[#f3f4ef] px-2.5 py-1 text-[10px] text-[#738078]">ULTIMI 7 GIORNI</span>
                   </div>
-                  <div className="flex h-[102px] items-end gap-2 sm:gap-3" aria-label="Grafico illustrativo di entrate e uscite">
+                  <div className="flex h-[102px] items-end gap-2 sm:gap-3" aria-label="Example chart of income and expenses">
                     {[42, 66, 50, 84, 59, 92, 72].map((height, index) => (
                       <div key={index} className="flex h-full flex-1 items-end gap-1">
                         <span className="w-1/2 rounded-t-full bg-[#4f9b78]" style={{ height: `${height}%` }} />
@@ -191,7 +191,7 @@ export default function Home() {
                     ))}
                   </div>
                   <div className="mt-3 flex justify-between text-[10px] text-[#9aa39c]">
-                    <span>LUN</span><span>MAR</span><span>MER</span><span>GIO</span><span>VEN</span><span>SAB</span><span>DOM</span>
+                    <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
                   </div>
                 </div>
 
@@ -199,8 +199,8 @@ export default function Home() {
                   <div className="flex items-center gap-3">
                     <span className="grid h-9 w-9 place-items-center rounded-xl bg-white text-sm">☕</span>
                     <div>
-                      <p className="text-xs font-semibold text-[#33463e]">Piccole spese</p>
-                      <p className="text-[11px] text-[#929b95]">Oggi · Quotidiano</p>
+                      <p className="text-xs font-semibold text-[#33463e]">Small expenses</p>
+                      <p className="text-[11px] text-[#929b95]">Today · Everyday</p>
                     </div>
                   </div>
                   <span className="text-sm font-semibold text-[#a35f43]">− €4,50</span>
@@ -214,8 +214,8 @@ export default function Home() {
               <Check className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-xs font-semibold text-[#263b33]">Tutto sotto controllo</p>
-              <p className="mt-0.5 text-[11px] text-[#7d8981]">Un passo alla volta.</p>
+              <p className="text-xs font-semibold text-[#263b33]">All under control</p>
+              <p className="mt-0.5 text-[11px] text-[#7d8981]">One step at a time.</p>
             </div>
           </div>
         </div>
@@ -227,14 +227,14 @@ export default function Home() {
         <div className="mx-auto grid max-w-[1280px] gap-10 lg:grid-cols-[0.65fr_1.35fr] lg:gap-16">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9fd2b6]">
-              Finalmente, semplice
+              Finally, simple
             </p>
             <h2 className="mt-4 max-w-sm text-3xl font-medium leading-tight tracking-[-0.04em] sm:text-4xl">
-              La chiarezza finanziaria non dovrebbe avere un prezzo.
+              Financial clarity shouldn&apos;t have a price.
             </h2>
             <p className="mt-5 max-w-sm text-sm leading-7 text-[#c3d6cd]">
-              Per questo Flow Wise è gratuito. Uno spazio pratico per prendere
-              decisioni migliori, con i tuoi tempi.
+              That&apos;s why Flow Wise is free. A practical space to make
+              better decisions, at your own pace.
             </p>
             <Button
               asChild
@@ -274,10 +274,10 @@ export default function Home() {
             <Image src={Logo} width={24} height={24} alt="" />
             flow wise
           </Link>
-          <p>Gestisci il presente. Guarda avanti.</p>
+          <p>Manage today. Look ahead.</p>
           <div className="flex gap-4">
             <Link href="/terms" className="underline decoration-[#aebbb2] underline-offset-4 hover:text-[#153c32]">
-              Termini di servizio
+              Terms of Service
             </Link>
             <Link href="/privacy" className="underline decoration-[#aebbb2] underline-offset-4 hover:text-[#153c32]">
               Privacy
