@@ -72,7 +72,7 @@ Il piano annuale (pagina `/annual-plan`, `lib/hooks/useAnnualPlan.ts`) usa `GET 
 (voci, rate e calcolo in centesimi: `plan.suggestedMonthlyCents`, `plan.capCents`, `plan.projection`…),
 `POST /annual-items`, `PUT`/`DELETE /annual-items/:id`, `POST /annual-items/:id/installments`,
 `POST /annual-items/:id/copy-next-year`, `PUT`/`DELETE /annual-installments/:id` e
-`PUT /annual-installments/:id/payment` (`{ transaction_id }`, `null` scollega). Il tetto di un
+`PUT /annual-installments/:id/payment` (`{ transaction_id }`, `null` scollega); `PUT /annual-installments/:id` accetta anche `is_paid` (pagata a mano, migrazione 015): una rata è `paid` se `is_paid` o collegata a una transazione. Il widget Total Balance legge anche `balance` di `GET /bank/connections` per i conti collegati. Il tetto di un
 salvadanaio si scrive con `PUT /wallet/:id` (`cap_cents`, `cap_from_plan`).
 
 Gli endpoint di lista rispondono con un **envelope**, non più con un array nudo:

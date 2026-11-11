@@ -59,6 +59,7 @@ rosso anche quando `tsc --noEmit` passa.
   (componenti in `components/movements/`, logica pura in `lib/movements.ts`). I vecchi indirizzi
   `/incomes`, `/expenses`, `/transfers`, `/wallets` sono solo rimandi in `next.config.ts`: non ricreare
   quelle pagine. Creare e modificare un movimento passa da un solo pannello, `components/new-transaction.tsx`.
+- **L'interfaccia è in inglese** (11/11/2026): un testo nuovo visibile all'utente si scrive in inglese, i commenti restano in italiano. Il multilingua non c'è ancora (testi nel codice).
 - Il piano annuale (`app/annual-plan/page.tsx`) **non calcola nulla**: quota, tetto dal piano e proiezione
   arrivano da `GET /annual-plan` (server, `utils/annualPlan.js`). Il client converte solo euro ↔ centesimi.
 - `app/settings/page.tsx` scrive la tabella `Profile` dal browser con la chiave anon: dipende dalle RLS
