@@ -161,8 +161,8 @@ function Movements() {
         // Un rimborso (fase 5) mostra la categoria di spesa che riduce.
         Category: movement.is_refund ? (
           <span className="inline-flex items-center gap-1.5">
-            <span className="rounded-full bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">Refund</span>
             {categoryName.get(String(movement.category_id)) ?? "-"}
+            <span className="rounded-full bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">Refund</span>
           </span>
         ) : (
           categoryName.get(String(movement.category_id)) ?? "-"
