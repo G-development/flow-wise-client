@@ -228,9 +228,9 @@ export default function Navbar() {
 
       {/* Mobile Bottom Navigation */}
       <nav aria-label="Mobile navigation" className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_-18px_rgba(15,23,42,0.35)] backdrop-blur-xl lg:hidden">
-        {/* Una colonna per ogni voce di `navLinks` più "New": se cambiano le voci, cambia il numero. */}
-        <div className="mx-auto grid max-w-lg grid-cols-4 gap-1 py-1.5">
-          {/* Ordine (Gio, 10/11): Dashboard, Movements, + New, poi il resto di `navLinks`. */}
+        {/* Una colonna per ogni voce (`navLinks`, "New" e Your Bank): se cambiano le voci, cambia il numero. */}
+        <div className="mx-auto grid max-w-lg grid-cols-5 gap-1 py-1.5">
+          {/* Ordine (Gio, 10/11 e 11/11): Dashboard, Movements, + New, Annual plan, Your Bank. */}
           {navLinks.slice(0, 2).map(renderBottomLink)}
           <NewTransaction
             trigger={
@@ -245,6 +245,7 @@ export default function Navbar() {
             }
           />
           {navLinks.slice(2).map(renderBottomLink)}
+          {renderBottomLink(yourBankLink)}
         </div>
       </nav>
     </>
