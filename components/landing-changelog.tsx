@@ -6,84 +6,95 @@
  */
 const CHANGELOG: Array<{ period: string; title: string; items: string[] }> = [
   {
-    period: "Novembre 2026",
-    title: "Salvadanai e piano delle spese annuali",
+    period: "November 2026",
+    title: "Refunds and an English app",
     items: [
-      "Trasferimenti tra wallet: spostare soldi da un conto a un altro non conta più come entrata o spesa.",
-      "Una sola pagina Movements per wallet, entrate, spese e trasferimenti, con filtri combinabili per tipo, wallet e periodo.",
-      "I trasferimenti arrivati dalla banca senza destinazione si completano in un clic, oppure si registrano come spesa o entrata se il conto non è tracciato.",
-      "Salvadanai dentro un conto, con un tetto massimo facoltativo e un avviso quando un versamento lo supererebbe.",
-      "Piano annuale: spese con rate e scadenze, quota da versare ogni mese consigliata e proiezione del fondo sui prossimi 12 mesi.",
+      "Refunds: money a friend pays back lowers the expense it belongs to (a dinner, the condo fees) instead of counting as income.",
+      "Bank transfers with a note such as \"condominio\" or \"tari\" are recognized by their text, not by who sent them.",
+      "Total Balance shows the balance read from your bank for linked accounts, and how it splits between accounts and savings pots.",
+      "Annual plan installments can be marked as paid even without linking a movement.",
+      "The whole app, the Privacy Policy and the Terms of Service are now in English.",
     ],
   },
   {
-    period: "Novembre 2026",
-    title: "Import automatico e dati che restano tuoi",
+    period: "November 2026",
+    title: "Savings pots and the annual expenses plan",
     items: [
-      "I movimenti della banca arrivano da soli ogni mattina, solo quando sono contabilizzati e senza doppioni.",
-      "Le categorie dei movimenti importati sono scelte da regole interne che imparano dalle tue correzioni: nessun dato viene inviato a servizi esterni.",
-      "Filtro per wallet nelle pagine Entrate e Spese, e indicazione dei wallet collegati alla banca.",
-      "Nuovi Termini di servizio e Informativa privacy, e un riquadro che spiega quali dati usa l'assistente AI.",
+      "Transfers between wallets: moving money from one account to another no longer counts as income or expense.",
+      "A single Movements page for wallets, income, expenses and transfers, with combinable filters by type, wallet and period.",
+      "Transfers that arrive from the bank without a destination are completed in one click, or recorded as an expense or income when the other account is not tracked.",
+      "Savings pots inside an account, with an optional cap and a warning when a deposit would exceed it.",
+      "Annual plan: expenses with installments and due dates, a suggested monthly deposit and a 12-month projection of the fund.",
     ],
   },
   {
-    period: "Ottobre 2026",
-    title: "Open banking e assistente AI",
+    period: "November 2026",
+    title: "Automatic import, and data that stays yours",
     items: [
-      "Collegamento a banche reali italiane ed europee tramite GoCardless (PSD2, sola lettura), con sincronizzazione dei movimenti e saldo del conto.",
-      "Import dei movimenti bancari, anche a gruppi, con categoria suggerita per ciascuno.",
-      "Assistente AI Beta che analizza le tue spese in un periodo.",
-      "Recupero della password via email.",
-      "Saldo dei wallet calcolato dai movimenti a partire da un saldo di apertura modificabile.",
-      "Import CSV più rigoroso: le righe ambigue vengono rifiutate con un messaggio chiaro.",
-      "Elenchi sempre completi, protezione contro la cancellazione di wallet e categorie ancora in uso, credenziali bancarie cifrate.",
+      "Bank movements arrive on their own every morning, only once booked and without duplicates.",
+      "Imported movements are categorized by internal rules that learn from your corrections: no data is sent to external services.",
+      "Wallet filter for income and expenses, and a tag on wallets linked to a bank.",
+      "New Terms of Service and Privacy Policy, and a box explaining which data the AI assistant uses.",
     ],
   },
   {
-    period: "Aprile 2026",
-    title: "Import da file",
-    items: ["Nuovo import dei movimenti da file CSV."],
-  },
-  {
-    period: "Gennaio 2026",
-    title: "Dashboard su misura",
+    period: "October 2026",
+    title: "Open banking and the AI assistant",
     items: [
-      "Nuova dashboard con widget da trascinare e ridimensionare: spese del periodo, entrate contro spese, spese per categoria.",
-      "Selettore del periodo condiviso tra le pagine.",
-      "Navigazione pensata per lo smartphone, con barra in basso.",
-      "Foto profilo con caricamento più affidabile.",
+      "Link real Italian and European banks through GoCardless (PSD2, read-only), with movement sync and account balance.",
+      "Import bank movements, also in groups, with a suggested category for each one.",
+      "AI Beta assistant that analyses your spending over a period.",
+      "Password recovery by email.",
+      "Wallet balances calculated from the movements, starting from an editable opening balance.",
+      "Stricter CSV import: ambiguous rows are rejected with a clear message.",
+      "Always complete lists, protection against deleting wallets and categories still in use, encrypted bank credentials.",
     ],
   },
   {
-    period: "Agosto 2025",
-    title: "Nuove fondamenta",
+    period: "April 2026",
+    title: "Import from file",
+    items: ["New import of movements from CSV files."],
+  },
+  {
+    period: "January 2026",
+    title: "A dashboard that fits you",
     items: [
-      "Passaggio a Supabase (PostgreSQL) per dati e accessi.",
-      "Wallet multipli, con un wallet predefinito.",
-      "Categorie attivabili e disattivabili, pagina del profilo rinnovata.",
+      "New dashboard with widgets to drag and resize: period expenses, income vs expenses, spending by category.",
+      "Period picker shared across pages.",
+      "Navigation designed for smartphones, with a bottom bar.",
+      "More reliable profile photo upload.",
     ],
   },
   {
-    period: "Aprile – Maggio 2025",
-    title: "Primi passi verso la banca",
+    period: "August 2025",
+    title: "New foundations",
     items: [
-      "Prima pagina per importare movimenti.",
-      "Primi esperimenti di collegamento bancario e nascita della pagina Your Bank.",
+      "Move to Supabase (PostgreSQL) for data and sign-in.",
+      "Multiple wallets, with a default wallet.",
+      "Categories that can be turned on and off, redesigned profile page.",
     ],
   },
   {
-    period: "Marzo 2025",
-    title: "Più controllo",
-    items: ["Modifica delle categorie.", "Grafico dell'andamento del saldo nel tempo."],
+    period: "April – May 2025",
+    title: "First steps towards the bank",
+    items: [
+      "First page to import movements.",
+      "First bank link experiments and the birth of the Your Bank page.",
+    ],
   },
   {
-    period: "Febbraio 2025",
-    title: "Nasce Flow Wise",
+    period: "March 2025",
+    title: "More control",
+    items: ["Edit categories.", "Chart of the balance over time."],
+  },
+  {
+    period: "February 2025",
+    title: "Flow Wise is born",
     items: [
-      "Prima versione: entrate e spese con categorie, accesso e registrazione.",
-      "Dashboard con riepiloghi e grafici, filtro per date.",
-      "Modifica ed eliminazione dei movimenti direttamente dalle tabelle.",
-      "Profilo con foto.",
+      "First version: income and expenses with categories, sign-in and sign-up.",
+      "Dashboard with summaries and charts, date filter.",
+      "Edit and delete movements straight from the tables.",
+      "Profile with photo.",
     ],
   },
 ];
@@ -94,10 +105,10 @@ export function LandingChangelog() {
       <div className="mx-auto max-w-[1280px]">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#5f7a6d]">Changelog</p>
         <h2 className="mt-4 max-w-xl text-3xl font-medium leading-tight tracking-[-0.04em] text-[#142c26] sm:text-4xl">
-          Come è cresciuto Flow Wise
+          How Flow Wise grew
         </h2>
         <p className="mt-4 max-w-xl text-sm leading-7 text-[#4f6158]">
-          Dal primo commit del febbraio 2025 a oggi: cosa è cambiato, versione dopo versione.
+          From the first commit in February 2025 to today: what changed, release after release.
         </p>
 
         <ol className="mt-10 space-y-8 border-l border-[#cfd8d1] pl-6 sm:pl-8">

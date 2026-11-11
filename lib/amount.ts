@@ -40,7 +40,7 @@ export function signedAmount(
   const magnitude = absoluteAmount(amount);
   if (type === "I") return magnitude;
   if (type === "E") return -magnitude;
-  throw new Error(`signedAmount: tipo ${JSON.stringify(type)} non è un'entrata né una spesa`);
+  throw new Error(`signedAmount: type ${JSON.stringify(type)} is neither an income nor an expense`);
 }
 
 type RefundLike = { type?: string | null; is_refund?: boolean | null };

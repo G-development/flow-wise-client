@@ -295,7 +295,7 @@ function YourBank() {
         error instanceof Error
           ? error.message
           : "Error while loading bank data.";
-      console.error("Errore nel caricamento delle connessioni bancarie:", error);
+      console.error("Error loading bank connections:", error);
       setErrorMessage(message);
       toast.error(message);
     } finally {

@@ -337,7 +337,7 @@ export default function AiBetaPage() {
             <div className="flex items-center gap-2 text-xs">
               <div className="flex items-center gap-1.5 bg-background border border-border/70 rounded-lg px-2 py-1">
                 <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">Dal:</span>
+                <span className="text-muted-foreground">From:</span>
                 <Input
                   id="agent-start-date"
                   type="date"
@@ -347,7 +347,7 @@ export default function AiBetaPage() {
                   disabled={isSending}
                   className="h-6 w-28 border-0 p-0 text-xs focus-visible:ring-0 bg-transparent"
                 />
-                <span className="text-muted-foreground ml-1">Al:</span>
+                <span className="text-muted-foreground ml-1">To:</span>
                 <Input
                   id="agent-end-date"
                   type="date"

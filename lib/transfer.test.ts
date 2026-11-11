@@ -69,7 +69,7 @@ test("assignTransferSide completa l'origine di una riunione somme", () => {
 });
 
 test("assignTransferSide rifiuta una T completa e lo stesso wallet sui due lati", () => {
-  assert.throws(() => assignTransferSide({ ...base, type: "T", wallet_id: 1, to_wallet_id: 2 }, 5), /non ha lati/);
+  assert.throws(() => assignTransferSide({ ...base, type: "T", wallet_id: 1, to_wallet_id: 2 }, 5), /no side to assign/);
   assert.throws(() => assignTransferSide({ ...base, type: "T", wallet_id: 1, to_wallet_id: null }, 1), /diverse/);
 });
 
@@ -88,7 +88,7 @@ test("transferAsIncomeExpense: un rientro nel conto diventa un'entrata sul conto
 });
 
 test("transferAsIncomeExpense rifiuta un trasferimento gia' completo", () => {
-  assert.throws(() => transferAsIncomeExpense({ ...base, type: "T", wallet_id: 1, to_wallet_id: 2 }, 70), /da assegnare/);
+  assert.throws(() => transferAsIncomeExpense({ ...base, type: "T", wallet_id: 1, to_wallet_id: 2 }, 70), /side to assign/);
   assert.equal(incomeExpenseTypeOf({ type: "T", wallet_id: 1, to_wallet_id: 2 }), null);
 });
 

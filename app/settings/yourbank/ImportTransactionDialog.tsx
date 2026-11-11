@@ -329,7 +329,7 @@ export default function ImportTransactionDialog({
           <div className="space-y-4 py-2">
             <div className="rounded-lg border border-border/80 bg-muted/40 p-3.5 space-y-1.5 text-xs text-muted-foreground">
               <div className="flex justify-between font-medium text-foreground text-sm">
-                <span>Movimenti selezionati</span>
+                <span>Selected movements</span>
                 <span>{stats.totalCount}</span>
               </div>
               {stats.totalExpense > 0 && (
@@ -425,7 +425,7 @@ export default function ImportTransactionDialog({
                                 </span>
                               )}
                               <p className="line-clamp-2 break-words text-sm font-medium sm:truncate" title={transaction.description}>
-                                {transaction.description || "Movimento senza descrizione"}
+                                {transaction.description || "Movement without description"}
                               </p>
                             </div>
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">

@@ -51,7 +51,7 @@ export function assignTransferSide<T extends TransferLike & {
   category_id: number;
 }>(transaction: T, walletId: number) {
   const side = missingTransferSide(transaction);
-  if (side === null) throw new Error("assignTransferSide: il trasferimento non ha lati da assegnare");
+  if (side === null) throw new Error("assignTransferSide: the transfer has no side to assign");
 
   const from = side === "from" ? walletId : Number(transaction.wallet_id);
   const to = side === "to" ? walletId : Number(transaction.to_wallet_id);
@@ -87,10 +87,10 @@ export function transferAsIncomeExpense<T extends TransferLike & {
   date: string;
 }>(transaction: T, categoryId: number, { refund = false }: { refund?: boolean } = {}) {
   const side = missingTransferSide(transaction);
-  if (side === null) throw new Error("transferAsIncomeExpense: solo un trasferimento da assegnare");
+  if (side === null) throw new Error("transferAsIncomeExpense: only a transfer with a side to assign");
   const outgoing = side === "to";
   // Un rimborso (fase 5) e' solo un'entrata: i soldi rientrano e riducono una spesa.
-  if (refund && outgoing) throw new Error("transferAsIncomeExpense: un'uscita non puo' essere un rimborso");
+  if (refund && outgoing) throw new Error("transferAsIncomeExpense: an outgoing movement cannot be a refund");
   return {
     ...(refund ? { is_refund: true } : {}),
     description: transaction.description || (outgoing ? "Spesa" : "Entrata"),

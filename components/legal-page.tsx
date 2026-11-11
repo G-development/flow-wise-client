@@ -19,7 +19,7 @@ export function LegalPage({
           {LEGAL.serviceName}
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
-        <p className="text-sm text-muted-foreground">In vigore dal {LEGAL.lastUpdated}</p>
+        <p className="text-sm text-muted-foreground">Effective from {LEGAL.lastUpdated}</p>
       </header>
 
       <div className="space-y-3 leading-relaxed">{intro}</div>

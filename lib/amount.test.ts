@@ -26,8 +26,8 @@ test("absoluteAmount ignora il segno e normalizza a 0 i valori non numerici", ()
 
 test("signedAmount rifiuta ogni tipo che non sia I o E (T compreso)", () => {
   // Prima tutto cio' che non era "I" diventava una spesa; una "T" non ha un segno unico.
-  assert.throws(() => signedAmount(50, "T"), /non è un'entrata né una spesa/);
-  assert.throws(() => signedAmount(50, undefined), /non è un'entrata né una spesa/);
+  assert.throws(() => signedAmount(50, "T"), /neither an income nor an expense/);
+  assert.throws(() => signedAmount(50, undefined), /neither an income nor an expense/);
 });
 
 test("signedAmount usa type come unica fonte del segno", () => {

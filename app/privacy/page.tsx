@@ -4,11 +4,12 @@ import { LegalList, LegalPage, LegalSection } from "@/components/legal-page";
 import { LEGAL } from "@/lib/legal";
 
 export const metadata: Metadata = {
-  title: "Informativa privacy — Flow Wise",
+  title: "Privacy Policy — Flow Wise",
 };
 
 /**
- * Informativa ai sensi degli artt. 13 e 14 del Regolamento (UE) 2016/679 (GDPR).
+ * Informativa ai sensi degli artt. 13 e 14 del Regolamento (UE) 2016/679 (GDPR), in inglese
+ * dall'11/11/2026 (stesso contenuto della versione italiana del 6/11).
  * I dati e i fornitori elencati rispecchiano il codice di flow-wise-client e
  * flow-wise-server: se cambia un trattamento (nuovo fornitore, nuovi dati), va aggiornata.
  */
@@ -21,237 +22,234 @@ export default function PrivacyPage() {
 
   return (
     <LegalPage
-      title="Informativa privacy"
+      title="Privacy Policy"
       intro={
         <p>
-          Questa informativa spiega quali dati personali tratta {LEGAL.serviceName}, perché, con chi li
-          condivide, per quanto li conserva e quali diritti hai, ai sensi del Regolamento (UE) 2016/679
-          (&quot;GDPR&quot;) e del Codice in materia di protezione dei dati personali (D.Lgs. 196/2003,
-          come modificato dal D.Lgs. 101/2018). Le condizioni d&apos;uso del Servizio sono nei{" "}
-          <Link href="/terms" className="text-primary hover:underline">Termini di servizio</Link>.
+          This policy explains which personal data {LEGAL.serviceName} processes, why, who it is shared
+          with, how long it is kept and which rights you have, under Regulation (EU) 2016/679
+          (&quot;GDPR&quot;) and the Italian Personal Data Protection Code (Legislative Decree 196/2003, as
+          amended by Legislative Decree 101/2018). The terms of use of the Service are in the{" "}
+          <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>.
         </p>
       }
     >
-      <LegalSection id="titolare" title="1. Titolare del trattamento">
+      <LegalSection id="titolare" title="1. Data controller">
         <p>
-          Il titolare è {LEGAL.ownerName}, persona fisica che sviluppa e offre {LEGAL.serviceName} come
-          progetto personale e gratuito. Contatto per qualsiasi richiesta sui tuoi dati: {mail}. Non è
-          stato nominato un responsabile della protezione dei dati (DPO), perché non obbligatorio per
-          questo trattamento.
+          The controller is {LEGAL.ownerName}, an individual who develops and offers {LEGAL.serviceName} as
+          a free personal project. Contact for any request about your data: {mail}. No data protection
+          officer (DPO) has been appointed, as one is not required for this processing.
         </p>
       </LegalSection>
 
-      <LegalSection id="dati" title="2. Quali dati trattiamo">
+      <LegalSection id="dati" title="2. Which data we process">
         <LegalList>
           <li>
-            <strong>Account:</strong> email e password. La password è gestita dal servizio di
-            autenticazione (Supabase Auth) in forma cifrata con hash: nessuno, nemmeno noi, può leggerla.
+            <strong>Account:</strong> email and password. The password is handled by the authentication
+            service (Supabase Auth) as a hash: nobody, not even us, can read it.
           </li>
           <li>
-            <strong>Profilo:</strong> nome, nome utente, valuta preferita e, se la carichi, la foto
-            profilo.
+            <strong>Profile:</strong> name, username, preferred currency and, if you upload it, your
+            profile photo.
           </li>
           <li>
-            <strong>Dati finanziari che inserisci o importi:</strong> entrate e spese (importo, data,
-            descrizione, note, categoria, wallet), categorie, wallet e relativo saldo di apertura, budget,
-            disposizione della dashboard, movimenti importati da file CSV. Il file CSV viene letto per
-            creare i movimenti e non viene conservato.
+            <strong>Financial data you enter or import:</strong> income, expenses, refunds and transfers
+            (amount, date, description, notes, category, wallet), categories, wallets and savings pots with
+            their opening balance and cap, the annual expenses plan, budgets, dashboard layout, movements
+            imported from CSV files. The CSV file is read to create the movements and is not stored.
           </li>
           <li>
-            <strong>Dati bancari, solo se colleghi una banca:</strong> identificativo della banca e del
-            conto, i token di accesso forniti da GoCardless (conservati cifrati), i movimenti del conto
-            (importo, valuta, data, descrizione, controparte, stato contabilizzato o in sospeso), il saldo
-            del conto, le impostazioni dell&apos;import automatico (wallet di destinazione, data di
-            partenza).
+            <strong>Bank data, only if you link a bank:</strong> bank and account identifiers, the access
+            tokens provided by GoCardless (stored encrypted), the account movements (amount, currency,
+            date, description, counterparty, booked or pending status), the account balance and the
+            auto-import settings (target wallet, start date).
           </li>
           <li>
-            <strong>Regole di categoria:</strong> le associazioni &quot;nome del negozio o della
-            controparte → categoria&quot; che crei o che il Servizio impara dalle tue correzioni.
+            <strong>Category rules:</strong> the links &quot;shop name, counterparty or transfer text →
+            category&quot; that you create or that the Service learns from your corrections.
           </li>
           <li>
-            <strong>Recupero password:</strong> un codice monouso valido un&apos;ora, collegato al tuo
+            <strong>Password recovery:</strong> a one-time code valid for one hour, linked to your
             account.
           </li>
           <li>
-            <strong>Dati tecnici:</strong> i log tecnici del server (per esempio indirizzo IP, data e ora,
-            richiesta effettuata) e statistiche di utilizzo e prestazioni aggregate, raccolte con Vercel
-            Web Analytics e Speed Insights senza cookie.
+            <strong>Technical data:</strong> the server&apos;s technical logs (for example IP address, date
+            and time, request made) and aggregate usage and performance statistics, collected with Vercel
+            Web Analytics and Speed Insights without cookies.
           </li>
         </LegalList>
         <p>
-          Non ti chiediamo dati appartenenti a categorie particolari (per esempio relativi alla salute o
-          alle convinzioni religiose). Le descrizioni dei movimenti bancari, però, possono rivelarle
-          indirettamente (per esempio il nome di una farmacia o di un&apos;associazione): li trattiamo solo
-          per mostrarteli e categorizzarli, mai per altri scopi.
+          We do not ask for special categories of data (for example about health or religious beliefs).
+          Bank movement descriptions, however, may reveal them indirectly (for example the name of a
+          pharmacy or an association): we process them only to show and categorize them, never for other
+          purposes.
         </p>
       </LegalSection>
 
-      <LegalSection id="finalita" title="3. Perché li trattiamo e su quale base giuridica">
+      <LegalSection id="finalita" title="3. Why we process them and on which legal basis">
         <LegalList>
           <li>
-            <strong>Fornirti il Servizio</strong> (account, registrazione e visualizzazione dei movimenti,
-            saldi, grafici, import CSV, email per il recupero password): esecuzione del contratto
-            costituito dai Termini di servizio (art. 6, par. 1, lett. b, GDPR).
+            <strong>Providing the Service</strong> (account, recording and showing movements, balances,
+            charts, CSV import, password recovery emails): performance of the contract formed by the Terms
+            of Service (Art. 6(1)(b) GDPR).
           </li>
           <li>
-            <strong>Collegamento bancario e import automatico</strong>, solo se li attivi: esecuzione del
-            contratto, su tua richiesta. L&apos;accesso ai conti avviene inoltre in base al consenso
-            esplicito che dai a GoCardless e alla tua banca, revocabile in qualsiasi momento.
+            <strong>Bank link and auto-import</strong>, only if you turn them on: performance of the
+            contract, at your request. Access to the accounts is also based on the explicit consent you
+            give GoCardless and your bank, which you can withdraw at any time.
           </li>
           <li>
-            <strong>Analisi con l&apos;assistente AI</strong>, solo quando la chiedi: esecuzione del
-            contratto, su tua richiesta. Puoi non usarla senza conseguenze sul resto del Servizio.
+            <strong>Analysis with the AI assistant</strong>, only when you ask for it: performance of the
+            contract, at your request. You can avoid it with no effect on the rest of the Service.
           </li>
           <li>
-            <strong>Sicurezza, prevenzione di abusi e diagnosi dei malfunzionamenti</strong> (log
-            tecnici): nostro legittimo interesse (art. 6, par. 1, lett. f, GDPR).
+            <strong>Security, abuse prevention and troubleshooting</strong> (technical logs): our
+            legitimate interest (Art. 6(1)(f) GDPR).
           </li>
           <li>
-            <strong>Statistiche aggregate</strong> sull&apos;uso e sulle prestazioni, per migliorare il
-            Servizio: nostro legittimo interesse. Non permettono di identificarti e non usano cookie.
+            <strong>Aggregate statistics</strong> on usage and performance, to improve the Service: our
+            legitimate interest. They do not identify you and do not use cookies.
           </li>
           <li>
-            <strong>Adempiere a obblighi di legge</strong> o richieste delle autorità: obbligo legale
-            (art. 6, par. 1, lett. c, GDPR).
+            <strong>Complying with legal obligations</strong> or requests from authorities: legal
+            obligation (Art. 6(1)(c) GDPR).
           </li>
         </LegalList>
         <p>
-          Non usiamo i tuoi dati per marketing, non li vendiamo e non facciamo profilazione. La
-          categorizzazione automatica dei movimenti avviene con regole interne e non produce decisioni con
-          effetti giuridici o analogamente significativi su di te (art. 22 GDPR).
+          We do not use your data for marketing, we do not sell it and we do not profile you. The automatic
+          categorization of movements uses internal rules and does not produce decisions with legal or
+          similarly significant effects on you (Art. 22 GDPR).
         </p>
       </LegalSection>
 
-      <LegalSection id="obbligo" title="4. Cosa succede se non fornisci i dati">
+      <LegalSection id="obbligo" title="4. What happens if you do not provide the data">
         <p>
-          Email e password sono necessarie per creare l&apos;account: senza non puoi usare il Servizio.
-          Tutti gli altri dati sono facoltativi; le funzioni che li richiedono (per esempio il
-          collegamento bancario o l&apos;assistente AI) semplicemente non saranno disponibili.
+          Email and password are needed to create the account: without them you cannot use the Service.
+          All other data is optional; the features that need it (for example the bank link or the AI
+          assistant) will simply not be available.
         </p>
       </LegalSection>
 
-      <LegalSection id="destinatari" title="5. Con chi condividiamo i dati">
+      <LegalSection id="destinatari" title="5. Who we share the data with">
         <p>
-          Per far funzionare il Servizio ci affidiamo ai seguenti fornitori, che trattano i dati solo per
-          le finalità indicate:
+          To run the Service we rely on the following providers, which process the data only for the
+          purposes stated:
         </p>
         <LegalList>
-          <li><strong>Supabase</strong>: database e autenticazione; conserva tutti i dati dell&apos;account.</li>
-          <li><strong>Vercel</strong>: hosting dell&apos;applicazione e del server, log tecnici, statistiche aggregate.</li>
+          <li><strong>Supabase</strong>: database and authentication; stores all account data.</li>
+          <li><strong>Vercel</strong>: hosting of the application and the server, technical logs, aggregate statistics.</li>
           <li>
-            <strong>GoCardless</strong> (Bank Account Data), solo se colleghi una banca: accede ai conti in
-            sola lettura e ci trasmette movimenti e saldo. Per il servizio di informazione sui conti
-            GoCardless agisce in base al consenso che gli dai e secondo la propria informativa privacy.
+            <strong>GoCardless</strong> (Bank Account Data), only if you link a bank: reads the accounts
+            and sends us movements and balance. For the account information service GoCardless acts on the
+            consent you give it and under its own privacy policy.
           </li>
-          <li><strong>Cloudinary</strong>: conservazione della foto profilo, se la carichi.</li>
+          <li><strong>Cloudinary</strong>: storage of the profile photo, if you upload one.</li>
           <li>
-            <strong>Groq</strong>, solo se usi l&apos;assistente AI: riceve la tua domanda, il periodo, i
-            totali delle spese per categoria e per mese e le 10 spese più alte con data, importo, categoria
-            e i primi 120 caratteri della descrizione. Non riceve nome, email, entrate, saldi o nomi dei
-            wallet. Flow Wise non salva la conversazione.
+            <strong>Groq</strong>, only if you use the AI assistant: receives your question, the period,
+            the expense totals by category and by month and the 10 largest expenses with date, amount,
+            category and the first 120 characters of the description. It does not receive your name,
+            email, income, balances or wallet names. Flow Wise does not store the conversation.
           </li>
-          <li><strong>Fornitore del servizio email</strong>: invio delle email di recupero password.</li>
+          <li><strong>Email service provider</strong>: sending password recovery emails.</li>
         </LegalList>
         <p>
-          L&apos;import automatico giornaliero è avviato da un job su GitHub Actions, che non riceve i tuoi
-          dati ma solo conteggi anonimi (per esempio il numero di movimenti importati). La categorizzazione
-          dei movimenti importati avviene all&apos;interno di {LEGAL.serviceName}, senza inviare dati a
-          servizi esterni. Possiamo comunicare i dati alle autorità solo se previsto dalla legge.
+          The daily auto-import is started by a GitHub Actions job, which does not receive your data, only
+          anonymous counts (for example the number of movements imported). Imported movements are
+          categorized inside {LEGAL.serviceName}, without sending data to external services. We may
+          disclose data to authorities only where the law requires it.
         </p>
       </LegalSection>
 
-      <LegalSection id="trasferimenti" title="6. Trasferimenti fuori dall'Unione europea">
+      <LegalSection id="trasferimenti" title="6. Transfers outside the European Union">
         <p>
-          Alcuni fornitori possono trattare i dati al di fuori dello Spazio economico europeo, in
-          particolare negli Stati Uniti. In questi casi il trasferimento avviene sulla base di una
-          decisione di adeguatezza della Commissione europea (come l&apos;EU-US Data Privacy Framework,
-          per i fornitori certificati) o delle clausole contrattuali tipo approvate dalla Commissione (art.
-          45 e 46 GDPR). Puoi chiederci maggiori informazioni scrivendo a {mail}.
+          Some providers may process data outside the European Economic Area, in particular in the United
+          States. In those cases the transfer is based on an adequacy decision of the European Commission
+          (such as the EU-US Data Privacy Framework, for certified providers) or on the standard
+          contractual clauses approved by the Commission (Arts. 45 and 46 GDPR). You can ask for more
+          information at {mail}.
         </p>
       </LegalSection>
 
-      <LegalSection id="conservazione" title="7. Per quanto tempo conserviamo i dati">
+      <LegalSection id="conservazione" title="7. How long we keep the data">
         <LegalList>
           <li>
-            <strong>Account, profilo e dati finanziari:</strong> finché l&apos;account è attivo. Se chiedi
-            la cancellazione, li eliminiamo entro 30 giorni; eventuali copie di sicurezza dei fornitori
-            vengono sovrascritte secondo i loro cicli.
+            <strong>Account, profile and financial data:</strong> as long as the account is active. If you
+            ask for deletion, we delete them within 30 days; any backup copies held by providers are
+            overwritten according to their cycles.
           </li>
           <li>
-            <strong>Token di accesso alla banca:</strong> fino alla disconnessione della banca o alla
-            scadenza dell&apos;autorizzazione. I movimenti bancari già sincronizzati restano finché non ne
-            chiedi la cancellazione o non chiudi l&apos;account.
+            <strong>Bank access tokens:</strong> until you disconnect the bank or the authorization
+            expires. Bank movements already synced stay until you ask for their deletion or close the
+            account.
           </li>
-          <li><strong>Codici di recupero password:</strong> validi un&apos;ora e utilizzabili una sola volta.</li>
+          <li><strong>Password recovery codes:</strong> valid for one hour and usable once.</li>
           <li>
-            <strong>Log tecnici:</strong> per il periodo limitato previsto dal fornitore di hosting, salvo
-            che servano più a lungo per accertare un abuso o un incidente di sicurezza.
+            <strong>Technical logs:</strong> for the limited period set by the hosting provider, unless
+            needed longer to investigate abuse or a security incident.
           </li>
           <li>
-            <strong>Richieste all&apos;assistente AI:</strong> Flow Wise non le conserva; Groq le tratta
-            secondo le proprie condizioni.
+            <strong>Requests to the AI assistant:</strong> Flow Wise does not keep them; Groq processes
+            them under its own terms.
           </li>
         </LegalList>
       </LegalSection>
 
-      <LegalSection id="sicurezza" title="8. Come proteggiamo i dati">
+      <LegalSection id="sicurezza" title="8. How we protect the data">
         <LegalList>
-          <li>Tutte le comunicazioni avvengono su connessione cifrata (HTTPS).</li>
-          <li>Ogni richiesta al server è autenticata e limitata ai dati del tuo account.</li>
-          <li>Le password sono conservate solo in forma di hash; i token di accesso alla banca sono cifrati.</li>
-          <li>Il database è accessibile solo dal server e da chi ne gestisce l&apos;amministrazione.</li>
+          <li>All communication happens over an encrypted connection (HTTPS).</li>
+          <li>Every request to the server is authenticated and limited to your account&apos;s data.</li>
+          <li>Passwords are stored only as hashes; bank access tokens are encrypted.</li>
+          <li>The database is reachable only by the server and by whoever administers it.</li>
         </LegalList>
         <p>
-          Nessun sistema è sicuro al 100%. In caso di violazione dei dati che presenti un rischio per i tuoi
-          diritti, la notificheremo al Garante entro 72 ore e, se il rischio è elevato, ti avviseremo
-          senza ingiustificato ritardo (artt. 33 e 34 GDPR).
+          No system is 100% secure. In case of a data breach that poses a risk to your rights, we will
+          notify the Italian Data Protection Authority within 72 hours and, if the risk is high, inform you
+          without undue delay (Arts. 33 and 34 GDPR).
         </p>
       </LegalSection>
 
-      <LegalSection id="diritti" title="9. I tuoi diritti">
-        <p>In qualsiasi momento puoi chiederci di:</p>
+      <LegalSection id="diritti" title="9. Your rights">
+        <p>At any time you can ask us to:</p>
         <LegalList>
-          <li>accedere ai tuoi dati e riceverne una copia (art. 15);</li>
-          <li>correggerli (art. 16) — molti li puoi modificare direttamente nell&apos;app;</li>
-          <li>cancellarli (art. 17), anche chiudendo l&apos;account;</li>
-          <li>limitarne il trattamento (art. 18);</li>
-          <li>riceverli in un formato strutturato e leggibile da dispositivo automatico, per trasferirli altrove (art. 20);</li>
-          <li>opporti ai trattamenti basati sul nostro legittimo interesse (art. 21);</li>
-          <li>revocare un consenso già dato, senza pregiudicare la liceità dei trattamenti precedenti (art. 7).</li>
+          <li>access your data and receive a copy (Art. 15);</li>
+          <li>correct it (Art. 16) — you can change much of it directly in the app;</li>
+          <li>delete it (Art. 17), also by closing the account;</li>
+          <li>restrict its processing (Art. 18);</li>
+          <li>receive it in a structured, machine-readable format, to move it elsewhere (Art. 20);</li>
+          <li>object to processing based on our legitimate interest (Art. 21);</li>
+          <li>withdraw consent already given, without affecting the lawfulness of earlier processing (Art. 7).</li>
         </LegalList>
         <p>
-          Per esercitarli scrivi a {mail} dall&apos;indirizzo associato all&apos;account. Ti risponderemo
-          entro un mese (art. 12). Se ritieni che il trattamento violi la normativa puoi proporre reclamo
-          al Garante per la protezione dei dati personali (
+          To exercise them, write to {mail} from the address linked to your account. We will answer within
+          one month (Art. 12). If you believe the processing breaks the law, you can lodge a complaint with
+          the Italian Data Protection Authority (Garante per la protezione dei dati personali,{" "}
           <a className="text-primary hover:underline" href="https://www.garanteprivacy.it" target="_blank" rel="noreferrer">
             www.garanteprivacy.it
           </a>
-          ) o rivolgerti all&apos;autorità giudiziaria.
+          ) or go to court.
         </p>
       </LegalSection>
 
-      <LegalSection id="cookie" title="10. Cookie e archiviazione nel browser">
+      <LegalSection id="cookie" title="10. Cookies and browser storage">
         <p>
-          {LEGAL.serviceName} non usa cookie di profilazione né cookie di terze parti a fini pubblicitari.
-          Per mantenerti connesso, il browser conserva nella memoria locale un token di sessione: è uno
-          strumento tecnico necessario al funzionamento del Servizio, per il quale non serve il consenso
-          (art. 122 del Codice privacy). Le statistiche di Vercel Web Analytics e Speed Insights sono
-          raccolte senza cookie.
+          {LEGAL.serviceName} does not use profiling cookies or third-party advertising cookies. To keep you
+          signed in, the browser keeps a session token in local storage: it is a technical tool needed for
+          the Service to work and does not require consent (Art. 122 of the Italian Privacy Code). Vercel
+          Web Analytics and Speed Insights statistics are collected without cookies.
         </p>
       </LegalSection>
 
-      <LegalSection id="minori" title="11. Minori">
+      <LegalSection id="minori" title="11. Minors">
         <p>
-          Il Servizio non è destinato a chi ha meno di 18 anni. Se ritieni che un minore ci abbia fornito
-          dati, scrivici e li cancelleremo.
+          The Service is not intended for people under 18. If you believe a minor has given us data, write
+          to us and we will delete it.
         </p>
       </LegalSection>
 
-      <LegalSection id="modifiche" title="12. Modifiche a questa informativa">
+      <LegalSection id="modifiche" title="12. Changes to this policy">
         <p>
-          Aggiorneremo questa informativa quando cambiano i trattamenti, per esempio con nuove funzioni o
-          nuovi fornitori. La data in cima alla pagina indica l&apos;ultima versione; delle modifiche
-          rilevanti ti avviseremo via email o con un avviso nell&apos;app.
+          We will update this policy when the processing changes, for example with new features or new
+          providers. The date at the top of the page shows the latest version; we will tell you about
+          significant changes by email or with a notice in the app.
         </p>
       </LegalSection>
     </LegalPage>

@@ -4,9 +4,13 @@ import { LegalList, LegalPage, LegalSection } from "@/components/legal-page";
 import { LEGAL } from "@/lib/legal";
 
 export const metadata: Metadata = {
-  title: "Termini di servizio — Flow Wise",
+  title: "Terms of Service — Flow Wise",
 };
 
+/**
+ * Termini di servizio, in inglese dall'11/11/2026 (stesso contenuto della versione italiana del
+ * 6/11, aggiornato alle funzioni di oggi: salvadanai, trasferimenti, rimborsi, piano annuale).
+ */
 export default function TermsPage() {
   const mail = (
     <a className="text-primary hover:underline" href={`mailto:${LEGAL.contactEmail}`}>
@@ -16,244 +20,246 @@ export default function TermsPage() {
 
   return (
     <LegalPage
-      title="Termini di servizio"
+      title="Terms of Service"
       intro={
         <>
           <p>
-            Questi Termini regolano l&apos;uso di {LEGAL.serviceName} (&quot;il Servizio&quot;),
-            l&apos;applicazione web per la gestione delle finanze personali disponibile su{" "}
+            These Terms govern the use of {LEGAL.serviceName} (&quot;the Service&quot;), the web
+            application for personal finance available at{" "}
             <a className="text-primary hover:underline" href={LEGAL.siteUrl}>{LEGAL.siteUrl}</a>.
-            Creando un account o usando il Servizio dichiari di averli letti e di accettarli. Se non li
-            accetti, non usare il Servizio.
+            By creating an account or using the Service you confirm that you have read and accept them. If
+            you do not accept them, do not use the Service.
           </p>
           <p>
-            Il trattamento dei tuoi dati personali è descritto nell&apos;
-            <Link href="/privacy" className="text-primary hover:underline">Informativa privacy</Link>,
-            che fa parte di questi Termini.
+            The processing of your personal data is described in the{" "}
+            <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>, which is
+            part of these Terms.
           </p>
         </>
       }
     >
-      <LegalSection id="fornitore" title="1. Chi fornisce il Servizio">
+      <LegalSection id="fornitore" title="1. Who provides the Service">
         <p>
-          {LEGAL.serviceName} è un progetto personale e non commerciale, sviluppato e offerto
-          gratuitamente da {LEGAL.ownerName}, persona fisica (&quot;noi&quot;). Non è un&apos;impresa e non
-          vende prodotti o servizi tramite il Servizio. Per qualsiasi comunicazione puoi scrivere a {mail}.
+          {LEGAL.serviceName} is a personal, non-commercial project, developed and offered free of charge
+          by {LEGAL.ownerName}, an individual (&quot;we&quot;). It is not a business and does not sell
+          products or services through the Service. For any communication you can write to {mail}.
         </p>
       </LegalSection>
 
-      <LegalSection id="servizio" title="2. Cosa fa il Servizio">
-        <p>Il Servizio ti permette di:</p>
+      <LegalSection id="servizio" title="2. What the Service does">
+        <p>The Service lets you:</p>
         <LegalList>
-          <li>registrare entrate e spese, organizzarle per categoria e per wallet (fino a 3 wallet);</li>
-          <li>consultare saldi, grafici e riepiloghi in una dashboard personalizzabile;</li>
-          <li>importare movimenti da file CSV;</li>
           <li>
-            collegare, se lo desideri, uno o più conti bancari per sincronizzare i movimenti in sola
-            lettura e importarli, anche automaticamente ogni giorno (sezione 6);
+            record income, expenses, refunds and transfers, organized by category and by wallet (up to 3
+            accounts, each with its own savings pots);
           </li>
-          <li>chiedere, se lo desideri, un&apos;analisi delle tue spese a un assistente AI sperimentale (sezione 8).</li>
+          <li>see balances, charts and summaries in a customizable dashboard;</li>
+          <li>plan yearly expenses paid from a savings pot, with a suggested monthly deposit;</li>
+          <li>import movements from CSV files;</li>
+          <li>
+            if you wish, link one or more bank accounts to sync movements read-only and import them, also
+            automatically every day (section 6);
+          </li>
+          <li>if you wish, ask an experimental AI assistant to analyse your spending (section 8).</li>
         </LegalList>
         <p>
-          Alcune funzioni sono sperimentali o in sviluppo (per esempio la pagina AI Beta e la sezione
-          Budget) e possono cambiare o essere rimosse.
+          Some features are experimental or in development (for example the AI Beta page and the Budgets
+          section) and may change or be removed.
         </p>
       </LegalSection>
 
-      <LegalSection id="non-consulenza" title="3. Cosa il Servizio non è">
+      <LegalSection id="non-consulenza" title="3. What the Service is not">
         <LegalList>
           <li>
-            <strong>Non è consulenza.</strong> Dati, grafici, categorie e risposte dell&apos;assistente AI
-            hanno solo scopo informativo: non costituiscono consulenza finanziaria, fiscale, legale o
-            di investimento e non sostituiscono il parere di un professionista.
+            <strong>It is not advice.</strong> Data, charts, categories, suggested deposits and the AI
+            assistant&apos;s answers are for information only: they are not financial, tax, legal or
+            investment advice and do not replace a professional&apos;s opinion.
           </li>
           <li>
-            <strong>Non è una banca né un servizio di pagamento.</strong> Non custodiamo denaro, non
-            eseguiamo pagamenti e non possiamo disporre operazioni sui tuoi conti.
+            <strong>It is not a bank or a payment service.</strong> We do not hold money, we do not make
+            payments and we cannot carry out operations on your accounts.
           </li>
           <li>
-            <strong>Non forniamo direttamente il servizio di informazione sui conti.</strong>{" "}
-            L&apos;accesso ai conti bancari avviene tramite GoCardless (servizio Bank Account Data),
-            prestatore autorizzato al servizio di informazione sui conti ai sensi della direttiva
-            europea sui servizi di pagamento (PSD2), recepita in Italia dal D.Lgs. 218/2017.
+            <strong>We do not provide the account information service directly.</strong> Access to bank
+            accounts happens through GoCardless (Bank Account Data service), a provider authorized for the
+            account information service under the European Payment Services Directive (PSD2), implemented
+            in Italy by Legislative Decree 218/2017.
           </li>
           <li>
-            <strong>Non è un documento ufficiale.</strong> Per qualsiasi verifica fanno fede gli
-            estratti conto e le comunicazioni della tua banca.
+            <strong>It is not an official document.</strong> For any check, your bank&apos;s statements and
+            communications prevail.
           </li>
         </LegalList>
       </LegalSection>
 
-      <LegalSection id="account" title="4. Account e requisiti">
+      <LegalSection id="account" title="4. Account and requirements">
         <LegalList>
-          <li>Per usare il Servizio devi avere almeno 18 anni e la capacità di agire.</li>
-          <li>Il Servizio è destinato a un uso personale e non commerciale.</li>
-          <li>Ogni account è personale: non condividerlo e non crearne a nome di altre persone.</li>
-          <li>Devi fornire un indirizzo email valido e di tua titolarità.</li>
+          <li>To use the Service you must be at least 18 and have full legal capacity.</li>
+          <li>The Service is meant for personal, non-commercial use.</li>
+          <li>Each account is personal: do not share it and do not create accounts in other people&apos;s names.</li>
+          <li>You must provide a valid email address that belongs to you.</li>
           <li>
-            Sei responsabile della riservatezza della password e di tutto ciò che avviene con il tuo
-            account. Se sospetti un accesso non autorizzato, cambia subito la password e scrivici.
+            You are responsible for keeping your password confidential and for everything done with your
+            account. If you suspect unauthorized access, change the password at once and write to us.
           </li>
         </LegalList>
       </LegalSection>
 
-      <LegalSection id="gratuita" title="5. Gratuità e disponibilità">
+      <LegalSection id="gratuita" title="5. Free of charge and availability">
         <p>
-          Il Servizio è gratuito e si basa sui piani gratuiti di fornitori terzi (hosting, database,
-          collegamento bancario). Per questo:
+          The Service is free and relies on the free plans of third-party providers (hosting, database,
+          bank connection). Therefore:
         </p>
         <LegalList>
-          <li>non garantiamo che sia sempre disponibile, privo di errori o senza interruzioni;</li>
-          <li>possono esserci limiti di utilizzo, per esempio sul numero di sincronizzazioni bancarie;</li>
+          <li>we do not guarantee that it is always available, error-free or uninterrupted;</li>
+          <li>there may be usage limits, for example on the number of bank syncs;</li>
           <li>
-            possiamo modificare, sospendere o chiudere il Servizio o singole funzioni. Se decidiamo di
-            chiuderlo, lo comunicheremo con almeno 30 giorni di preavviso, quando possibile, per darti
-            modo di chiedere una copia dei tuoi dati.
+            we may change, suspend or close the Service or individual features. If we decide to close it,
+            we will give at least 30 days&apos; notice where possible, so you can ask for a copy of your
+            data.
           </li>
         </LegalList>
       </LegalSection>
 
-      <LegalSection id="banca" title="6. Collegamento bancario e import automatico">
+      <LegalSection id="banca" title="6. Bank link and auto-import">
         <LegalList>
           <li>
-            Il collegamento è facoltativo. Per attivarlo autorizzi GoCardless e la tua banca ad accedere
-            ai tuoi conti in sola lettura, secondo le loro condizioni. L&apos;autorizzazione dura per un
-            periodo limitato stabilito dalla banca e da GoCardless (di norma 90 giorni), poi va rinnovata.
+            Linking a bank is optional. To turn it on you authorize GoCardless and your bank to access your
+            accounts read-only, under their terms. The authorization lasts for a limited period set by the
+            bank and GoCardless (usually 90 days), then it must be renewed.
           </li>
           <li>
-            Puoi revocare l&apos;accesso in qualsiasi momento disconnettendo la banca dalla pagina Your
-            Bank o dai canali della tua banca. I movimenti già sincronizzati restano nel tuo account
-            finché non li elimini o non chiedi la cancellazione dei dati.
+            You can revoke access at any time by disconnecting the bank from the Your Bank page or through
+            your bank&apos;s channels. Movements already synced stay in your account until you delete them
+            or ask for your data to be deleted.
           </li>
           <li>
-            Le banche limitano il numero di letture che un servizio può fare senza la tua presenza (spesso
-            4 al giorno per conto): la sincronizzazione automatica avviene una volta al giorno.
+            Banks limit how many reads a service can make without you being present (often 4 per day per
+            account): the automatic sync runs once a day.
           </li>
           <li>
-            Se attivi l&apos;import automatico per una banca, ogni giorno i nuovi movimenti
-            contabilizzati vengono aggiunti a entrate e spese nel wallet che hai scelto, dalla data che
-            hai indicato. I movimenti in sospeso vengono importati solo dopo la contabilizzazione.
+            If you turn on auto-import for a bank, every day the new booked movements are added to the
+            account you chose, from the date you set: as income, expenses, refunds or transfers still to
+            assign, depending on your rules. Pending movements are imported only once booked.
           </li>
           <li>
-            La categoria dei movimenti importati è assegnata automaticamente da regole interne al
-            Servizio, che imparano dalle tue correzioni; senza una regola il movimento va nella categoria
-            &quot;Altro&quot;. L&apos;assegnazione può essere sbagliata: controlla e correggi i movimenti
-            quando serve.
+            The category of imported movements is assigned automatically by rules inside the Service,
+            which learn from your corrections; without a rule the movement goes to the &quot;Altro&quot;
+            (Other) category. The assignment can be wrong: check and correct movements when needed.
           </li>
         </LegalList>
       </LegalSection>
 
-      <LegalSection id="dati-utente" title="7. I tuoi dati">
+      <LegalSection id="dati-utente" title="7. Your data">
         <LegalList>
           <li>
-            I dati che inserisci o importi restano tuoi. Ci concedi solo il diritto di conservarli ed
-            elaborarli nella misura necessaria a fornirti il Servizio.
+            The data you enter or import remains yours. You only grant us the right to store and process
+            it as far as needed to provide the Service.
           </li>
-          <li>Non vendiamo i tuoi dati e non li usiamo per pubblicità o profilazione.</li>
+          <li>We do not sell your data and do not use it for advertising or profiling.</li>
           <li>
-            Per ricevere una copia completa dei tuoi dati in un formato leggibile (per esempio CSV o
-            JSON), o per la loro cancellazione, scrivi a {mail}.
+            To receive a full copy of your data in a readable format (for example CSV or JSON), or to have
+            it deleted, write to {mail}.
           </li>
           <li>
-            Sei responsabile della correttezza dei dati che inserisci e di avere il diritto di inserire
-            dati che riguardano altre persone (per esempio nomi nelle descrizioni dei movimenti).
+            You are responsible for the accuracy of the data you enter and for having the right to enter
+            data about other people (for example names in movement descriptions).
           </li>
         </LegalList>
       </LegalSection>
 
-      <LegalSection id="ai" title="8. Assistente AI (AI Beta)">
+      <LegalSection id="ai" title="8. AI assistant (AI Beta)">
         <LegalList>
           <li>
-            L&apos;assistente è facoltativo e funziona solo quando gli fai una domanda. Per rispondere,
-            invia un riepilogo delle tue spese a Groq, un fornitore esterno di intelligenza artificiale:
-            cosa viene inviato è indicato nella pagina AI Beta e nell&apos;
-            <Link href="/privacy" className="text-primary hover:underline">Informativa privacy</Link>.
+            The assistant is optional and works only when you ask it a question. To answer, it sends a
+            summary of your expenses to Groq, an external artificial intelligence provider: what is sent is
+            listed on the AI Beta page and in the{" "}
+            <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
           </li>
           <li>
-            Le risposte sono generate automaticamente e possono essere incomplete o errate. Non sono
-            consulenza (sezione 3): verifica sempre prima di prendere decisioni.
+            Answers are generated automatically and may be incomplete or wrong. They are not advice
+            (section 3): always check before making decisions.
           </li>
         </LegalList>
       </LegalSection>
 
-      <LegalSection id="uso" title="9. Uso consentito">
-        <p>Usando il Servizio ti impegni a non:</p>
+      <LegalSection id="uso" title="9. Acceptable use">
+        <p>By using the Service you agree not to:</p>
         <LegalList>
-          <li>usarlo per scopi illeciti o per conto di terzi senza il loro consenso;</li>
-          <li>accedere o tentare di accedere ad account o dati di altri utenti;</li>
+          <li>use it for unlawful purposes or on behalf of others without their consent;</li>
+          <li>access or try to access other users&apos; accounts or data;</li>
           <li>
-            aggirare le misure di sicurezza, sovraccaricare il Servizio (per esempio con richieste
-            automatizzate massive) o interferire con il suo funzionamento;
+            get around security measures, overload the Service (for example with massive automated
+            requests) or interfere with how it works;
           </li>
-          <li>caricare contenuti dannosi, come codice malevolo, o che violano diritti di terzi.</li>
+          <li>upload harmful content, such as malicious code, or content that infringes third-party rights.</li>
         </LegalList>
         <p>
-          Se scopri una vulnerabilità, ti chiediamo di segnalarla a {mail} senza sfruttarla né
-          divulgarla prima che sia corretta.
-        </p>
-      </LegalSection>
-
-      <LegalSection id="proprieta" title="10. Proprietà intellettuale">
-        <p>
-          Nome, logo, grafica e testi di {LEGAL.serviceName} appartengono a {LEGAL.ownerName}. Il codice
-          sorgente è consultabile pubblicamente; può essere riutilizzato solo nei limiti della licenza
-          eventualmente indicata nel rispettivo repository. L&apos;uso del Servizio non ti trasferisce
-          altri diritti oltre a quelli necessari per usarlo.
+          If you find a vulnerability, please report it to {mail} without exploiting it or disclosing it
+          before it is fixed.
         </p>
       </LegalSection>
 
-      <LegalSection id="chiusura" title="11. Chiusura dell'account">
-        <LegalList>
-          <li>
-            Puoi smettere di usare il Servizio in qualsiasi momento. Per chiudere l&apos;account e
-            cancellare i tuoi dati scrivi a {mail} dall&apos;indirizzo associato all&apos;account:
-            procederemo entro 30 giorni.
-          </li>
-          <li>
-            Possiamo sospendere o chiudere un account che viola questi Termini o che mette a rischio la
-            sicurezza del Servizio o di altri utenti, avvisandoti via email salvo che ciò sia impedito da
-            ragioni di sicurezza o di legge.
-          </li>
-        </LegalList>
-      </LegalSection>
-
-      <LegalSection id="responsabilita" title="12. Limitazione di responsabilità">
-        <LegalList>
-          <li>
-            Il Servizio è fornito &quot;così com&apos;è&quot;. Nei limiti consentiti dalla legge non
-            rispondiamo di danni derivanti da decisioni prese sulla base dei dati o delle analisi del
-            Servizio, da dati inesatti forniti da te o dalla tua banca, da interruzioni o perdite di dati
-            dovute a fornitori terzi (banche, GoCardless, hosting, database, servizi AI).
-          </li>
-          <li>
-            Nulla in questi Termini limita la nostra responsabilità per dolo o colpa grave (art. 1229 del
-            Codice civile), né i diritti che la legge riconosce in modo inderogabile ai consumatori.
-          </li>
-        </LegalList>
-      </LegalSection>
-
-      <LegalSection id="modifiche" title="13. Modifiche ai Termini">
+      <LegalSection id="proprieta" title="10. Intellectual property">
         <p>
-          Possiamo aggiornare questi Termini, per esempio quando aggiungiamo funzioni o cambiano le norme.
-          La data in cima alla pagina indica l&apos;ultima versione. Delle modifiche sostanziali ti
-          avviseremo via email o con un avviso nell&apos;app almeno 15 giorni prima che si applichino;
-          se non le accetti, puoi chiudere l&apos;account (sezione 11).
+          The name, logo, graphics and texts of {LEGAL.serviceName} belong to {LEGAL.ownerName}. The source
+          code is publicly viewable; it can be reused only within the limits of any license stated in the
+          respective repository. Using the Service does not give you any rights beyond those needed to use
+          it.
         </p>
       </LegalSection>
 
-      <LegalSection id="legge" title="14. Legge applicabile e controversie">
+      <LegalSection id="chiusura" title="11. Closing the account">
         <LegalList>
-          <li>Questi Termini sono regolati dalla legge italiana.</li>
           <li>
-            Se usi il Servizio come consumatore, per qualsiasi controversia è competente il giudice del
-            luogo in cui risiedi o sei domiciliato (art. 66-bis del Codice del Consumo, D.Lgs. 206/2005).
+            You can stop using the Service at any time. To close the account and delete your data, write to
+            {" "}{mail} from the address linked to the account: we will do it within 30 days.
           </li>
-          <li>Prima di agire, scrivici: proveremo a risolvere la questione in modo amichevole.</li>
+          <li>
+            We may suspend or close an account that breaks these Terms or puts the security of the Service
+            or other users at risk, telling you by email unless security or legal reasons prevent it.
+          </li>
         </LegalList>
       </LegalSection>
 
-      <LegalSection id="contatti" title="15. Contatti">
-        <p>Per domande su questi Termini scrivi a {mail}.</p>
+      <LegalSection id="responsabilita" title="12. Limitation of liability">
+        <LegalList>
+          <li>
+            The Service is provided &quot;as is&quot;. To the extent permitted by law we are not liable for
+            damage resulting from decisions made on the basis of the Service&apos;s data or analyses, from
+            inaccurate data provided by you or your bank, or from interruptions or data loss caused by
+            third-party providers (banks, GoCardless, hosting, database, AI services).
+          </li>
+          <li>
+            Nothing in these Terms limits our liability for wilful misconduct or gross negligence (Art.
+            1229 of the Italian Civil Code), nor the rights that the law grants consumers and that cannot
+            be waived.
+          </li>
+        </LegalList>
+      </LegalSection>
+
+      <LegalSection id="modifiche" title="13. Changes to the Terms">
+        <p>
+          We may update these Terms, for example when we add features or the rules change. The date at the
+          top of the page shows the latest version. We will tell you about substantial changes by email or
+          with a notice in the app at least 15 days before they apply; if you do not accept them, you can
+          close the account (section 11).
+        </p>
+      </LegalSection>
+
+      <LegalSection id="legge" title="14. Governing law and disputes">
+        <LegalList>
+          <li>These Terms are governed by Italian law.</li>
+          <li>
+            If you use the Service as a consumer, any dispute falls under the court of the place where you
+            live or are domiciled (Art. 66-bis of the Italian Consumer Code, Legislative Decree 206/2005).
+          </li>
+          <li>Before taking action, write to us: we will try to settle the matter amicably.</li>
+        </LegalList>
+      </LegalSection>
+
+      <LegalSection id="contatti" title="15. Contact">
+        <p>For questions about these Terms write to {mail}.</p>
       </LegalSection>
     </LegalPage>
   );
