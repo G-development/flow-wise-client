@@ -43,26 +43,35 @@ export function signedAmount(
   throw new Error(`signedAmount: tipo ${JSON.stringify(type)} non è un'entrata né una spesa`);
 }
 
+type RefundLike = { type?: string | null; is_refund?: boolean | null };
+
 /**
- * Totale **positivo** di una selezione omogenea per tipo (le entrate per i
- * widget delle entrate, le uscite per quelli delle spese).
+ * Rimborso (fase 5, migrazione 014 del server): una riga "I" con `is_refund`. I soldi entrano
+ * nel wallet, ma nelle statistiche non è un'entrata: è una spesa in meno della sua categoria
+ * (di tipo "E"), nel mese in cui arriva.
+ */
+export function isRefund(transaction: RefundLike): boolean {
+  return transaction.type === "I" && transaction.is_refund === true;
+}
+
+/**
+ * Totale di una selezione per i widget: le **entrate** senza i rimborsi, le **spese** al
+ * netto dei rimborsi (che le riducono). Il segno lo decide `type`, mai il valore.
  *
- * Le righe con `type` diverso da `expectedType` valgono 0: il segno lo decide
- * `type`, non il valore, quindi una riga mal classificata non entra nel totale
- * sbagliato. Il risultato è la magnitudine della somma firmata, cioè la stessa
- * grandezza che `walletService` somma per quel tipo.
+ * Le righe di altro tipo valgono 0, così una riga mal classificata non entra nel totale
+ * sbagliato. Le spese nette possono risultare negative in un mese in cui arrivano più
+ * rimborsi che spese: il numero resta onesto, non viene corretto a zero.
  */
 export function totalForType(
-  transactions: ReadonlyArray<{ amount: unknown; type?: string | null }>,
+  transactions: ReadonlyArray<{ amount: unknown; type?: string | null; is_refund?: boolean | null }>,
   expectedType: "I" | "E"
 ): number {
-  const signed = transactions.reduce(
-    (total, transaction) =>
-      transaction.type === expectedType
-        ? total + signedAmount(transaction.amount, transaction.type)
-        : total,
-    0
-  );
-
-  return Math.abs(signed);
+  const total = transactions.reduce((sum, transaction) => {
+    const magnitude = absoluteAmount(transaction.amount);
+    if (expectedType === "I") return transaction.type === "I" && !isRefund(transaction) ? sum + magnitude : sum;
+    if (transaction.type === "E") return sum + magnitude;
+    if (isRefund(transaction)) return sum - magnitude;
+    return sum;
+  }, 0);
+  return Math.round(total * 100) / 100;
 }

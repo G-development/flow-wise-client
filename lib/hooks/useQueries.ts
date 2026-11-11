@@ -57,6 +57,8 @@ export interface Transaction extends Record<string, unknown> {
   wallet_id: number | null;
   /** Solo per una "T": la destinazione. Null = lato da assegnare. */
   to_wallet_id?: number | null;
+  /** Rimborso (migrazione 014 del server): una "I" con categoria di spesa, che riduce quella spesa. */
+  is_refund?: boolean;
   category_id: number;
   created_at?: string;
   updated_at?: string;

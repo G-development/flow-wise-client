@@ -72,10 +72,13 @@ export function PendingTransfers({
   // "Not a transfer": diventa spesa (se esce dal conto) o entrata (se entra), con la
   // categoria scelta. Il server ne impara la regola: i movimenti simili arrivano gia' cosi'.
   const convert = (transfer: Transaction) => {
-    const categoryId = Number(categoryChoice[transfer.id]);
+    // "r:<id>" = rimborso di quella categoria di spesa (solo per un'entrata).
+    const raw = categoryChoice[transfer.id] ?? "";
+    const refund = raw.startsWith("r:");
+    const categoryId = Number(refund ? raw.slice(2) : raw);
     if (!categoryId) return;
     updateTransaction.mutate(
-      { id: transfer.id, data: transferAsIncomeExpense(transfer, categoryId) },
+      { id: transfer.id, data: transferAsIncomeExpense(transfer, categoryId, { refund }) },
       { onSuccess: () => clearRow(transfer.id) }
     );
   };
@@ -138,6 +141,14 @@ export function PendingTransfers({
                               {category.name}
                             </SelectItem>
                           ))}
+                        {incomeExpenseTypeOf(transfer) === "I" &&
+                          categoryList.rows
+                            .filter((category) => category.type === "E")
+                            .map((category) => (
+                              <SelectItem key={`r-${category.id}`} value={`r:${category.id}`}>
+                                Refund · {category.name}
+                              </SelectItem>
+                            ))}
                       </SelectContent>
                     </Select>
                     <Button

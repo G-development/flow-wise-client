@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useExpenses, useCategories, type Transaction, type Category } from "@/lib/hooks/useQueries";
 import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
 import { TruncatedNotice } from "@/components/truncated-notice";
-import { absoluteAmount } from "@/lib/amount";
+import { absoluteAmount, isRefund, totalForType } from "@/lib/amount";
 import { WidgetConfig } from "@/lib/types/dashboard";
 import { useMemo } from "react";
 import {
@@ -79,7 +79,8 @@ export function ExpenseBreakdownWidget({
       const categoryName = categoryMap[categoryKey] || "Uncategorized";
       // Convenzione importi (lib/amount.ts): la magnitudine si legge da `amount`,
       // il segno da `type`. Qui le fette del grafico sono magnitudini.
-      const amount = absoluteAmount(expense.amount);
+      // Un rimborso (fase 5) e' una spesa in meno della sua categoria.
+      const amount = isRefund(expense) ? -absoluteAmount(expense.amount) : absoluteAmount(expense.amount);
       grouped[categoryName] = (grouped[categoryName] || 0) + amount;
     });
 
@@ -88,7 +89,11 @@ export function ExpenseBreakdownWidget({
 
   // Format data for pie chart
   const chartData = useMemo(() => {
-    return Object.entries(expensesByCategory).map(([category, amount], index: number) => ({
+    // Una categoria con piu' rimborsi che spese nel periodo (es. il condominio rimborsato il
+    // mese dopo) non ha una fetta: il totale sotto resta comunque il netto vero.
+    return Object.entries(expensesByCategory)
+      .filter(([, amount]) => amount > 0.005)
+      .map(([category, amount], index: number) => ({
       category,
       value: amount,
       fill: CATEGORY_COLORS[index % Object.keys(CATEGORY_COLORS).length],
@@ -110,9 +115,8 @@ export function ExpenseBreakdownWidget({
   const barData = useMemo(() => [...chartData].sort((a, b) => b.value - a.value), [chartData]);
   const maxValue = barData[0]?.value ?? 0;
 
-  const totalExpenses = useMemo(() => {
-    return chartData.reduce((sum, item) => sum + item.value, 0);
-  }, [chartData]);
+  // Totale netto di tutte le categorie (anche quelle senza fetta), come gli altri widget.
+  const totalExpenses = useMemo(() => totalForType(expenseRows, "E"), [expenseRows]);
 
   const formatCurrency = new Intl.NumberFormat("it-IT", {
     style: "currency",

@@ -97,3 +97,13 @@ test("movementDirection: neutro per le T, tranne quando si guarda un solo wallet
   assert.equal(movementDirection(rows[2], "1"), "out");
   assert.equal(movementDirection(rows[2], "11"), "in");
 });
+
+test("rimborso: con le spese nei filtri e nei totali, in entrata sul wallet", () => {
+  const refund = { type: "I", is_refund: true, amount: 36, wallet_id: 1, to_wallet_id: null };
+  const cena = { type: "E", amount: 60, wallet_id: 1, to_wallet_id: null };
+  const stipendio = { type: "I", amount: 1800, wallet_id: 1, to_wallet_id: null };
+  const onlyExpenses = filterMovements([refund, cena, stipendio], { types: new Set(["E"]), wallets: null });
+  assert.deepEqual(onlyExpenses, [refund, cena]);
+  assert.deepEqual(movementTotals([refund, cena, stipendio]), { income: 1800, expense: 24, net: 1776, transfersIn: null, transfersOut: null });
+  assert.equal(movementDirection(refund), "in");
+});

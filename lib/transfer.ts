@@ -77,18 +77,22 @@ export function assignTransferSide<T extends TransferLike & {
  * Il lato noto resta il wallet della transazione: se è l'origine (uscita dal conto) diventa
  * una spesa, se è la destinazione (entrata nel conto) un'entrata. Il server impara la
  * correzione come regola (`learnRuleFromCorrection`), quindi i movimenti simili successivi
- * arrivano già con quella categoria.
+ * arrivano già con quella categoria. Con `refund` un'entrata diventa un rimborso di una
+ * categoria di spesa (fase 5): il server impara la regola solo dal testo libero del bonifico.
  */
 export function transferAsIncomeExpense<T extends TransferLike & {
   description?: string | null;
   note?: string | null;
   amount: number;
   date: string;
-}>(transaction: T, categoryId: number) {
+}>(transaction: T, categoryId: number, { refund = false }: { refund?: boolean } = {}) {
   const side = missingTransferSide(transaction);
   if (side === null) throw new Error("transferAsIncomeExpense: solo un trasferimento da assegnare");
   const outgoing = side === "to";
+  // Un rimborso (fase 5) e' solo un'entrata: i soldi rientrano e riducono una spesa.
+  if (refund && outgoing) throw new Error("transferAsIncomeExpense: un'uscita non puo' essere un rimborso");
   return {
+    ...(refund ? { is_refund: true } : {}),
     description: transaction.description || (outgoing ? "Spesa" : "Entrata"),
     note: transaction.note ?? null,
     amount: transaction.amount,

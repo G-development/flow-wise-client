@@ -117,6 +117,15 @@ La regola vive in due punti speculari, uno per repo, perché i repo sono separat
 col segno nel numero non fa più divergere i totali di periodo dal saldo: entrambi
 la contano come magnitudine e le danno il segno di `type`.
 
+**Rimborsi** (fase 5, migrazione 014 del server): un rimborso è una riga `"I"` con
+`is_refund: true` e una categoria di **spesa**. I soldi entrano nel wallet (il saldo li
+conta come entrata), ma nelle statistiche non è un'entrata: riduce le spese di quella
+categoria nel mese in cui arriva. `isRefund` e `totalForType` in `lib/amount.ts` lo
+applicano ai widget (entrate senza rimborsi, spese al netto, anche negative in un mese
+con più rimborsi che spese); `lib/movements.ts` lo mette con le spese nei filtri e nei
+totali di `/movements`, dove la riga mostra il badge "Refund". Si crea dal pannello del
+movimento (casella "Refund" per un'entrata) o da "Not a transfer" ("Refund · categoria").
+
 Non vale per `bank_transactions`, dove il segno è nel valore perché è il formato
 del provider bancario: la traduzione in (`amount` positivo, `type`) avviene
 all'import.

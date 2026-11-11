@@ -7,13 +7,14 @@
  * (`lib/transfer.ts`).
  */
 
-import { absoluteAmount } from "./amount.ts";
+import { absoluteAmount, isRefund } from "./amount.ts";
 
 export type MovementType = "I" | "E" | "T";
 export const MOVEMENT_TYPES: readonly MovementType[] = ["I", "E", "T"];
 
 type MovementLike = {
   type?: string | null;
+  is_refund?: boolean | null;
   amount: unknown;
   wallet_id?: number | string | null;
   to_wallet_id?: number | string | null;
@@ -65,9 +66,15 @@ export function touchesWallet(movement: MovementLike, walletId: string): boolean
   return movement.type === "T" && String(movement.to_wallet_id ?? "") === walletId;
 }
 
+/** Tipo per i filtri: un rimborso sta con le spese ("E"), perché le riduce. */
+export function movementFilterType(movement: MovementLike): string {
+  return isRefund(movement) ? "E" : String(movement.type);
+}
+
 export function filterMovements<M extends MovementLike>(movements: readonly M[], filters: MovementFilters): M[] {
   return movements.filter((movement) => {
-    if (!isMovementType(String(movement.type)) || !filters.types.has(movement.type as MovementType)) return false;
+    const type = movementFilterType(movement);
+    if (!isMovementType(type) || !filters.types.has(type)) return false;
     if (filters.wallets === null) return true;
     return [...filters.wallets].some((walletId) => touchesWallet(movement, walletId));
   });
@@ -96,7 +103,8 @@ export function movementTotals(movements: readonly MovementLike[], singleWalletI
   let transfersOut = 0;
   for (const movement of movements) {
     const amount = absoluteAmount(movement.amount);
-    if (movement.type === "I") income += amount;
+    if (isRefund(movement)) expense -= amount;
+    else if (movement.type === "I") income += amount;
     else if (movement.type === "E") expense += amount;
     else if (movement.type === "T" && singleWalletId !== null) {
       if (String(movement.to_wallet_id ?? "") === singleWalletId) transfersIn += amount;

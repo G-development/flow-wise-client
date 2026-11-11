@@ -5,7 +5,7 @@
 Indice file-per-file generato dal codice, non dalla documentazione. Serve a sapere **dove** sta una
 cosa senza leggere il repo: architettura e regole locali stanno altrove (vedi `AGENTS.md`).
 
-Forma `next`, radice sorgente `.`, commit `71536e4`.
+Forma `next`, radice sorgente `.`, commit `e7eabdc`.
 
 ```bash
 node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/flow-wise-client \
@@ -126,7 +126,7 @@ Layout: `app/layout.tsx`
 
 *lib/*
 - `lib/amount.test.ts`
-- `lib/amount.ts` — exports: fn `absoluteAmount`, `signedAmount`, `totalForType`
+- `lib/amount.ts` — exports: fn `absoluteAmount`, `isRefund`, `signedAmount`, `totalForType`
 - `lib/amountInput.test.ts`
 - `lib/amountInput.ts` — exports: const `AMOUNT_NEGATIVE_MESSAGE`, `AMOUNT_NOT_A_NUMBER_MESSAGE`; type `AmountInputCheck`; fn `checkAmountInput`
 - `lib/api.ts` — exports: fn `apiFetch`, `buildQuery`, `getAuthToken`
@@ -140,7 +140,7 @@ Layout: `app/layout.tsx`
 - `lib/listResponse.test.ts`
 - `lib/listResponse.ts` — exports: const `EMPTY_LIST_RESPONSE`; type `ListResponse`; fn `parseListResponse`
 - `lib/movements.test.ts`
-- `lib/movements.ts` — exports: const `DEFAULT_FILTERS`, `MOVEMENT_TYPES`; fn `filterMovements`, `movementDirection`, `movementTotals`, `parseMovementFilters`, `serializeMovementFilters`, `touchesWallet`, `walletPeriodTotals`; type `MovementFilters`, `MovementTotals`, `MovementType`
+- `lib/movements.ts` — exports: const `DEFAULT_FILTERS`, `MOVEMENT_TYPES`; fn `filterMovements`, `movementDirection`, `movementFilterType`, `movementTotals`, `parseMovementFilters`, `serializeMovementFilters`, `touchesWallet`, `walletPeriodTotals`; type `MovementFilters`, `MovementTotals`, `MovementType`
 - `lib/potCap.test.ts`
 - `lib/potCap.ts` — exports: fn `effectiveCapCents`, `overCapCents`
 - `lib/supabaseClient.ts` — exports: const `supabase`

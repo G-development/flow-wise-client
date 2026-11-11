@@ -58,6 +58,11 @@ per tipo e wallet lato client (`lib/movements.ts`); i trasferimenti da assegnare
 `GET /transaction/all` senza date (`useTransfers`), così un accantonamento vecchio non sparisce
 cambiando periodo. Il server non filtra quella lista per tipo.
 
+`/income/all` esclude i rimborsi e `/expense/all` li include (righe `"I"` con
+`is_refund: true`, migrazione 014): chi somma le spese li sottrae (`totalForType`).
+Un rimborso si scrive con `POST`/`PUT /transaction` e `is_refund: true` su un'entrata con
+categoria di spesa; il client manda `is_refund` solo quando serve.
+
 Un trasferimento si crea con `POST /transaction` (`type: "T"`, `wallet_id` origine,
 `to_wallet_id` destinazione, `category_id` della categoria di sistema
 "Trasferimento") e si completa, quando un lato è "da assegnare", con

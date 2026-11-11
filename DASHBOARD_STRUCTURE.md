@@ -10,7 +10,7 @@ un componente in base a `widget.type`.
 - `period-incomes`: totale delle entrate nell'intervallo di date selezionato.
 - `period-expenses`: totale delle spese nell'intervallo di date selezionato.
 - `income-vs-expenses`: confronto dei totali e differenza netta tra entrate e spese.
-- `expense-breakdown`: spese raggruppate per categoria. Su desktop grafico a torta e legenda; su mobile (sotto 768 px, la stessa soglia di `dashboard-grid.tsx`) barre orizzontali ordinate dalla categoria più alta, con nome, importo e barra proporzionale alla più alta.
+- `expense-breakdown`: spese raggruppate per categoria, al netto dei rimborsi (una categoria con più rimborsi che spese nel periodo non ha una fetta; il totale è il netto vero). Su desktop grafico a torta e legenda; su mobile (sotto 768 px, la stessa soglia di `dashboard-grid.tsx`) barre orizzontali ordinate dalla categoria più alta, con nome, importo e barra proporzionale alla più alta.
 
 Il layout iniziale include solo saldo totale e entrate del periodo. Il provider
 globale delle date parte dal primo giorno del mese corrente a oggi; i widget

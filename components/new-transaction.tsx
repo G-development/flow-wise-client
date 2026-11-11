@@ -47,6 +47,8 @@ type FormData = {
   to_wallet_id: number | null;
   category_id: number | null;
   date?: string | null;
+  /** Solo per un'entrata: e' un rimborso, con una categoria di spesa (fase 5). */
+  is_refund: boolean;
 };
 
 const TYPE_OPTIONS = [
@@ -80,6 +82,7 @@ const emptyForm = (type: FormData["type"]): FormData => ({
   to_wallet_id: null,
   category_id: null,
   date: null,
+  is_refund: false,
 });
 
 /** Valori del modulo per una transazione esistente (date ISO -> yyyy-MM-dd). */
@@ -92,6 +95,7 @@ const formFromTransaction = (transaction: Transaction): FormData => ({
   to_wallet_id: transaction.to_wallet_id == null ? null : Number(transaction.to_wallet_id),
   category_id: transaction.category_id == null ? null : Number(transaction.category_id),
   date: transaction.date ? String(transaction.date).slice(0, 10) : null,
+  is_refund: transaction.is_refund === true,
 });
 
 export default function NewTransaction({
@@ -150,7 +154,9 @@ export default function NewTransaction({
     });
   }, [open, isEdit, defaultWallet, today]);
 
-  const filteredCategories = categories.filter((cat) => cat.type === formData.type);
+  // Un rimborso e' un'entrata con una categoria di spesa: riduce quella spesa (fase 5).
+  const isRefundForm = formData.type === "I" && formData.is_refund;
+  const filteredCategories = categories.filter((cat) => cat.type === (isRefundForm ? "E" : formData.type));
   const isTransferForm = formData.type === "T";
   // Un trasferimento usa sempre la categoria di sistema "Trasferimento" (server,
   // migrazione 011): non si sceglie, quindi al posto delle categorie c'e' il wallet "To".
@@ -204,6 +210,9 @@ export default function NewTransaction({
           wallet_id: formData.wallet_id,
           category_id: formData.category_id!,
           date: formData.date || undefined,
+          // Mandato solo se serve (rimborso, o un rimborso che torna entrata): la colonna c'e'
+          // solo dalla migrazione 014 del server.
+          ...(isRefundForm || transaction?.is_refund ? { is_refund: isRefundForm } : {}),
         };
 
     const done = () => {
@@ -274,7 +283,7 @@ export default function NewTransaction({
                       className="min-w-0 justify-center px-2"
                       onClick={() =>
                         // Cambiando tipo la categoria scelta non vale piu': e' filtrata per tipo.
-                        setFormData({ ...formData, type: value, category_id: null })
+                        setFormData({ ...formData, type: value, category_id: null, is_refund: false })
                       }
                     >
                       {/* Sotto i 640px l'icona toglie lo spazio alla parola: resta solo il testo. */}
@@ -419,6 +428,17 @@ export default function NewTransaction({
                     ))}
                   </SelectContent>
                 </Select>
+                {formData.type === "I" && (
+                  <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5"
+                      checked={formData.is_refund}
+                      onChange={(event) => setFormData({ ...formData, is_refund: event.target.checked, category_id: null })}
+                    />
+                    <span>Refund: money paid back for an expense (e.g. a friend&apos;s share of a dinner). Pick the expense category it reduces.</span>
+                  </label>
+                )}
               </div>
             )}
           </div>

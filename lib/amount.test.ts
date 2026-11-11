@@ -12,7 +12,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { absoluteAmount, signedAmount, totalForType } from "./amount.ts";
+import { absoluteAmount, isRefund, signedAmount, totalForType } from "./amount.ts";
 
 test("absoluteAmount ignora il segno e normalizza a 0 i valori non numerici", () => {
   assert.equal(absoluteAmount(-50), 50);
@@ -53,4 +53,20 @@ test("totalForType ignora il segno nel numero e restituisce una magnitudine posi
   assert.equal(totalForType([{ amount: -25, type: "E" }], "E"), 25);
   assert.equal(totalForType([], "I"), 0);
   assert.equal(totalForType([{ amount: 10, type: null }, { amount: 5 }], "E"), 0);
+});
+
+test("rimborsi: non sono entrate e riducono le spese", () => {
+  const rows = [
+    { amount: 60, type: "E" },
+    { amount: 36, type: "I", is_refund: true },
+    { amount: 1800, type: "I" },
+  ];
+  assert.equal(isRefund(rows[1]), true);
+  assert.equal(isRefund(rows[2]), false);
+  assert.equal(totalForType(rows, "E"), 24);
+  assert.equal(totalForType(rows, "I"), 1800);
+});
+
+test("rimborsi: un mese con piu' rimborsi che spese resta negativo, senza arrotondamenti sbagliati", () => {
+  assert.equal(totalForType([{ amount: 132.91, type: "I", is_refund: true }, { amount: 0.1, type: "E" }], "E"), -132.81);
 });

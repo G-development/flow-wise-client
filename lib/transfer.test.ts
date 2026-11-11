@@ -106,3 +106,14 @@ test("canTransferBetween: un salvadanaio solo con il suo conto, due conti liberi
   assert.equal(canTransferBetween(isp, isp), false);
   assert.equal(canTransferBetween({ id: 2 }, { id: 3 }), true, "wallet senza kind (prima della 012) = conto");
 });
+
+test("transferAsIncomeExpense: un'entrata puo' diventare un rimborso, un'uscita no", () => {
+  const incoming = { ...base, type: "T", wallet_id: null, to_wallet_id: 1, amount: 36 };
+  const outgoing = { ...base, type: "T", wallet_id: 1, to_wallet_id: null, amount: 36 };
+  const refund = transferAsIncomeExpense(incoming, 12, { refund: true });
+  assert.equal(refund.type, "I");
+  assert.equal(refund.is_refund, true);
+  assert.equal(refund.category_id, 12);
+  assert.equal("is_refund" in transferAsIncomeExpense(incoming, 5), false);
+  assert.throws(() => transferAsIncomeExpense(outgoing, 12, { refund: true }));
+});
