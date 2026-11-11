@@ -16,6 +16,9 @@ export type AnnualInstallment = {
   due_date: string;
   amount_cents: number;
   transaction_id: number | null;
+  /** Segnata pagata a mano (migrazione 015 del server), anche senza transazione collegata. */
+  is_paid?: boolean;
+  /** Pagata = `is_paid` oppure collegata a una transazione (lo calcola il server). */
   paid: boolean;
 };
 
@@ -134,7 +137,7 @@ export function useAddInstallment() {
 
 export function useUpdateInstallment() {
   return useAnnualMutation(
-    ({ id, data }: { id: number; data: { due_date?: string; amount_cents?: number } }) =>
+    ({ id, data }: { id: number; data: { due_date?: string; amount_cents?: number; is_paid?: boolean } }) =>
       apiFetch(`/annual-installments/${id}`, json("PUT", data)),
     "Failed to update the installment"
   );

@@ -367,6 +367,7 @@ function InstallmentDialog({ itemId, installment, open, onClose }: { itemId: num
   const updateInstallment = useUpdateInstallment();
   const [date, setDate] = useState("");
   const [amount, setAmount] = useState("");
+  const [paid, setPaid] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastOpened, setLastOpened] = useState<string | null>(null);
 
@@ -375,8 +376,11 @@ function InstallmentDialog({ itemId, installment, open, onClose }: { itemId: num
     setLastOpened(openKey);
     setDate(installment ? installment.due_date.slice(0, 10) : "");
     setAmount(installment ? (installment.amount_cents / 100).toFixed(2) : "");
+    setPaid(installment?.is_paid === true);
     setError(null);
   }
+  // Collegata a un movimento = pagata comunque: l'interruttore non puo' toglierlo (si scollega da "Paid").
+  const linked = installment?.transaction_id != null;
 
   const save = async () => {
     const cents = parseAmountToCents(amount);
@@ -385,7 +389,11 @@ function InstallmentDialog({ itemId, installment, open, onClose }: { itemId: num
       return;
     }
     try {
-      if (installment) await updateInstallment.mutateAsync({ id: installment.id, data: { due_date: date, amount_cents: cents } });
+      if (installment) {
+        // `is_paid` solo se cambia: la colonna esiste dalla migrazione 015 del server.
+        const paidChange = paid !== (installment.is_paid === true) ? { is_paid: paid } : {};
+        await updateInstallment.mutateAsync({ id: installment.id, data: { due_date: date, amount_cents: cents, ...paidChange } });
+      }
       else await addInstallment.mutateAsync({ itemId, data: { due_date: date, amount_cents: cents } });
       onClose();
     } catch {
@@ -404,6 +412,15 @@ function InstallmentDialog({ itemId, installment, open, onClose }: { itemId: num
           <Input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
           <Input inputMode="decimal" placeholder="Amount €" value={amount} onChange={(event) => setAmount(event.target.value)} />
         </div>
+        {installment && (
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={paid || linked} disabled={linked} onChange={(event) => setPaid(event.target.checked)} />
+            Paid
+            <span className="text-xs text-muted-foreground">
+              {linked ? "linked to a movement" : "no movement needed; you can still link one from the badge"}
+            </span>
+          </label>
+        )}
         {error && <p className="text-sm text-destructive">{error}</p>}
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
@@ -465,9 +482,10 @@ function PaymentDialog({ installment, onClose }: { installment: AnnualInstallmen
           </SelectContent>
         </Select>
         <DialogFooter className="gap-2">
-          {installment?.paid && (
+          {/* Scollega solo il movimento: "Paid" senza movimento si toglie da Edit (migrazione 015). */}
+          {installment?.transaction_id != null && (
             <Button variant="outline" onClick={() => setPayment.mutate({ id: installment.id, transactionId: null }, { onSuccess: close })}>
-              Mark as not paid
+              Unlink movement
             </Button>
           )}
           <Button
