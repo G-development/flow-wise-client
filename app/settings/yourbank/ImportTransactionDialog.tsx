@@ -52,7 +52,9 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   CheckCircle2,
+  RotateCcw,
   Wallet as WalletIcon,
+  X,
 } from "lucide-react";
 
 export interface BankTransactionItem {
@@ -443,6 +445,8 @@ export default function ImportTransactionDialog({
                               {transaction.counterparty && <span className="truncate">· {transaction.counterparty}</span>}
                             </div>
                           </div>
+                          {/* R1 (13/11): se la categoria e' stata cambiata, ↺ rimette quella suggerita */}
+                          <div className="flex min-w-0 items-center gap-1">
                           <Select
                             value={selectedCategoryId}
                             onValueChange={(value) => handleCategoryChange(transaction.id, value)}
@@ -462,6 +466,21 @@ export default function ImportTransactionDialog({
                               ))}
                             </SelectContent>
                           </Select>
+                          {suggestion?.categoryId && selectedCategoryId !== suggestion.categoryId && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 shrink-0"
+                              disabled={isSubmitting}
+                              onClick={() => handleCategoryChange(transaction.id, suggestion.categoryId)}
+                              title="Back to suggestion"
+                              aria-label={`Back to the suggested category for ${transaction.description || "movement"}`}
+                            >
+                              <RotateCcw className="h-4 w-4" />
+                            </Button>
+                          )}
+                          </div>
                         </div>
                       );
                     })}
@@ -498,8 +517,18 @@ export default function ImportTransactionDialog({
 
       <AlertDialog open={isCreateOtherOpen} onOpenChange={(nextOpen) => !isCreatingOther && setIsCreateOtherOpen(nextOpen)}>
         <AlertDialogContent>
+          {/* R2 (13/11): X per chiudere e tornare all'elenco, senza scegliere */}
+          <button
+            type="button"
+            onClick={() => setIsCreateOtherOpen(false)}
+            disabled={isCreatingOther}
+            className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </button>
           <AlertDialogHeader>
-            <AlertDialogTitle>Create the “Altro” category?</AlertDialogTitle>
+            <AlertDialogTitle className="pr-6">Create the “Altro” category?</AlertDialogTitle>
             <AlertDialogDescription>
               You have no active “Altro” category for {createTypesLabel}. Create it and use it as the suggestion for movements without a sure match? You can still review the categories before importing.
             </AlertDialogDescription>

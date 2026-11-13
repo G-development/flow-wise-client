@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { parseAmountToCents } from "@/components/movements/wallet-cards";
-import { useMovements, useWallets, type Wallet } from "@/lib/hooks/useQueries";
+import { useCreateWallet, useMovements, useUpdateWallet, useWallets, type Wallet } from "@/lib/hooks/useQueries";
 import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
 import { absoluteAmount } from "@/lib/amount";
 import {
@@ -84,7 +84,16 @@ function AnnualPlanView() {
     return (
       <main className="app-page">
         <h1 className="page-title">Annual plan</h1>
-        <p className="page-description">Create a savings pot first (Movements → account menu → Add savings pot).</p>
+        <p className="page-description mb-4">
+          Plan yearly expenses (insurance, car tax, fees…) and put aside a little every month.
+        </p>
+        <CreatePotStep
+          accounts={wallets.filter((wallet) => (wallet.kind ?? "account") === "account")}
+          onCreated={(id) => {
+            router.replace(`${pathname}?wallet=${id}`, { scroll: false });
+            setCreating(true);
+          }}
+        />
       </main>
     );
   }
@@ -154,7 +163,16 @@ function AnnualPlanView() {
 
           <section className="space-y-4">
             {data.items.length === 0 && (
-              <p className="text-sm text-muted-foreground">No items yet for {pot?.name}. Add the first one.</p>
+              <div className="rounded-xl border border-dashed border-border bg-card p-5 text-sm">
+                <p className="font-medium">Step 2 · Add your first yearly expense</p>
+                <p className="mt-1 text-muted-foreground">
+                  For example the car insurance, with its installments and due dates. Flow Wise then tells you how
+                  much to put in {pot?.name} every month.
+                </p>
+                <Button className="mt-3" onClick={() => setCreating(true)}>
+                  <Plus className="mr-2 h-4 w-4" /> Add the first item
+                </Button>
+              </div>
             )}
             {data.items.map((item) => (
               <ItemCard key={item.id} item={item} />
@@ -165,6 +183,80 @@ function AnnualPlanView() {
 
       {pot && <ItemDialog pot={pot} open={creating} onClose={() => setCreating(false)} />}
     </main>
+  );
+}
+
+/**
+ * R3 (13/11/2026): senza salvadanai la pagina guida a crearne uno qui, invece di rimandare a
+ * Movements. Il salvadanaio nasce con il tetto "dal piano"; poi si apre subito "Add item".
+ */
+function CreatePotStep({ accounts, onCreated }: { accounts: Wallet[]; onCreated: (id: number) => void }) {
+  const createWallet = useCreateWallet();
+  const updateWallet = useUpdateWallet();
+  const [name, setName] = useState("Annual expenses");
+  const [accountId, setAccountId] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+  const parent = accounts.find((account) => String(account.id) === accountId) ?? accounts.find((a) => a.is_default) ?? accounts[0];
+
+  if (accounts.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-border bg-card p-5 text-sm">
+        <p className="font-medium">First, add an account</p>
+        <p className="mt-1 text-muted-foreground">A savings pot lives inside an account. Create one in Movements, then come back here.</p>
+      </div>
+    );
+  }
+
+  const save = async () => {
+    if (!name.trim()) {
+      setError("Enter a name");
+      return;
+    }
+    try {
+      const created = await createWallet.mutateAsync({ name: name.trim(), kind: "pot", parent_wallet_id: Number(parent.id) });
+      const id = Number(created?.id);
+      if (Number.isInteger(id)) {
+        await updateWallet.mutateAsync({ id: String(id), data: { cap_cents: null, cap_from_plan: true } });
+        onCreated(id);
+      }
+    } catch {
+      // il messaggio lo mostra la mutation
+    }
+  };
+
+  return (
+    <div className="max-w-lg rounded-xl border border-border/70 bg-card p-5 shadow-sm">
+      <p className="text-sm font-medium">Step 1 · Create a savings pot</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        A pot is a part of an account set aside for these expenses. You move money in with a transfer each month.
+      </p>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-2">
+          <Label htmlFor="pot-name">Name</Label>
+          <Input id="pot-name" value={name} onChange={(event) => { setName(event.target.value); setError(null); }} />
+        </div>
+        <div className="grid gap-2">
+          <Label>Inside the account</Label>
+          <Select value={String(parent.id)} onValueChange={setAccountId}>
+            <SelectTrigger aria-label="Account">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {accounts.map((account) => (
+                <SelectItem key={account.id} value={String(account.id)}>
+                  {account.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+      <p className="mt-3 text-xs text-muted-foreground">Its cap will follow the plan: the installments of the next 12 months.</p>
+      <Button className="mt-4" onClick={save} disabled={createWallet.isPending || updateWallet.isPending}>
+        <Plus className="mr-2 h-4 w-4" /> Create pot and continue
+      </Button>
+    </div>
   );
 }
 
