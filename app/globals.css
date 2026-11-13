@@ -171,3 +171,29 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * iOS Safari: gli input data/ora hanno una larghezza minima intrinseca e ignorano w-full e h-*,
+ * quindi escono a destra dalla card (Your Bank su iPhone, 13/11/2026). Solo su iOS
+ * (-webkit-touch-callout esiste solo li'): togliere l'aspetto nativo li fa rispettare il contenitore;
+ * il selettore della data si apre comunque al tocco. Il testo resta allineato a sinistra come gli
+ * altri campi.
+ */
+@supports (-webkit-touch-callout: none) {
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="time"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  input[type="date"]::-webkit-date-and-time-value,
+  input[type="datetime-local"]::-webkit-date-and-time-value,
+  input[type="month"]::-webkit-date-and-time-value,
+  input[type="time"]::-webkit-date-and-time-value {
+    text-align: left;
+  }
+}

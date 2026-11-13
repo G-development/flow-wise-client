@@ -96,7 +96,7 @@ export default function AutoImportSettings({ bank, autoImport, onSaved }: AutoIm
         Daily auto-import
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-1">
+        <div className="min-w-0 space-y-1">
           <Label className="text-[11px] text-muted-foreground">Wallet</Label>
           <Select value={walletValue} onValueChange={setWalletValue} disabled={loadingWallets || saving}>
             <SelectTrigger className="h-8 text-xs">
@@ -112,7 +112,7 @@ export default function AutoImportSettings({ bank, autoImport, onSaved }: AutoIm
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-1">
+        <div className="min-w-0 space-y-1">
           <Label className="text-[11px] text-muted-foreground">From</Label>
           <Input
             type="date"

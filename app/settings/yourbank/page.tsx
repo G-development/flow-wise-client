@@ -836,7 +836,7 @@ function YourBank() {
 
                 {/* Input Date Manuali */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 items-end pt-1">
-                  <div className="space-y-1">
+                  <div className="min-w-0 space-y-1">
                     <Label htmlFor="start-date" className="text-xs text-muted-foreground">
                       Start date
                     </Label>
@@ -848,7 +848,7 @@ function YourBank() {
                       className="h-9 text-xs bg-background"
                     />
                   </div>
-                  <div className="space-y-1">
+                  <div className="min-w-0 space-y-1">
                     <Label htmlFor="end-date" className="text-xs text-muted-foreground">
                       End date
                     </Label>
