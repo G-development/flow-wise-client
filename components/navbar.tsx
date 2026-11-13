@@ -12,7 +12,7 @@ import {
   ChartNoAxesCombined,
   Plus,
   ArrowLeftRight,
-  User,
+  Settings,
   Upload,
   Banknote,
   Boxes,
@@ -25,6 +25,7 @@ import Logo from "../app/flow-wise-logo.svg";
 
 import {
   Sheet,
+  SheetClose,
   SheetTitle,
   SheetTrigger,
   SheetContent,
@@ -60,7 +61,8 @@ const yourBankLink: NavLink = { href: '/settings/yourbank', icon: Banknote, labe
 
 /**
  * Sezioni del menu laterale mobile (scelte di Gio, 10/11/2026). La barra desktop non le usa: mostra
- * `navLinks`, `mainLinks` e Your Bank in riga, mentre Import e Account stanno nel menu utente.
+ * `navLinks`, `mainLinks` e Your Bank in riga, mentre Import CSV e Settings stanno nel menu utente
+ * (stessi nomi e stesso ordine qui e li': se cambia uno, cambia anche l'altro).
  */
 const mobileSections: { title: string; links: NavLink[] }[] = [
   { title: 'Main', links: [...navLinks, { href: '/ai-beta', icon: Bot, label: 'AI Beta' }] },
@@ -68,8 +70,9 @@ const mobileSections: { title: string; links: NavLink[] }[] = [
   {
     title: 'Settings',
     links: [
-      { href: '/settings/import', icon: Upload, label: 'Import' },
-      { href: '/settings', icon: User, label: 'Account' },
+      // 13/11 (Gio): stessi nomi del menu utente su desktop, "da oggi viaggiano paralleli"
+      { href: '/settings/import', icon: Upload, label: 'Import CSV' },
+      { href: '/settings', icon: Settings, label: 'Settings' },
     ],
   },
 ];
@@ -132,10 +135,12 @@ export default function Navbar() {
             </SheetTrigger>
 
             <SheetContent side="left" className="w-64 p-0">
-              <div className="flex items-center gap-2 border-b px-4 py-4">
-                <Image src={Logo} width={32} height={32} alt="Flow wise" />
-                <SheetTitle className="text-lg">Flow Wise</SheetTitle>
-              </div>
+              <SheetClose asChild>
+                <Link href="/dashboard" prefetch={false} className="flex items-center gap-2 border-b px-4 py-4">
+                  <Image src={Logo} width={32} height={32} alt="" />
+                  <SheetTitle className="text-lg">Flow Wise</SheetTitle>
+                </Link>
+              </SheetClose>
               <nav className="space-y-6 px-4 py-6">
                 {mobileSections.map(({ title, links }) => (
                   <div key={title} className="space-y-2">
@@ -160,20 +165,20 @@ export default function Navbar() {
                   className="w-full justify-start gap-2"
                   onClick={async () => {
                     await supabase.auth.signOut();
-                    router.push("/login");
+                    router.replace("/");
                   }}
                 >
-                  <LogOut className="h-4 w-4" /> Logout
+                  <LogOut className="h-4 w-4" /> Log out
                 </Button>
               </nav>
             </SheetContent>
           </Sheet>
 
-          {/* Mobile Logo */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <Image src={Logo} width={32} height={32} alt="Flow wise logo" />
-          <span className="font-semibold tracking-tight text-base">Flow Wise</span>
-          </div>
+          {/* Mobile Logo: come su desktop porta sempre alla dashboard (Gio, 13/11) */}
+          <Link href="/dashboard" prefetch={false} className="flex items-center gap-2 lg:hidden" aria-label="Flow Wise, go to the dashboard">
+            <Image src={Logo} width={32} height={32} alt="" />
+            <span className="text-base font-semibold tracking-tight">Flow Wise</span>
+          </Link>
 
           {/* Mobile User Menu */}
           <div className="lg:hidden">
