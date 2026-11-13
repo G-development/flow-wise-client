@@ -223,7 +223,7 @@ export function WalletCards({
                         </p>
                         {(planById.get(id)?.items.length ?? 0) > 0 && (
                           <p className="text-xs text-muted-foreground tabular-nums">
-                            Suggested {formatEuro((planById.get(id)?.plan.suggestedMonthlyCents ?? 0) / 100)} / month
+                            Deposit this month {formatEuro((planById.get(id)?.plan.suggestedMonthlyCents ?? 0) / 100)}
                           </p>
                         )}
                       </div>

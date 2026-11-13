@@ -132,7 +132,7 @@ function AnnualPlanView() {
         <>
           <section className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Stat label="Balance" value={euro(data.plan.balanceCents)} />
-            <Stat label="Suggested deposit" value={`${euro(data.plan.suggestedMonthlyCents)} / month`} strong />
+            <Stat label="Deposit this month" value={euro(data.plan.suggestedMonthlyCents)} strong />
             <Stat label="Cap" value={data.plan.capCents != null ? euro(data.plan.capCents) : "—"} />
             <Stat
               label="Next 12 months"
@@ -186,31 +186,52 @@ function Warning({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Mese per mese: rate e saldo previsto a fine mese versando la quota consigliata. */
-function Projection({ today, projection }: { today: string; projection: { month: number; dueCents: number; balanceCents: number }[] }) {
+/**
+ * Mese per mese (13/11/2026): quanto c'e' da pagare (Due), quanto versare quel mese (Deposit, calcolato
+ * dal server: alto finche' il salvadanaio e' indietro, poi scende verso la media annua) e il saldo a fine
+ * mese seguendo il piano. Quattro colonne strette, cosi' stanno su un telefono senza scorrere.
+ */
+function Projection({
+  today,
+  projection,
+}: {
+  today: string;
+  projection: { month: number; dueCents: number; depositCents: number; balanceCents: number }[];
+}) {
   const start = new Date(`${today}T00:00:00`);
   return (
-    <section className="mb-6 overflow-x-auto rounded-xl border border-border/70 bg-card shadow-sm">
-      <table className="w-full min-w-[520px] text-sm">
-        <thead className="bg-muted/60 text-left text-xs text-muted-foreground">
+    <section className="mb-6 overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
+      <table className="w-full table-fixed text-xs sm:text-sm">
+        <thead className="bg-muted/60 text-left text-muted-foreground">
           <tr>
-            <th className="px-3 py-2 font-medium">Month</th>
-            <th className="px-3 py-2 text-right font-medium">Installments</th>
-            <th className="px-3 py-2 text-right font-medium">Balance at month end</th>
+            <th className="w-[26%] px-2 py-2 font-medium sm:px-3">Month</th>
+            <th className="px-2 py-2 text-right font-medium sm:px-3">Due</th>
+            <th className="px-2 py-2 text-right font-medium sm:px-3">Deposit</th>
+            <th className="px-2 py-2 text-right font-medium sm:px-3">Balance</th>
           </tr>
         </thead>
         <tbody>
           {projection.map((row) => (
             <tr key={row.month} className="border-t border-border/50">
-              <td className="px-3 py-1.5">{format(addMonths(start, row.month), "MMM yyyy")}{row.month === 0 ? " (now)" : ""}</td>
-              <td className="px-3 py-1.5 text-right tabular-nums">{row.dueCents ? euro(row.dueCents) : "—"}</td>
-              <td className={`px-3 py-1.5 text-right tabular-nums ${row.balanceCents < 0 ? "font-medium text-destructive" : ""}`}>
+              <td className="truncate px-2 py-1.5 sm:px-3">
+                {format(addMonths(start, row.month), "MMM yy")}
+                {row.month === 0 && <span className="text-muted-foreground"> · now</span>}
+              </td>
+              <td className="px-2 py-1.5 text-right tabular-nums sm:px-3">{row.dueCents ? euro(row.dueCents) : "—"}</td>
+              <td className="px-2 py-1.5 text-right font-medium tabular-nums text-primary sm:px-3">
+                {row.depositCents ? euro(row.depositCents) : "—"}
+              </td>
+              <td className={`px-2 py-1.5 text-right tabular-nums sm:px-3 ${row.balanceCents < 0 ? "font-medium text-destructive" : ""}`}>
                 {euro(row.balanceCents)}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      <p className="border-t border-border/50 px-3 py-2 text-xs text-muted-foreground">
+        Deposit is what to put in the pot that month to cover what is due next. It is higher while the pot is
+        behind and goes down to the yearly average; it updates every time you pay or add an installment.
+      </p>
     </section>
   );
 }

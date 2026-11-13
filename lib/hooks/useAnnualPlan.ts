@@ -38,7 +38,7 @@ export type AnnualPlan = {
   capCents: number | null;
   capConflict: boolean;
   negativeMonths: number[];
-  projection: { month: number; dueCents: number; balanceCents: number }[];
+  projection: { month: number; dueCents: number; depositCents: number; balanceCents: number }[];
 };
 
 export type AnnualPlanResponse = {

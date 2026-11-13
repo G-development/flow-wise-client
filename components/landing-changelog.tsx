@@ -13,6 +13,7 @@ const CHANGELOG: Array<{ period: string; title: string; items: string[] }> = [
       "Nightly encrypted backups of the database, kept for 30 days, with a tested restore.",
       "Forgot your password? The reset email now really arrives, from a Flow Wise address and in the app's style.",
       "The password recovery pages look like the login page, in light and dark mode.",
+      "Annual plan: each month shows what is due and how much to put aside that month, higher while a pot is behind and then down to the yearly average.",
     ],
   },
   {
