@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { Category } from "@/lib/hooks/useQueries";
+import { CategoryAvatar } from "@/lib/categoryStyle";
 import {
   useCreateRule,
   useDeleteRule,
@@ -93,9 +94,10 @@ export function CategorySheet({
           <>
             <SheetHeader className="text-left">
               <SheetTitle className="flex items-center gap-2 pr-8">
+                <CategoryAvatar category={category} />
                 <span className="truncate">{category.name}</span>
                 {!isSystem && (
-                  <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => onRename(String(category.id))}>
+                  <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => onRename(String(category.id))} title="Edit name, colour and icon">
                     <Pencil className="h-3.5 w-3.5" />
                     <span className="sr-only">Rename</span>
                   </Button>

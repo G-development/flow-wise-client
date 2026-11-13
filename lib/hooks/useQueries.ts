@@ -139,10 +139,13 @@ export interface Category extends Record<string, unknown> {
   name: string;
   /**
    * Il database usa "I" / "E" / "T". La sola categoria "T" e' quella di sistema
-   * "Trasferimento": si rinomina e basta (server, `routes/category.js`).
+   * "Transfer": si rinomina e basta (server, `routes/category.js`).
    */
   type: "I" | "E" | "T";
   active: boolean;
+  /** Colore e icona scelti (migrazione 017), null = automatici: `lib/categoryStyle.tsx`. */
+  color?: string | null;
+  icon?: string | null;
   created_at?: string;
   updated_at?: string;
 }

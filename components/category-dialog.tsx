@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,17 +11,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCreateCategory, useUpdateCategory, useCategories } from "@/lib/hooks/useQueries";
 import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
-import { toast } from "sonner";
+import { CATEGORY_COLORS, CATEGORY_ICONS, CategoryAvatar, type CategoryColor } from "@/lib/categoryStyle";
+import { cn } from "@/lib/utils";
 
 interface CategoryDialogProps {
   isOpen: boolean;
@@ -32,6 +27,13 @@ interface CategoryDialogProps {
   defaultType?: "I" | "E";
 }
 
+type Form = { name: string; type: "I" | "E"; color: CategoryColor | null; icon: string | null };
+
+/**
+ * Crea o modifica una categoria: nome, tipo, colore e icona (13/11/2026, migrazione 017 del server).
+ * La categoria "T" (Transfer) e' di sistema: la pagina non apre questo dialogo per lei.
+ * Colore e icona si mandano solo se scelti o cambiati: "Auto" (null) lascia all'app un colore stabile.
+ */
 export default function CategoryDialog({
   isOpen,
   onClose,
@@ -40,122 +42,154 @@ export default function CategoryDialog({
   defaultType = "E",
 }: CategoryDialogProps) {
   const { data: categoryList = EMPTY_LIST_RESPONSE } = useCategories();
-  // La risposta e' l'envelope di lista: le righe stanno in `rows`.
   const categories = categoryList.rows;
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    type: "E" as "I" | "E",
-  });
+  const [form, setForm] = useState<Form>({ name: "", type: defaultType, color: null, icon: null });
+  const [error, setError] = useState<string | null>(null);
 
-  // Se siamo in edit mode, popola i dati
   useEffect(() => {
-    if (categoryId && isOpen && categories.length > 0) {
-      const category = categories.find(
-        (c) => String(c.id) === String(categoryId)
-      );
-      // La categoria "T" (Trasferimento) e' di sistema: la pagina non apre questo
-      // dialogo per lei, e il dialogo sa scrivere solo categorie I/E.
+    if (!isOpen) return;
+    setError(null);
+    if (categoryId) {
+      const category = categories.find((c) => String(c.id) === String(categoryId));
       if (category && category.type !== "T") {
-        setFormData({
-          name: category.name,
-          type: category.type,
+        setForm({
+          name: String(category.name),
+          type: category.type as "I" | "E",
+          color: (typeof category.color === "string" && category.color in CATEGORY_COLORS ? category.color : null) as CategoryColor | null,
+          icon: typeof category.icon === "string" ? category.icon : null,
         });
       }
-    } else if (!categoryId && isOpen) {
-      // Reset per nuovo
-      setFormData({ name: "", type: defaultType });
+    } else {
+      setForm({ name: "", type: defaultType, color: null, icon: null });
     }
   }, [categoryId, isOpen, categories, defaultType]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const editing = categories.find((c) => String(c.id) === String(categoryId));
 
-    if (!formData.name.trim()) {
-      toast.error("Name is required");
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!form.name.trim()) {
+      setError("Enter a name");
       return;
     }
-
+    // solo cio' che serve: colore e icona se scelti (o tolti, in modifica)
+    const style: { color?: string | null; icon?: string | null } = {};
+    if (form.color !== null || (editing && editing.color != null)) style.color = form.color;
+    if (form.icon !== null || (editing && editing.icon != null)) style.icon = form.icon;
     try {
       if (categoryId) {
-        // Update
-        await updateCategory.mutateAsync({
-          id: categoryId,
-          data: { name: formData.name, type: formData.type },
-        });
-        toast.success("Category updated");
+        await updateCategory.mutateAsync({ id: categoryId, data: { name: form.name.trim(), type: form.type, ...style } });
       } else {
-        // Create
-        await createCategory.mutateAsync({
-          name: formData.name,
-          type: formData.type,
-        });
-        toast.success("Category created");
+        await createCategory.mutateAsync({ name: form.name.trim(), type: form.type, ...style });
       }
-
       onSuccess?.();
       onClose();
-      setFormData({ name: "", type: defaultType });
     } catch {
-      toast.error("Error saving category");
+      // le mutation mostrano gia' il messaggio
     }
   };
 
+  const preview = { id: categoryId ?? 0, color: form.color, icon: form.icon };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={isOpen} onOpenChange={(next) => !next && onClose()}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{categoryId ? "Edit Category" : "Add Category"}</DialogTitle>
-          <DialogDescription>
-            {categoryId ? "Edit category details" : "Create a new category to organize transactions"}
-          </DialogDescription>
+          <DialogTitle>{categoryId ? "Edit category" : "Add category"}</DialogTitle>
+          <DialogDescription>Name, type, colour and icon. The colour is also used in the charts.</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Category Name</Label>
-            <Input
-              id="name"
-              placeholder="Es: Alimentari, Benzina, Stipendio"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, name: e.target.value }))
-              }
-            />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="flex items-end gap-3">
+            <CategoryAvatar category={preview} size="lg" />
+            <div className="grid flex-1 gap-2">
+              <Label htmlFor="category-name">Name</Label>
+              <Input
+                id="category-name"
+                placeholder="e.g. Groceries, Fuel, Salary"
+                value={form.name}
+                onChange={(event) => {
+                  setForm((prev) => ({ ...prev, name: event.target.value }));
+                  setError(null);
+                }}
+              />
+            </div>
+          </div>
+          {error && <p className="-mt-3 text-sm text-destructive">{error}</p>}
+
+          <div className="grid gap-2">
+            <Label>Type</Label>
+            <Tabs value={form.type} onValueChange={(value) => setForm((prev) => ({ ...prev, type: value as "I" | "E" }))}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="E">Expense</TabsTrigger>
+                <TabsTrigger value="I">Income</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="type">Tipo</Label>
-            <Select
-              value={formData.type}
-              onValueChange={(value) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  type: value as "I" | "E",
-                }))
-              }
-            >
-              <SelectTrigger id="type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="I">Income</SelectItem>
-                <SelectItem value="E">Expense</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid gap-2">
+            <Label>Colour</Label>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setForm((prev) => ({ ...prev, color: null }))}
+                className={cn(
+                  "h-8 rounded-full border px-3 text-xs font-medium",
+                  form.color === null ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"
+                )}
+              >
+                Auto
+              </button>
+              {(Object.keys(CATEGORY_COLORS) as CategoryColor[]).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setForm((prev) => ({ ...prev, color: key }))}
+                  className={cn(
+                    "h-8 w-8 rounded-full ring-offset-2 ring-offset-background transition",
+                    form.color === key ? "ring-2 ring-foreground" : "hover:scale-110"
+                  )}
+                  style={{ backgroundColor: CATEGORY_COLORS[key] }}
+                  aria-label={`Colour ${key}`}
+                  aria-pressed={form.color === key}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-2">
+            <Label>Icon</Label>
+            <div className="grid grid-cols-8 gap-1.5">
+              {Object.entries(CATEGORY_ICONS).map(([key, Icon]) => {
+                const selected = (form.icon ?? "tag") === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setForm((prev) => ({ ...prev, icon: key === "tag" ? null : key }))}
+                    className={cn(
+                      "flex aspect-square items-center justify-center rounded-lg border transition-colors",
+                      selected ? "border-primary bg-primary/10 text-primary" : "border-transparent text-muted-foreground hover:bg-secondary"
+                    )}
+                    aria-label={`Icon ${key}`}
+                    aria-pressed={selected}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={createCategory.isPending || updateCategory.isPending}
-            >
-              {categoryId ? "Update" : "Create"}
+            <Button type="submit" disabled={createCategory.isPending || updateCategory.isPending}>
+              {categoryId ? "Save" : "Create"}
             </Button>
           </DialogFooter>
         </form>

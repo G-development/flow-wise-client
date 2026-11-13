@@ -1,4 +1,5 @@
 "use client";
+import { categoryHex } from "@/lib/categoryStyle";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useExpenses, useCategories, type Transaction, type Category } from "@/lib/hooks/useQueries";
@@ -20,17 +21,7 @@ interface ExpenseBreakdownWidgetProps {
   dateFilter?: { startDate?: string; endDate?: string };
 }
 
-// Color palette for categories
-const CATEGORY_COLORS: { [key: string]: string } = {
-  0: "#ef4444", // red
-  1: "#f97316", // orange
-  2: "#eab308", // yellow
-  3: "#22c55e", // green
-  4: "#06b6d4", // cyan
-  5: "#3b82f6", // blue
-  6: "#8b5cf6", // purple
-  7: "#ec4899", // pink
-};
+// Colori: quelli della categoria (migrazione 017, lib/categoryStyle.tsx), anche nella torta e nelle barre.
 
 export function ExpenseBreakdownWidget({
   config,
@@ -61,11 +52,18 @@ export function ExpenseBreakdownWidget({
   // quando il set e' troncato).
   const expenseRows = expenses.rows;
 
-  // Create a map of category_id to category name
+  // Nome e colore di ogni categoria per id
   const categoryMap = useMemo(() => {
     const map: { [key: string]: string } = {};
     categories.forEach((cat: Category) => {
       map[String(cat.id)] = cat.name;
+    });
+    return map;
+  }, [categories]);
+  const colorByName = useMemo(() => {
+    const map: { [name: string]: string } = {};
+    categories.forEach((cat: Category) => {
+      map[cat.name] = categoryHex(cat);
     });
     return map;
   }, [categories]);
@@ -93,12 +91,12 @@ export function ExpenseBreakdownWidget({
     // mese dopo) non ha una fetta: il totale sotto resta comunque il netto vero.
     return Object.entries(expensesByCategory)
       .filter(([, amount]) => amount > 0.005)
-      .map(([category, amount], index: number) => ({
+      .map(([category, amount]) => ({
       category,
       value: amount,
-      fill: CATEGORY_COLORS[index % Object.keys(CATEGORY_COLORS).length],
+      fill: colorByName[category] ?? categoryHex(null),
     }));
-  }, [expensesByCategory]);
+  }, [expensesByCategory, colorByName]);
 
   const chartConfig = useMemo(() => {
     const config: Record<string, { label: string; color: string }> = {};

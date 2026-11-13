@@ -5,7 +5,7 @@
 Indice file-per-file generato dal codice, non dalla documentazione. Serve a sapere **dove** sta una
 cosa senza leggere il repo: architettura e regole locali stanno altrove (vedi `AGENTS.md`).
 
-Forma `next`, radice sorgente `.`, commit `772cca5`.
+Forma `next`, radice sorgente `.`, commit `5061948`.
 
 ```bash
 node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/flow-wise-client \
@@ -149,6 +149,7 @@ Layout: `app/layout.tsx`
 - `lib/balanceBreakdown.ts` — exports: type `AccountGroup`, `BalanceBreakdown`, `BankBalances`, `BreakdownRow`; fn `balanceBreakdown`
 - `lib/bankCategorySuggestion.test.ts`
 - `lib/bankCategorySuggestion.ts` — exports: type `BankTransactionForSuggestion`, `BankTransactionType`, `CategorySuggestion`; fn `getBankTransactionType`, `getMissingOtherTypes`, `suggestBankTransactionCategory`
+- `lib/categoryStyle.tsx` — exports: const `CATEGORY_COLORS`, `CATEGORY_ICONS`; fn `CategoryAvatar`, `categoryHex`, `categoryIcon`; type `CategoryColor`
 - `lib/constants.ts` — exports: const `API_URL`
 - `lib/httpError.ts` — exports: fn `errorFromResponse`
 - `lib/legal.ts` — exports: const `LEGAL`

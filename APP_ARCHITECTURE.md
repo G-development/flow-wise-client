@@ -76,6 +76,9 @@ se ne aggiungono a mano), unione in un'altra dello stesso tipo (`POST /category/
 (solo senza movimenti). Il riquadro "To review" apre `components/categories/review-sheet.tsx`: i movimenti nelle
 categorie di ripiego ("Altro"/"Other" e quelle "… da classificare"), da assegnare uno per uno con `PUT /transaction/:id`
 (per i movimenti della banca il server impara anche la regola). Hook in `lib/hooks/useCategoryManagement.ts`.
+Colore e icona (migrazione 017 del server): scelti nel dialogo della categoria (`components/category-dialog.tsx`),
+elenco e disegno in `lib/categoryStyle.tsx` (`CategoryAvatar`, `categoryHex`). Senza scelta il colore e' stabile
+dall'id, e "Altro"/"Other" resta grigia. Il grafico delle spese della dashboard usa gli stessi colori.
 
 ### Tour guidato (`components/onboarding-tour.tsx`)
 

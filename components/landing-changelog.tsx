@@ -21,6 +21,7 @@ const CHANGELOG: Array<{ period: string; title: string; items: string[] }> = [
       "Annual plan items can be renamed.",
       "New Categories page: expenses and income apart, how much each one is used, the rules that sort your bank movements (now visible and editable), merging two categories, and a To review list for what is still uncategorised.",
       "New accounts start with English categories, including Other, and the transfer category is called Transfer.",
+      "Each category can have its own colour and icon, also used in the spending chart of the dashboard.",
     ],
   },
   {

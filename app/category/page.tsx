@@ -14,6 +14,7 @@ import { useCategories, useDeleteCategory, useUpdateCategory, type Category } fr
 import { useCategoryRules, useCategoryStats, type CategoryStat } from "@/lib/hooks/useCategoryManagement";
 import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
 import { toast } from "sonner";
+import { CategoryAvatar } from "@/lib/categoryStyle";
 
 const euro = (cents: number) =>
   new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(cents / 100);
@@ -98,6 +99,7 @@ export default function Categories() {
         onClick={() => setOpenId(String(c.id))}
         className="group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary/60"
       >
+        <CategoryAvatar category={c} />
         <span className="min-w-0 flex-1">
           <span className="block truncate font-medium">{c.name}</span>
           <span className="block text-xs text-muted-foreground">
