@@ -55,6 +55,15 @@ dall'id della riga (la colonna id è nascosta da `hiddenColumns` di
 `components/dynamic-table.tsx`) e `components/delete-dialog.tsx` è un dialog di
 conferma generico che lascia la mutation al chiamante.
 
+### I tuoi dati (`/settings`, sezione "Your data")
+
+`components/settings/your-data-card.tsx`: due pulsanti scaricano una copia dei dati dell'utente con
+`apiFetch` + Blob (il token va nell'header, un link semplice non potrebbe portarlo):
+`GET /export` (JSON con tutte le tabelle, senza token della banca né payload grezzi) e
+`GET /export/transactions.csv` (movimenti per Excel: BOM, `;`, virgola decimale). Le regole dell'export
+stanno nel server, `utils/exportService.js`. Fase 6 C, 13/11/2026; i backup notturni cifrati (fase 6 A)
+stanno nel repo privato `flow-wise-backups`.
+
 ### Integrazione Bancaria (`/settings/yourbank`)
 
 La pagina `/settings/yourbank` include:

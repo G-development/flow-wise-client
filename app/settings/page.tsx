@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Send, HandCoins, BellRing, Sparkle } from "lucide-react";
 import Navbar from "@/components/navbar";
+import { YourDataCard } from "@/components/settings/your-data-card";
 
 interface Profile {
   id: string;
@@ -209,7 +210,7 @@ export default function Settings() {
                   onClick={() => fileInputRef.current?.click()}
                   className="absolute inset-0 rounded-lg bg-black/60 text-white text-xs font-medium opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center"
                 >
-                  Cambia foto
+                  Change photo
                 </button>
               </div>
 
@@ -280,7 +281,7 @@ export default function Settings() {
                   checked={notifications}
                   onCheckedChange={(val) => setNotifications(!!val)}
                 />
-                <span className="text-xs text-muted-foreground">Email alerts e promemoria</span>
+                <span className="text-xs text-muted-foreground">Email alerts and reminders</span>
               </div>
 
               <div className="space-y-2 md:col-span-2">
@@ -311,6 +312,10 @@ export default function Settings() {
               </Button>
             </div>
           </div>
+        </div>
+
+        <div className="mt-6">
+          <YourDataCard />
         </div>
       </main>
     </>

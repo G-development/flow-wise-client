@@ -7,6 +7,14 @@
 const CHANGELOG: Array<{ period: string; title: string; items: string[] }> = [
   {
     period: "November 2026",
+    title: "Your data, backed up and yours to download",
+    items: [
+      "Settings → Your data: download everything you have in Flow Wise as a JSON file, or your movements as a CSV file that opens in Excel.",
+      "Nightly encrypted backups of the database, kept for 30 days, with a tested restore.",
+    ],
+  },
+  {
+    period: "November 2026",
     title: "Refunds and an English app",
     items: [
       "Refunds: money a friend pays back lowers the expense it belongs to (a dinner, the condo fees) instead of counting as income.",

@@ -10,6 +10,6 @@ export const LEGAL = {
   /** Recapito per richieste su account, dati personali e termini. */
   contactEmail: "cuozzogiovanni03@gmail.com",
   /** Data di entrata in vigore della versione corrente dei testi. */
-  lastUpdated: "November 11, 2026",
+  lastUpdated: "November 13, 2026",
   siteUrl: "https://flow-wise-client.vercel.app",
 } as const;

@@ -158,8 +158,8 @@ export default function TermsPage() {
           </li>
           <li>We do not sell your data and do not use it for advertising or profiling.</li>
           <li>
-            To receive a full copy of your data in a readable format (for example CSV or JSON), or to have
-            it deleted, write to {mail}.
+            You can download a full copy of your data at any time from Settings → Your data: a JSON file
+            with everything and a CSV file with your movements. To have your data deleted, write to {mail}.
           </li>
           <li>
             You are responsible for the accuracy of the data you enter and for having the right to enter

@@ -5,7 +5,7 @@
 Indice file-per-file generato dal codice, non dalla documentazione. Serve a sapere **dove** sta una
 cosa senza leggere il repo: architettura e regole locali stanno altrove (vedi `AGENTS.md`).
 
-Forma `next`, radice sorgente `.`, commit `ef988fd`.
+Forma `next`, radice sorgente `.`, commit `d4fc0dd`.
 
 ```bash
 node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/flow-wise-client \
@@ -91,6 +91,11 @@ Layout: `app/layout.tsx`
 - `components/movements/cap-warning.tsx` — exports: fn `CapWarning`
 - `components/movements/pending-transfers.tsx` — exports: fn `PendingTransfers`
 - `components/movements/wallet-cards.tsx` — exports: fn `parseAmountToCents`, `WalletCards`; type `WalletCardInfo`
+
+## components/settings/
+
+*components/settings/*
+- `components/settings/your-data-card.tsx` — exports: fn `YourDataCard`
 
 ## components/ui/
 

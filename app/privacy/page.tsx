@@ -157,6 +157,12 @@ export default function PrivacyPage() {
           categorized inside {LEGAL.serviceName}, without sending data to external services. We may
           disclose data to authorities only where the law requires it.
         </p>
+        <p>
+          <strong>Backups.</strong> Every night a GitHub Actions job copies the database, encrypts the copy
+          before it leaves the job and stores it in a private GitHub repository. The copy is encrypted
+          with a key that only we hold: GitHub stores it but cannot read it. Bank access tokens in the
+          copy stay encrypted as they are in the database.
+        </p>
       </LegalSection>
 
       <LegalSection id="trasferimenti" title="6. Transfers outside the European Union">
@@ -180,6 +186,10 @@ export default function PrivacyPage() {
             <strong>Bank access tokens:</strong> until you disconnect the bank or the authorization
             expires. Bank movements already synced stay until you ask for their deletion or close the
             account.
+          </li>
+          <li>
+            <strong>Backups:</strong> the last 30 nightly copies, so a deleted record disappears from the
+            backups within about 30 days.
           </li>
           <li><strong>Password recovery codes:</strong> valid for one hour and usable once.</li>
           <li>
@@ -210,11 +220,17 @@ export default function PrivacyPage() {
       <LegalSection id="diritti" title="9. Your rights">
         <p>At any time you can ask us to:</p>
         <LegalList>
-          <li>access your data and receive a copy (Art. 15);</li>
+          <li>
+            access your data and receive a copy (Art. 15) — you can download it yourself from Settings →
+            Your data;
+          </li>
           <li>correct it (Art. 16) — you can change much of it directly in the app;</li>
           <li>delete it (Art. 17), also by closing the account;</li>
           <li>restrict its processing (Art. 18);</li>
-          <li>receive it in a structured, machine-readable format, to move it elsewhere (Art. 20);</li>
+          <li>
+            receive it in a structured, machine-readable format, to move it elsewhere (Art. 20) — the JSON
+            download in Settings → Your data;
+          </li>
           <li>object to processing based on our legitimate interest (Art. 21);</li>
           <li>withdraw consent already given, without affecting the lawfulness of earlier processing (Art. 7).</li>
         </LegalList>
