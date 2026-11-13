@@ -144,8 +144,8 @@ export default function TermsPage() {
           </li>
           <li>
             The category of imported movements is assigned automatically by rules inside the Service,
-            which learn from your corrections; without a rule the movement goes to the &quot;Altro&quot;
-            (Other) category. The assignment can be wrong: check and correct movements when needed.
+            which learn from your corrections; without a rule the movement goes to the &quot;Other&quot;
+            category. The assignment can be wrong: check and correct movements when needed.
           </li>
         </LegalList>
       </LegalSection>

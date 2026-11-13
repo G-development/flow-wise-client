@@ -124,7 +124,7 @@ export default function AutoImportSettings({ bank, autoImport, onSaved }: AutoIm
         </div>
       </div>
       <p className="text-[11px] text-muted-foreground">
-        Booked movements only. Category from your rules, otherwise &quot;Altro&quot;.
+        Booked movements only. Category from your rules, otherwise &quot;Other&quot;.
       </p>
       {dirty && (
         <Button size="sm" className="h-8 w-full" onClick={() => void save()} disabled={saving}>

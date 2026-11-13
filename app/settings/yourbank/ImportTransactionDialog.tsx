@@ -184,7 +184,7 @@ export default function ImportTransactionDialog({
     try {
       const created: Category[] = [];
       for (const type of createOtherTypes) {
-        const result = (await createCategory.mutateAsync({ name: "Altro", type })) as Category;
+        const result = (await createCategory.mutateAsync({ name: "Other", type })) as Category;
         created.push(result);
       }
 
@@ -207,9 +207,9 @@ export default function ImportTransactionDialog({
       setIsCreateOtherOpen(false);
       setCreateOtherTypes([]);
       setDeclinedOtherTypes([]);
-      toast.success("\"Altro\" categories created. Check the suggestions before importing.");
+      toast.success("\"Other\" categories created. Check the suggestions before importing.");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not create the \"Altro\" categories");
+      toast.error(error instanceof Error ? error.message : "Could not create the \"Other\" categories");
     } finally {
       setIsCreatingOther(false);
     }
@@ -489,7 +489,7 @@ export default function ImportTransactionDialog({
               )}
               {mustChooseManually && unresolvedTransactions.length > 0 && !loadingCategories && (
                 <p className="text-xs text-amber-600 dark:text-amber-400">
-                  You chose not to create “Altro”. Pick a category for {unresolvedTransactions.length} {unresolvedTransactions.length === 1 ? "movement" : "movements"} without a suggestion.
+                  You chose not to create “Other”. Pick a category for {unresolvedTransactions.length} {unresolvedTransactions.length === 1 ? "movement" : "movements"} without a suggestion.
                 </p>
               )}
             </div>
@@ -528,9 +528,9 @@ export default function ImportTransactionDialog({
             <span className="sr-only">Close</span>
           </button>
           <AlertDialogHeader>
-            <AlertDialogTitle className="pr-6">Create the “Altro” category?</AlertDialogTitle>
+            <AlertDialogTitle className="pr-6">Create the “Other” category?</AlertDialogTitle>
             <AlertDialogDescription>
-              You have no active “Altro” category for {createTypesLabel}. Create it and use it as the suggestion for movements without a sure match? You can still review the categories before importing.
+              You have no active “Other” category for {createTypesLabel}. Create it and use it as the suggestion for movements without a sure match? You can still review the categories before importing.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

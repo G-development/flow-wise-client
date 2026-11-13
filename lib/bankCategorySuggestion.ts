@@ -22,6 +22,12 @@ export interface CategorySuggestion {
 
 const CONFIDENT_MATCH_SCORE = 100;
 
+/** Categoria di ripiego: "Altro" (account storici) o "Other" (account nuovi dal 13/11/2026). */
+function isFallbackName(name: string): boolean {
+  const normalized = normalizeForMatch(name);
+  return normalized === "altro" || normalized === "other";
+}
+
 function normalizeForMatch(text: string): string {
   return String(text)
     .normalize("NFD")
@@ -73,7 +79,7 @@ export function suggestBankTransactionCategory(
   }
 
   const other = matchingCategories.find(
-    (category) => normalizeForMatch(category.name) === "altro"
+    (category) => isFallbackName(category.name)
   );
   return {
     categoryId: other ? String(other.id) : "",
@@ -93,7 +99,7 @@ export function getMissingOtherTypes(
     const type = getBankTransactionType(transaction.amount);
     const hasActiveOther = categories.some(
       (category) =>
-        category.type === type && normalizeForMatch(category.name) === "altro"
+        category.type === type && isFallbackName(category.name)
     );
     if (!hasActiveOther) types.add(type);
   }
