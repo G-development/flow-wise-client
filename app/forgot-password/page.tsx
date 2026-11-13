@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Check, Mail } from "lucide-react";
+import { AuthError, AuthShell, AuthStatusIcon } from "@/components/auth-shell";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { API_URL } from "@/lib/constants";
 
+// 13/11/2026: stessa grafica del login (AuthShell); la logica e' quella di prima.
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,16 +22,11 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5030"}/auth/forgot-password`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        }
-      );
+      const response = await fetch(`${API_URL || "http://localhost:5030"}/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
       const data = await response.json();
 
@@ -43,116 +45,77 @@ export default function ForgotPasswordPage() {
     }
   };
 
+  const backToLogin = (
+    <>
+      Remember your password?{" "}
+      <Link href="/login" className="font-semibold text-primary hover:underline">
+        Back to login
+      </Link>
+    </>
+  );
+
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-        <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-8 h-8 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Check Your Email
-            </h1>
-            <p className="text-gray-600 mb-6">
-              We&apos;ve sent a password reset link to your email address. Click the
-              link in the email to reset your password.
-            </p>
-            <p className="text-sm text-gray-500 mb-6">
-              The link will expire in 1 hour.
-            </p>
-            <div className="space-y-3">
-              <p className="text-sm text-gray-600">
-                Didn&apos;t receive the email?
-              </p>
-              <button
-                onClick={() => {
-                  setSuccess(false);
-                  setEmail("");
-                }}
-                className="text-indigo-600 hover:text-indigo-700 font-medium"
-              >
-                Try again
-              </button>
-            </div>
+      <AuthShell title="Check your email" footer={backToLogin}>
+        <div className="space-y-4 text-center">
+          <AuthStatusIcon tone="success">
+            <Check className="h-7 w-7" />
+          </AuthStatusIcon>
+          <p className="text-muted-foreground">
+            We&apos;ve sent a password reset link to your email address. Click the link in the email to
+            choose a new password.
+          </p>
+          <p className="text-sm text-muted-foreground">The link expires in 1 hour.</p>
+          <div className="space-y-1 pt-2 text-sm">
+            <p className="text-muted-foreground">Didn&apos;t receive the email?</p>
+            <Button
+              variant="link"
+              className="h-auto p-0 font-semibold"
+              onClick={() => {
+                setSuccess(false);
+                setEmail("");
+              }}
+            >
+              Try again
+            </Button>
           </div>
         </div>
-      </div>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Forgot Password?
-          </h1>
-          <p className="text-gray-600">
-            Enter your email address and we&apos;ll send you a link to reset your
-            password.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Email Address
-            </label>
-            <input
-              type="email"
+    <AuthShell
+      title="Forgot password?"
+      description="Enter your email and we'll send you a link to reset your password."
+      footer={backToLogin}
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-3">
+          <Label htmlFor="email" className="text-sm font-medium text-foreground/80">
+            Email
+          </Label>
+          <div className="relative group">
+            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+            <Input
               id="email"
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
               disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="pl-10 h-11 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
             />
           </div>
-
-          {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 text-sm">{error}</p>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading || !email}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-medium py-2 rounded-lg transition duration-200"
-          >
-            {loading ? "Sending..." : "Send Reset Link"}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-gray-600 text-sm">
-            Remember your password?{" "}
-            <Link
-              href="/login"
-              className="text-indigo-600 hover:text-indigo-700 font-medium"
-            >
-              Back to Login
-            </Link>
-          </p>
         </div>
-      </div>
-    </div>
+
+        {error && <AuthError>{error}</AuthError>}
+
+        <Button type="submit" className="w-full h-11 font-semibold" disabled={loading || !email}>
+          {loading ? "Sending…" : "Send reset link"}
+        </Button>
+      </form>
+    </AuthShell>
   );
 }

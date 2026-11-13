@@ -5,7 +5,7 @@
 Indice file-per-file generato dal codice, non dalla documentazione. Serve a sapere **dove** sta una
 cosa senza leggere il repo: architettura e regole locali stanno altrove (vedi `AGENTS.md`).
 
-Forma `next`, radice sorgente `.`, commit `d4fc0dd`.
+Forma `next`, radice sorgente `.`, commit `9ec788a`.
 
 ```bash
 node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/flow-wise-client \
@@ -57,6 +57,7 @@ Layout: `app/layout.tsx`
 ## components/
 
 *components/*
+- `components/auth-shell.tsx` — exports: fn `AuthError`, `AuthShell`, `AuthStatusIcon`
 - `components/category-dialog.tsx` — exports: default `CategoryDialog`
 - `components/date-picker.tsx` — exports: default `DatePickerWithRange`
 - `components/delete-dialog.tsx` — exports: default `DeleteDialog`

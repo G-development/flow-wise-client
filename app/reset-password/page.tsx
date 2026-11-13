@@ -3,6 +3,15 @@
 import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Check, CircleAlert, Eye, EyeOff, Lock } from "lucide-react";
+import { AuthError, AuthShell, AuthStatusIcon } from "@/components/auth-shell";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+
+// 13/11/2026: stessa grafica del login (AuthShell); la logica (verifica del token, forza della
+// password, invio) e' quella di prima.
 
 function ResetPasswordForm() {
   const [password, setPassword] = useState("");
@@ -87,9 +96,9 @@ function ResetPasswordForm() {
   }, [password]);
 
   const getPasswordStrengthColor = () => {
-    if (passwordStrength < 30) return "bg-red-500";
-    if (passwordStrength < 60) return "bg-yellow-500";
-    return "bg-green-500";
+    if (passwordStrength < 30) return "bg-destructive";
+    if (passwordStrength < 60) return "bg-warning";
+    return "bg-success";
   };
 
   const getPasswordStrengthText = () => {
@@ -151,346 +160,193 @@ function ResetPasswordForm() {
     }
   };
 
+  const backToLogin = (
+    <Link href="/login" className="font-semibold text-primary hover:underline">
+      Back to login
+    </Link>
+  );
+
   if (validating) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Validating reset link...</p>
-        </div>
-      </div>
-    );
+    return <ValidatingLink />;
   }
 
   if (!tokenValid) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-        <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-8 h-8 text-red-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Invalid Link
-            </h1>
-            <p className="text-gray-600 mb-6">{error}</p>
-            <Link
-              href="/forgot-password"
-              className="text-indigo-600 hover:text-indigo-700 font-medium"
-            >
-              Request a new reset link
-            </Link>
-          </div>
+      <AuthShell title="Invalid link" footer={backToLogin}>
+        <div className="space-y-4 text-center">
+          <AuthStatusIcon tone="error">
+            <CircleAlert className="h-7 w-7" />
+          </AuthStatusIcon>
+          <p className="text-muted-foreground">{error}</p>
+          <Link href="/forgot-password" className="inline-block font-semibold text-primary hover:underline">
+            Request a new reset link
+          </Link>
         </div>
-      </div>
+      </AuthShell>
     );
   }
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-        <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-8 h-8 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Password Reset Successful
-            </h1>
-            <p className="text-gray-600 mb-6">
-              Your password has been reset successfully. You will be redirected
-              to login shortly.
-            </p>
-            <Link
-              href="/login"
-              className="inline-block text-indigo-600 hover:text-indigo-700 font-medium"
-            >
-              Go to Login
-            </Link>
-          </div>
+      <AuthShell title="Password updated">
+        <div className="space-y-4 text-center">
+          <AuthStatusIcon tone="success">
+            <Check className="h-7 w-7" />
+          </AuthStatusIcon>
+          <p className="text-muted-foreground">
+            Your password has been reset. You will be taken to the login page in a moment.
+          </p>
+          <Link href="/login" className="inline-block font-semibold text-primary hover:underline">
+            Go to login
+          </Link>
         </div>
-      </div>
+      </AuthShell>
     );
   }
 
+  const matches = password === confirmPassword;
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Reset Password
-          </h1>
-          <p className="text-gray-600">
-            Enter your new password below. Make sure it&apos;s strong and secure.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Password Field */}
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              New Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter new password"
-                required
-                disabled={loading}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
-              >
-                {showPassword ? (
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                )}
-              </button>
-            </div>
-
-            {/* Password Strength Indicator */}
-            {password && (
-              <div className="mt-2">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs text-gray-600">Password strength:</span>
-                  <span
-                    className={`text-xs font-medium ${
-                      passwordStrength < 30
-                        ? "text-red-600"
-                        : passwordStrength < 60
-                          ? "text-yellow-600"
-                          : "text-green-600"
-                    }`}
-                  >
-                    {getPasswordStrengthText()}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className={`h-2 rounded-full transition-all ${getPasswordStrengthColor()}`}
-                    style={{ width: `${passwordStrength}%` }}
-                  ></div>
-                </div>
+    <AuthShell
+      title="Reset password"
+      description="Choose a new password for your Flow Wise account."
+      footer={backToLogin}
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <PasswordField
+          id="password"
+          label="New password"
+          value={password}
+          onChange={setPassword}
+          visible={showPassword}
+          onToggle={() => setShowPassword(!showPassword)}
+          placeholder="Enter new password"
+          disabled={loading}
+        >
+          {password && (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Password strength</span>
+                <span
+                  className={cn(
+                    "font-medium",
+                    passwordStrength < 30 ? "text-destructive" : passwordStrength < 60 ? "text-warning" : "text-success"
+                  )}
+                >
+                  {getPasswordStrengthText()}
+                </span>
               </div>
-            )}
-
-            <p className="text-xs text-gray-500 mt-2">
-              At least 8 characters, with uppercase, number, and special
-              character (@$!%*?&)
-            </p>
-          </div>
-
-          {/* Confirm Password Field */}
-          <div>
-            <label
-              htmlFor="confirmPassword"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Confirm Password
-            </label>
-            <div className="relative">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm password"
-                required
-                disabled={loading}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
-              >
-                {showConfirmPassword ? (
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                )}
-              </button>
-            </div>
-
-            {/* Password Match Indicator */}
-            {confirmPassword && (
-              <div className="mt-2">
-                {password === confirmPassword ? (
-                  <p className="text-xs text-green-600 flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-1"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    Passwords match
-                  </p>
-                ) : (
-                  <p className="text-xs text-red-600 flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-1"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    Passwords don&apos;t match
-                  </p>
-                )}
+              <div className="h-2 w-full rounded-full bg-muted">
+                <div
+                  className={cn("h-2 rounded-full transition-all", getPasswordStrengthColor())}
+                  style={{ width: `${passwordStrength}%` }}
+                />
               </div>
-            )}
-          </div>
-
-          {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 text-sm">{error}</p>
             </div>
           )}
-
-          <button
-            type="submit"
-            disabled={
-              loading ||
-              !password ||
-              !confirmPassword ||
-              password !== confirmPassword ||
-              passwordStrength < 50
-            }
-            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-medium py-2 rounded-lg transition duration-200"
-          >
-            {loading ? "Resetting..." : "Reset Password"}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-gray-600 text-sm">
-            <Link
-              href="/login"
-              className="text-indigo-600 hover:text-indigo-700 font-medium"
-            >
-              Back to Login
-            </Link>
+          <p className="text-xs text-muted-foreground">
+            At least 8 characters, with an uppercase letter, a number and a special character (@$!%*?&amp;).
           </p>
-        </div>
+        </PasswordField>
+
+        <PasswordField
+          id="confirmPassword"
+          label="Confirm password"
+          value={confirmPassword}
+          onChange={setConfirmPassword}
+          visible={showConfirmPassword}
+          onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
+          placeholder="Confirm password"
+          disabled={loading}
+        >
+          {confirmPassword && (
+            <p className={cn("flex items-center gap-1 text-xs", matches ? "text-success" : "text-destructive")}>
+              {matches ? <Check className="h-4 w-4" /> : <CircleAlert className="h-4 w-4" />}
+              {matches ? "Passwords match" : "Passwords don't match"}
+            </p>
+          )}
+        </PasswordField>
+
+        {error && <AuthError>{error}</AuthError>}
+
+        <Button
+          type="submit"
+          className="w-full h-11 font-semibold"
+          disabled={loading || !password || !confirmPassword || !matches || passwordStrength < 50}
+        >
+          {loading ? "Resetting…" : "Reset password"}
+        </Button>
+      </form>
+    </AuthShell>
+  );
+}
+
+function PasswordField({
+  id,
+  label,
+  value,
+  onChange,
+  visible,
+  onToggle,
+  placeholder,
+  disabled,
+  children,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  visible: boolean;
+  onToggle: () => void;
+  placeholder: string;
+  disabled: boolean;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-3">
+      <Label htmlFor={id} className="text-sm font-medium text-foreground/80">
+        {label}
+      </Label>
+      <div className="relative group">
+        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+        <Input
+          id={id}
+          type={visible ? "text" : "password"}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          required
+          disabled={disabled}
+          className="pl-10 pr-10 h-11 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+        />
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label={visible ? "Hide password" : "Show password"}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+        >
+          {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
       </div>
+      {children}
     </div>
   );
 }
+
+function ValidatingLink() {
+  return (
+    <main className="auth-shell flex min-h-svh items-center justify-center px-4">
+      <div className="text-center">
+        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+        <p className="text-muted-foreground">Validating reset link…</p>
+      </div>
+    </main>
+  );
+}
+
 export default function ResetPasswordPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Validating reset link...</p>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={<ValidatingLink />}>
       <ResetPasswordForm />
     </Suspense>
   );
