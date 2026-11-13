@@ -28,6 +28,8 @@ interface CategoryDialogProps {
   onClose: () => void;
   categoryId?: string | null;
   onSuccess?: () => void;
+  /** Tipo proposto per una categoria nuova (la scheda aperta nella pagina Categorie). */
+  defaultType?: "I" | "E";
 }
 
 export default function CategoryDialog({
@@ -35,6 +37,7 @@ export default function CategoryDialog({
   onClose,
   categoryId,
   onSuccess,
+  defaultType = "E",
 }: CategoryDialogProps) {
   const { data: categoryList = EMPTY_LIST_RESPONSE } = useCategories();
   // La risposta e' l'envelope di lista: le righe stanno in `rows`.
@@ -63,9 +66,9 @@ export default function CategoryDialog({
       }
     } else if (!categoryId && isOpen) {
       // Reset per nuovo
-      setFormData({ name: "", type: "E" });
+      setFormData({ name: "", type: defaultType });
     }
-  }, [categoryId, isOpen, categories]);
+  }, [categoryId, isOpen, categories, defaultType]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +97,7 @@ export default function CategoryDialog({
 
       onSuccess?.();
       onClose();
-      setFormData({ name: "", type: "E" });
+      setFormData({ name: "", type: defaultType });
     } catch {
       toast.error("Error saving category");
     }

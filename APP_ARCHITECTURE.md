@@ -67,6 +67,16 @@ conferma generico che lascia la mutation al chiamante.
 stanno nel server, `utils/exportService.js`. Fase 6 C, 13/11/2026; i backup notturni cifrati (fase 6 A)
 stanno nel repo privato `flow-wise-backups`.
 
+### Categorie (`/category`)
+
+Rifatta il 13/11/2026: schede Expenses / Income, righe ordinate per uso con movimenti, regole e totale dell'anno
+(`GET /category/stats`), gruppi "In use", "Not used yet" e "Inactive" (chiuso). Toccando una categoria si apre
+`components/categories/category-sheet.tsx`: numeri, regole (`GET/POST/DELETE /category-rules`, si vedono, si tolgono,
+se ne aggiungono a mano), unione in un'altra dello stesso tipo (`POST /category/:id/merge`), attiva, rinomina, elimina
+(solo senza movimenti). Il riquadro "To review" apre `components/categories/review-sheet.tsx`: i movimenti nelle
+categorie di ripiego ("Altro"/"Other" e quelle "… da classificare"), da assegnare uno per uno con `PUT /transaction/:id`
+(per i movimenti della banca il server impara anche la regola). Hook in `lib/hooks/useCategoryManagement.ts`.
+
 ### Tour guidato (`components/onboarding-tour.tsx`)
 
 R5, 13/11/2026: 7 passaggi sulla dashboard (benvenuto, controlli della dashboard, + New, Movements, Annual plan,

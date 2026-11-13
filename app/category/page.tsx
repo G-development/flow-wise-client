@@ -1,230 +1,256 @@
 "use client";
 
-import { useState } from "react";
-import { DynamicTable } from "@/components/dynamic-table";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
+import { ArrowRightLeft, ChevronDown, ChevronRight, Inbox, Plus, Tags } from "lucide-react";
 import Navbar from "@/components/navbar";
-import { useCategories, useUpdateCategory, useDeleteCategory } from "@/lib/hooks/useQueries";
-import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
-import { TruncatedNotice } from "@/components/truncated-notice";
-import { toast } from "sonner";
-import { Plus, Pencil, Trash } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CategoryDialog from "@/components/category-dialog";
 import DeleteDialog from "@/components/delete-dialog";
+import { TruncatedNotice } from "@/components/truncated-notice";
+import { CategorySheet } from "@/components/categories/category-sheet";
+import { ReviewSheet, isReviewCategory } from "@/components/categories/review-sheet";
+import { useCategories, useDeleteCategory, useUpdateCategory, type Category } from "@/lib/hooks/useQueries";
+import { useCategoryRules, useCategoryStats, type CategoryStat } from "@/lib/hooks/useCategoryManagement";
+import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
+import { toast } from "sonner";
 
-interface Category {
-  id: string;
-  name: string;
-  type: string;
-  userid: string;
-  active: boolean;
-}
+const euro = (cents: number) =>
+  new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(cents / 100);
 
+/**
+ * Pagina Categorie (rifatta il 13/11/2026 con Gio). Spese ed entrate in due schede, ogni categoria
+ * con quanto pesa (movimenti, totale dell'anno, regole), ordinate dalla piu' usata; in fondo quelle
+ * mai usate e quelle inattive. Toccando una categoria si apre il dettaglio (regole, unione, attiva,
+ * elimina). In alto il riquadro "To review" con i movimenti ancora in Altro / Other o da classificare.
+ * La categoria di sistema dei trasferimenti sta a parte: si rinomina e basta.
+ */
 export default function Categories() {
-  const { data: categoryList = EMPTY_LIST_RESPONSE, isLoading, isError, refetch } =
-    useCategories();
-  // Il server risponde con l'envelope di lista: le righe stanno in `rows`.
-  const categories = categoryList.rows;
-  // La categoria "T" e' quella di sistema dei trasferimenti (server, migrazione 011):
-  // il server rifiuta di eliminarla, disattivarla o cambiarle tipo, quindi qui non ha azioni.
-  const systemCategoryIds = new Set(
-    categories.filter((c) => c.type === "T").map((c) => String(c.id))
-  );
+  const { data: list = EMPTY_LIST_RESPONSE, isLoading, isError } = useCategories();
+  const { data: statsData } = useCategoryStats();
+  const { data: rules = [] } = useCategoryRules();
   const updateCategory = useUpdateCategory();
   const deleteCategory = useDeleteCategory();
 
+  const [tab, setTab] = useState<"E" | "I">("E");
+  const [openId, setOpenId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showInactive, setShowInactive] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+
+  const categories = list.rows as Category[];
+  const stats = statsData?.stats ?? {};
+  const year = statsData?.year ?? new Date().getFullYear();
+  const statOf = (id: string | number): CategoryStat | undefined => stats[String(id)];
+  const transfer = categories.find((c) => c.type === "T");
+
+  const groups = useMemo(() => {
+    const ofType = categories.filter((c) => c.type === tab);
+    const used = (c: Category) => (statOf(c.id)?.movements ?? 0) > 0;
+    const byUse = (a: Category, b: Category) =>
+      (statOf(b.id)?.movements ?? 0) - (statOf(a.id)?.movements ?? 0) || String(a.name).localeCompare(String(b.name));
+    return {
+      active: ofType.filter((c) => c.active !== false && used(c)).sort(byUse),
+      unused: ofType.filter((c) => c.active !== false && !used(c)).sort(byUse),
+      inactive: ofType.filter((c) => c.active === false).sort(byUse),
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categories, tab, statsData]);
+
+  const counts = {
+    E: categories.filter((c) => c.type === "E").length,
+    I: categories.filter((c) => c.type === "I").length,
+  };
+  const reviewCount = categories
+    .filter((c) => isReviewCategory(String(c.name)))
+    .reduce((sum, c) => sum + (statOf(c.id)?.movements ?? 0), 0);
+
+  const opened = categories.find((c) => String(c.id) === openId) ?? null;
 
   const toggleActive = (category: Category) => {
     updateCategory.mutate(
-      {
-        id: category.id,
-        data: { active: !category.active },
-      },
-      {
-        onError: () => {
-          toast.error("Failed to update category");
-        },
-      }
+      { id: String(category.id), data: { active: category.active === false } },
+      { onError: () => toast.error("Failed to update category") }
     );
   };
 
-  const handleDelete = (categoryId: string) => {
-    setSelectedId(categoryId);
-    setDeleteOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!selectedId) return;
+  const confirmDelete = async () => {
+    if (!deleteId) return;
     try {
-      await deleteCategory.mutateAsync(selectedId);
-      // La mutation invalida già la cache; refetch riallinea questo elenco.
-      refetch();
+      await deleteCategory.mutateAsync(deleteId);
+      setOpenId(null);
     } catch {
-      // l'errore è già notificato dalla mutation
+      // la mutation notifica gia' l'errore
     } finally {
-      setDeleteOpen(false);
-      setSelectedId(null);
+      setDeleteId(null);
     }
   };
 
-  const handleEditOpen = (categoryId: string) => {
-    setEditingId(categoryId);
-    setDialogOpen(true);
+  const row = (c: Category) => {
+    const stat = statOf(c.id);
+    const ruleCount = rules.filter((r) => String(r.category_id) === String(c.id)).length;
+    return (
+      <button
+        key={c.id}
+        type="button"
+        onClick={() => setOpenId(String(c.id))}
+        className="group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary/60"
+      >
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-medium">{c.name}</span>
+          <span className="block text-xs text-muted-foreground">
+            {stat?.movements ?? 0} {(stat?.movements ?? 0) === 1 ? "movement" : "movements"}
+            {ruleCount > 0 && ` · ${ruleCount} ${ruleCount === 1 ? "rule" : "rules"}`}
+          </span>
+        </span>
+        {(stat?.yearCents ?? 0) !== 0 && (
+          <span className="shrink-0 text-sm tabular-nums text-muted-foreground">{euro(stat?.yearCents ?? 0)}</span>
+        )}
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground opacity-60 group-hover:opacity-100" />
+      </button>
+    );
   };
 
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setEditingId(null);
-  };
-
-  const handleDialogSuccess = () => {
-    refetch();
-  };
+  const block = (title: string, items: Category[], hint?: string) =>
+    items.length > 0 && (
+      <section className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm">
+        <div className="flex items-baseline justify-between gap-2 border-b border-border/60 px-4 py-2.5">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
+          {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
+        </div>
+        <div className="divide-y divide-border/60">{items.map(row)}</div>
+      </section>
+    );
 
   return (
     <>
       <Navbar />
       <main className="app-page">
-        {/* Header */}
-        <div className="app-page-header">
-          <div>
-            <h1 className="page-title">Categories</h1>
-            <p className="page-description">
-              Organize your transactions with custom categories
-            </p>
-          </div>
-          <Button
-            onClick={() => {
-              setEditingId(null);
-              setDialogOpen(true);
-            }}
-            className="w-full sm:w-auto"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Category
-          </Button>
-        </div>
-
-        {/* Loading & Error States */}
-        {isLoading && (
-          <div className="flex items-center justify-center h-40">
-            <p className="text-muted-foreground">Loading categories...</p>
-          </div>
-        )}
-
-        {isError && (
-          <div className="bg-destructive/10 border border-destructive/50 rounded-lg p-4">
-            <p className="text-destructive font-medium">Error loading categories</p>
-          </div>
-        )}
-
-        {/* Elenco parziale: il server dichiara di aver tagliato il set */}
-        {!isLoading && !isError && categoryList.truncated && (
-          <TruncatedNotice
-            shown={categoryList.count}
-            total={categoryList.total}
-            className="mb-4"
-          />
-        )}
-
-        {!isLoading && !isError && categories.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-40 text-center">
-            <p className="text-muted-foreground mb-4">No categories yet</p>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditingId(null);
-                setDialogOpen(true);
-              }}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Create your first category
+        <div className="mx-auto max-w-3xl space-y-5">
+          <div className="app-page-header">
+            <div>
+              <h1 className="page-title">Categories</h1>
+              <p className="page-description">What your money goes to and comes from, and the rules that sort it.</p>
+            </div>
+            <Button onClick={() => { setEditingId(null); setDialogOpen(true); }} className="w-full sm:w-auto">
+              <Plus className="mr-2 h-4 w-4" /> Add category
             </Button>
           </div>
-        )}
 
-        {/* Table */}
-        {!isLoading && !isError && categories.length > 0 && (
-          <div className="overflow-x-auto rounded-xl border border-border/70 bg-card shadow-sm">
-            <DynamicTable
-              data={categories.map((c) => {
-                const isIncome = c.type === "I";
-                const isTransfer = c.type === "T";
-                const label = isTransfer ? "Transfer" : isIncome ? "Income" : "Expense";
-                const badgeClass = isTransfer
-                  ? "border-0 bg-muted text-foreground hover:bg-muted"
-                  : isIncome
-                    ? "border-0 bg-success/10 text-success hover:bg-success/15"
-                    : "border-0 bg-destructive/10 text-destructive hover:bg-destructive/15";
+          {isError && (
+            <p className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+              Could not load the categories.
+            </p>
+          )}
+          {list.truncated && <TruncatedNotice shown={list.count} total={list.total} />}
 
-                return {
-                  // Id presente nei dati ma nascosto: serve alle azioni, non all'utente
-                  Id: c.id,
-                  Name: c.name,
-                  Type: <Badge className={`${badgeClass} font-medium`}>{label}</Badge>,
-                  Active: (
-                    <Switch
-                      checked={c.active}
-                      disabled={isTransfer}
-                      onCheckedChange={() => toggleActive(c)}
-                    />
-                  ),
-                };
-              })}
-              hiddenColumns={["Id"]}
-              caption={`Hai ${categories.length} categor${categories.length === 1 ? "ia" : "ie"}.`}
-              renderActions={(row) => systemCategoryIds.has(String(row.Id)) ? (
-                <span className="block text-right text-xs text-muted-foreground">
-                  Gestita dall&apos;app
+          {reviewCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setReviewOpen(true)}
+              className="flex w-full items-center gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-left transition-colors hover:bg-amber-500/15"
+            >
+              <div className="rounded-xl bg-amber-500/15 p-2.5">
+                <Inbox className="h-4 w-4 text-amber-700 dark:text-amber-400" />
+              </div>
+              <span className="min-w-0 flex-1">
+                <span className="block font-medium">{reviewCount} movements to review</span>
+                <span className="block text-sm text-muted-foreground">
+                  Still in a fallback category. Give them a real one: Flow Wise learns from it.
                 </span>
-              ) : (
-                <div className="flex justify-end gap-2">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8"
-                    onClick={() => handleEditOpen(String(row.Id))}
-                  >
-                    <Pencil className="h-4 w-4" />
-                    <span className="sr-only">Edit</span>
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => handleDelete(String(row.Id))}
-                  >
-                    <Trash className="h-4 w-4" />
-                    <span className="sr-only">Delete</span>
-                  </Button>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </button>
+          )}
+
+          <Tabs value={tab} onValueChange={(value) => setTab(value as "E" | "I")}>
+            <TabsList className="grid w-full grid-cols-2 sm:w-80">
+              <TabsTrigger value="E">Expenses ({counts.E})</TabsTrigger>
+              <TabsTrigger value="I">Income ({counts.I})</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {isLoading ? (
+            <div className="space-y-2">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="h-14 animate-pulse rounded-2xl bg-muted" />
+              ))}
+            </div>
+          ) : (
+            <>
+              {block("In use", groups.active, `${year}`)}
+              {block("Not used yet", groups.unused)}
+              {groups.active.length + groups.unused.length === 0 && (
+                <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                  <Tags className="mx-auto mb-2 h-5 w-5" />
+                  No {tab === "E" ? "expense" : "income"} categories yet.
                 </div>
               )}
-            />
-          </div>
-        )}
+              {groups.inactive.length > 0 && (
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowInactive(!showInactive)}
+                    className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    {showInactive ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    Inactive ({groups.inactive.length})
+                  </button>
+                  {showInactive && block("Inactive", groups.inactive)}
+                </div>
+              )}
+            </>
+          )}
+
+          {transfer && (
+            <button
+              type="button"
+              onClick={() => setOpenId(String(transfer.id))}
+              className="flex w-full items-center gap-3 rounded-2xl border border-border/70 bg-card px-4 py-3 text-left shadow-sm hover:bg-secondary/60"
+            >
+              <ArrowRightLeft className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span className="min-w-0 flex-1">
+                <span className="block font-medium">{transfer.name}</span>
+                <span className="block text-xs text-muted-foreground">
+                  System category for transfers · {statOf(transfer.id)?.movements ?? 0} movements
+                </span>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </button>
+          )}
+        </div>
       </main>
 
-      {/* Dialogs */}
+      <CategorySheet
+        category={opened}
+        stat={opened ? statOf(opened.id) : undefined}
+        rules={opened ? rules.filter((r) => String(r.category_id) === String(opened.id)) : []}
+        year={year}
+        sameType={opened ? categories.filter((c) => c.type === opened.type && c.type !== "T" && String(c.id) !== String(opened.id)) : []}
+        onClose={() => setOpenId(null)}
+        onRename={(id) => { setEditingId(id); setDialogOpen(true); }}
+        onToggleActive={toggleActive}
+        onDelete={(id) => setDeleteId(id)}
+      />
+
+      <ReviewSheet open={reviewOpen} onClose={() => setReviewOpen(false)} categories={categories} />
+
       <CategoryDialog
         isOpen={dialogOpen}
-        onClose={handleDialogClose}
+        onClose={() => { setDialogOpen(false); setEditingId(null); }}
         categoryId={editingId}
-        onSuccess={handleDialogSuccess}
+        defaultType={tab}
       />
 
       <DeleteDialog
-        isOpen={deleteOpen}
-        title="Delete category"
-        description="Are you sure you want to delete this category? This action cannot be undone."
+        isOpen={deleteId != null}
+        onClose={() => setDeleteId(null)}
+        title="Delete category?"
+        description="This category has no movements. It will be deleted with its rules."
+        onConfirm={confirmDelete}
         isPending={deleteCategory.isPending}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={handleDeleteConfirm}
       />
     </>
   );

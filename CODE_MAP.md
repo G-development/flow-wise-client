@@ -5,7 +5,7 @@
 Indice file-per-file generato dal codice, non dalla documentazione. Serve a sapere **dove** sta una
 cosa senza leggere il repo: architettura e regole locali stanno altrove (vedi `AGENTS.md`).
 
-Forma `next`, radice sorgente `.`, commit `2221c15`.
+Forma `next`, radice sorgente `.`, commit `772cca5`.
 
 ```bash
 node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/flow-wise-client \
@@ -73,6 +73,12 @@ Layout: `app/layout.tsx`
 - `components/register-form.tsx` — exports: fn `RegisterForm`
 - `components/truncated-notice.tsx` — exports: fn `TruncatedNotice`
 
+## components/categories/
+
+*components/categories/*
+- `components/categories/category-sheet.tsx` — exports: fn `CategorySheet`
+- `components/categories/review-sheet.tsx` — exports: fn `isReviewCategory`, `ReviewSheet`
+
 ## components/dashboard/
 
 *components/dashboard/*
@@ -98,6 +104,7 @@ Layout: `app/layout.tsx`
 
 *components/settings/*
 - `components/settings/delete-account-card.tsx` — exports: fn `DeleteAccountCard`
+- `components/settings/settings-section.tsx` — exports: fn `SettingsLinkRow`, `SettingsRows`, `SettingsSection`
 - `components/settings/your-data-card.tsx` — exports: fn `YourDataCard`
 
 ## components/ui/
@@ -160,6 +167,7 @@ Layout: `app/layout.tsx`
 
 *lib/hooks/*
 - `lib/hooks/useAnnualPlan.ts` — exports: type `AnnualInstallment`, `AnnualItem`, `AnnualPlan`, `AnnualPlanResponse`; fn `useAddInstallment`, `useAnnualPlan`, `useAnnualPlans`, `useCopyNextYear`, `useCreateAnnualItem`, `useDeleteAnnualItem`, `useDeleteInstallment`, `usePotCaps`, `useSetInstallmentPayment`, `useUpdateAnnualItem`, `useUpdateInstallment`
+- `lib/hooks/useCategoryManagement.ts` — exports: type `CategoryRule`, `CategoryStat`; fn `useCategoryRules`, `useCategoryStats`, `useCreateRule`, `useDeleteRule`, `useMergeCategory`
 - `lib/hooks/useQueries.ts` — exports: type `BankConnectionSummary`, `Category`, `Transaction`, `Wallet`, `WalletCreateInput`, `WalletUpdateInput`; const `queryKeys`; fn `useActiveCategories`, `useBankConnections`, `useBankInstitutions`, `useCategories`, `useCreateCategory`, `useCreateTransaction`, `useCreateWallet`, `useDashboardLayout`, `useDeleteCategory`, `useDeleteTransaction`, `useDeleteWallet`, `useExpenses`, `useImportCsv`, `useIncomes`, `useMovements`, `useSaveDashboardLayout`, `useTransfers`, `useUpdateCategory`, `useUpdateTransaction`, `useUpdateWallet`, `useWallets`
 
 ## lib/providers/

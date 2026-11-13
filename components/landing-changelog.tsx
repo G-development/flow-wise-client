@@ -19,6 +19,8 @@ const CHANGELOG: Array<{ period: string; title: string; items: string[] }> = [
       "Bank import: one tap brings a changed category back to the suggested one.",
       "A short guided tour for new accounts, and Replay the tour in Settings.",
       "Annual plan items can be renamed.",
+      "New Categories page: expenses and income apart, how much each one is used, the rules that sort your bank movements (now visible and editable), merging two categories, and a To review list for what is still uncategorised.",
+      "New accounts start with English categories, including Other, and the transfer category is called Transfer.",
     ],
   },
   {
