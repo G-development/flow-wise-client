@@ -3,13 +3,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {
-  BadgeCheck,
-  Bell,
-  LogOut,
-  Sparkles,
-  Import,
-} from "lucide-react";
+import { LogOut, Settings, Upload } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -59,68 +53,58 @@ export function NavUser() {
     ? profile.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
     : "FW";
 
+  // 13/11/2026 (Gio): via "Upgrade to Pro" e "Notifications", che non esistono; "Account" diventa
+  // "Settings" come la pagina, "Import utility" diventa "Import CSV" come nelle Shortcuts di Settings.
+  // Il trigger e' un vero pulsante (tastiera e lettori di schermo) e le voci sono link veri (asChild).
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    router.replace("/");
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar className="h-8 w-8 rounded-lg">
-          <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.name} />
-          <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
-        </Avatar>
+        <button
+          type="button"
+          aria-label="Account menu"
+          className="rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <Avatar className="h-8 w-8 rounded-lg">
+            <AvatarImage src={profile?.avatar_url || undefined} alt="" className="object-cover" />
+            <AvatarFallback className="rounded-lg bg-primary/10 text-xs font-semibold text-primary">{initials}</AvatarFallback>
+          </Avatar>
+        </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-        side={true ? "bottom" : "right"}
-        align="end"
-        sideOffset={4}
-      >
+      <DropdownMenuContent className="min-w-56 rounded-xl" side="bottom" align="end" sideOffset={6}>
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
             <Avatar className="h-8 w-8 rounded-lg">
-              <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.name} />
-              <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+              <AvatarImage src={profile?.avatar_url || undefined} alt="" className="object-cover" />
+              <AvatarFallback className="rounded-lg bg-primary/10 text-xs font-semibold text-primary">{initials}</AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-semibold">{profile?.name || "User"}</span>
-              <span className="truncate text-xs">{profile?.email || ""}</span>
+              <span className="truncate text-xs text-muted-foreground">{profile?.email || ""}</span>
             </div>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem disabled>
-            <Sparkles />
-            Upgrade to Pro
+          <DropdownMenuItem asChild>
+            <Link href="/settings">
+              <Settings />
+              Settings
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/settings/import">
+              <Upload />
+              Import CSV
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <Link href="/settings">
-            <DropdownMenuItem>
-              <BadgeCheck />
-              Account
-            </DropdownMenuItem>
-          </Link>
-          <DropdownMenuItem disabled>
-            <Bell />
-            Notifications
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <Link href="/settings/import">
-            <DropdownMenuItem>
-              <Import />
-              Import utility
-            </DropdownMenuItem>
-          </Link>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => {
-            supabase.auth.signOut();
-            router.replace("/");
-          }}
-        >
+        <DropdownMenuItem onClick={() => void signOut()}>
           <LogOut />
           Log out
         </DropdownMenuItem>
