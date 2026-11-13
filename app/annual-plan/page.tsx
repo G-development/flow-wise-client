@@ -35,6 +35,7 @@ import {
   useDeleteAnnualItem,
   useDeleteInstallment,
   useSetInstallmentPayment,
+  useUpdateAnnualItem,
   useUpdateInstallment,
   type AnnualInstallment,
   type AnnualItem,
@@ -335,11 +336,18 @@ function ItemCard({ item }: { item: AnnualItem }) {
   const [editing, setEditing] = useState<AnnualInstallment | "new" | null>(null);
   const [paying, setPaying] = useState<AnnualInstallment | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [renaming, setRenaming] = useState(false);
 
   return (
     <div className="rounded-xl border border-border/70 bg-card p-4 shadow-sm">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-semibold">{item.name}</h2>
+        <div className="flex min-w-0 items-center gap-1">
+          <h2 className="truncate font-semibold">{item.name}</h2>
+          <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={() => setRenaming(true)}>
+            <Pencil className="h-4 w-4" />
+            <span className="sr-only">Rename item</span>
+          </Button>
+        </div>
         <div className="flex flex-wrap gap-1">
           <Button size="sm" variant="outline" onClick={() => setEditing("new")}>
             <Plus className="mr-1 h-4 w-4" /> Installment
@@ -383,6 +391,7 @@ function ItemCard({ item }: { item: AnnualItem }) {
 
       <InstallmentDialog itemId={item.id} installment={editing === "new" ? null : editing} open={editing !== null} onClose={() => setEditing(null)} />
       <PaymentDialog installment={paying} onClose={() => setPaying(null)} />
+      <RenameItemDialog item={item} open={renaming} onClose={() => setRenaming(false)} />
       <DeleteDialog
         isOpen={confirmDelete}
         title="Delete item"
@@ -402,6 +411,58 @@ function ItemCard({ item }: { item: AnnualItem }) {
 }
 
 /** Nuova voce con le sue rate (righe data + importo in euro). */
+/** Rinomina una voce del piano (13/11/2026): il server lo permetteva gia' (PUT /annual-items/:id). */
+function RenameItemDialog({ item, open, onClose }: { item: AnnualItem; open: boolean; onClose: () => void }) {
+  const updateItem = useUpdateAnnualItem();
+  const [name, setName] = useState(item.name);
+  const [error, setError] = useState<string | null>(null);
+  const [lastOpen, setLastOpen] = useState(false);
+  if (open !== lastOpen) {
+    setLastOpen(open);
+    if (open) {
+      setName(item.name);
+      setError(null);
+    }
+  }
+
+  const save = async () => {
+    if (!name.trim()) {
+      setError("Enter a name");
+      return;
+    }
+    try {
+      await updateItem.mutateAsync({ id: Number(item.id), data: { name: name.trim() } });
+      onClose();
+    } catch {
+      // il messaggio lo mostra la mutation
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Rename item</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-2">
+          <Label htmlFor={`item-name-${item.id}`}>Name</Label>
+          <Input
+            id={`item-name-${item.id}`}
+            value={name}
+            onChange={(event) => { setName(event.target.value); setError(null); }}
+            onKeyDown={(event) => { if (event.key === "Enter") void save(); }}
+          />
+          {error && <p className="text-sm text-destructive">{error}</p>}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => void save()} disabled={updateItem.isPending}>Save</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function ItemDialog({ pot, open, onClose }: { pot: Wallet; open: boolean; onClose: () => void }) {
   const createItem = useCreateAnnualItem();
   const [name, setName] = useState("");
