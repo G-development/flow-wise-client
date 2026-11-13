@@ -11,6 +11,8 @@ const CHANGELOG: Array<{ period: string; title: string; items: string[] }> = [
     items: [
       "Settings → Your data: download everything you have in Flow Wise as a JSON file, or your movements as a CSV file that opens in Excel.",
       "Nightly encrypted backups of the database, kept for 30 days, with a tested restore.",
+      "Forgot your password? The reset email now really arrives, from a Flow Wise address and in the app's style.",
+      "The password recovery pages look like the login page, in light and dark mode.",
     ],
   },
   {

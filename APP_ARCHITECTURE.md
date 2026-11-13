@@ -27,7 +27,10 @@ protetta. Le route considerate pubbliche dal provider sono `/`, `/login`,
 
 Le pagine `/forgot-password` e `/reset-password` sono implementate e chiamano
 le route pubbliche di reset del server; essendo in `PUBLIC_ROUTES` del provider
-sono raggiungibili anche senza sessione.
+sono raggiungibili anche senza sessione. Dal 13/11/2026 usano `components/auth-shell.tsx`
+(`AuthShell`, `AuthStatusIcon`, `AuthError`): stesso sfondo `auth-shell`, logo, titolo e card del
+login, colori del tema anche in scuro. La mail che arriva ha lo stesso stile (server,
+`utils/emailTemplates.js`) e parte dalla casella di sistema `gc.dev.app@gmail.com`.
 
 La barra di navigazione è in `components/navbar.tsx`: su desktop una riga di link (Import e Account nel menu utente); su mobile un menu laterale a sezioni (`mobileSections`: Main, Management, Settings) e una barra in basso con Dashboard, Movements, + New, Annual plan, Your Bank. Il + della barra è l'unico "aggiungi" su mobile: in `/movements` e in `/dashboard` il pulsante "Add Transaction" in alto compare solo da `lg`. `lib/api.ts` centralizza
 le chiamate autenticate; i form di autenticazione usano anche direttamente
@@ -264,7 +267,8 @@ Ultima verifica: 2026-11-06, sui commit `de41f49` (client) e `8b4e0f3` (server).
   un errore invece di rispondere "utente inesistente"; senza `SMTP_HOST` la
   route risponde `502` con il motivo reale, e il token viene salvato solo dopo
   che la mail è partita. `/forgot-password` e `/reset-password` sono in
-  `PUBLIC_ROUTES`.
+  `PUBLIC_ROUTES`. Verificato dal vivo il 13/11 da Gio (mail arrivata, password
+  reimpostata, accesso ok) dopo aver applicato la migrazione 002, mai applicata prima.
 - **Suggerimento di categoria nell'import bancario**: un movimento senza
   corrispondenza non riceve più in silenzio la prima categoria del suo tipo,
   ma è marcato come incerto e precompilato con `Altro` (vedi *Integrazione
