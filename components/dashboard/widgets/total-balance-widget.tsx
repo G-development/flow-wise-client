@@ -20,8 +20,9 @@ const percent = (share: number) =>
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 
 /**
- * Saldo totale di tutti i wallet. Sotto, in piccolo, quanto sta nei conti e quanto nei
- * salvadanai; toccandolo si apre la ripartizione wallet per wallet. Per un conto collegato a una
+ * Due numeri affiancati (13/11/2026, richiesta di Gio): a sinistra la somma dei conti, a destra
+ * la somma dei salvadanai; il totale complessivo resta nel dettaglio. Toccando la riga sotto si
+ * apre la ripartizione wallet per wallet. Per un conto collegato a una
  * banca conta il saldo letto dalla banca (`GET /bank/connections`); il saldo dell'app resta nel
  * dettaglio, cosi' una differenza si vede. Per gli altri wallet `wallet.balance` e' il
  * saldo derivato di `GET /wallet` (server, `utils/walletService.js`); i conti si fanno in
@@ -55,26 +56,25 @@ export function TotalBalanceWidget() {
         {isLoading ? (
           <div className="text-3xl font-bold text-muted-foreground animate-pulse">...</div>
         ) : (
-          <div className="text-3xl font-semibold tracking-tight text-foreground">{euro(breakdown.totalCents)}</div>
+          <div className="flex min-w-0 items-end justify-between gap-4">
+            <Figure label="Accounts" cents={breakdown.accounts.cents} icon="account" />
+            {breakdown.pots.count > 0 && (
+              <Figure label="Savings pots" cents={breakdown.pots.cents} icon="pot" align="right" />
+            )}
+          </div>
         )}
         {!isLoading && wallets.length > 0 && (
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="group flex w-full min-w-0 items-center gap-1 text-left text-xs text-muted-foreground hover:text-foreground"
+            className="group flex w-full min-w-0 items-center justify-between gap-2 text-left text-xs text-muted-foreground hover:text-foreground"
             aria-label="Show how the balance is split"
           >
-            <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
-              <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                <WalletIcon className="h-3 w-3" />
-                {euro(breakdown.accounts.cents)} in {plural(breakdown.accounts.count, "account", "accounts")}
-              </span>
-              {breakdown.pots.count > 0 && (
-                <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                  <PiggyBank className="h-3 w-3" />
-                  {euro(breakdown.pots.cents)} in {plural(breakdown.pots.count, "pot", "pots")}
-                </span>
-              )}
+            <span className="truncate">
+              {plural(breakdown.accounts.count, "account", "accounts")}
+              {breakdown.pots.count > 0 && ` · ${plural(breakdown.pots.count, "pot", "pots")}`}
+              {" · "}
+              {euro(breakdown.totalCents)} in total
             </span>
             <ChevronRight className="h-3 w-3 shrink-0 opacity-60 group-hover:opacity-100" />
           </button>
@@ -109,6 +109,33 @@ export function TotalBalanceWidget() {
         </DialogContent>
       </Dialog>
     </Card>
+  );
+}
+
+function Figure({
+  label,
+  cents,
+  icon,
+  align = "left",
+}: {
+  label: string;
+  cents: number;
+  icon: "account" | "pot";
+  align?: "left" | "right";
+}) {
+  const Icon = icon === "pot" ? PiggyBank : WalletIcon;
+  return (
+    <div className={align === "right" ? "min-w-0 text-right" : "min-w-0"}>
+      <p className={`flex items-center gap-1 text-xs text-muted-foreground ${align === "right" ? "justify-end" : ""}`}>
+        <Icon className="h-3 w-3" />
+        {label}
+      </p>
+      <p
+        className="truncate text-2xl font-semibold tracking-tight tabular-nums text-foreground"
+      >
+        {euro(cents)}
+      </p>
+    </div>
   );
 }
 
