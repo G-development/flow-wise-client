@@ -2,10 +2,11 @@
 
 import Navbar from "@/components/navbar";
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid";
+import { OnboardingTour } from "@/components/onboarding-tour";
 import { AddWidgetDialog } from "@/components/dashboard/add-widget-dialog";
 import { useDashboardLayout, useSaveDashboardLayout } from "@/lib/hooks/useQueries";
 import { DEFAULT_LAYOUT, Widget } from "@/lib/types/dashboard";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import LoadingSpinner from "@/components/loading-spinner";
 import DatePickerWithRange from "@/components/date-picker";
 import { useDateRange } from "@/lib/providers/DateRangeProvider";
@@ -89,8 +90,8 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Controls Bar */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+            {/* Controls Bar (data-tour: passaggio "Your dashboard" del tour, R5) */}
+            <div data-tour="widgets" className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
               <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
               <div className="flex flex-wrap gap-2">
                 {/* Su mobile c'e' gia' il + della barra in basso (navbar): qui solo da desktop. */}
@@ -99,6 +100,7 @@ export default function Dashboard() {
                     <NewTransaction
                       trigger={
                         <Button
+                          data-tour="new"
                           className="gap-2 font-semibold shadow-md hover:shadow-lg transition-shadow"
                           aria-label="Add transaction"
                         >
@@ -155,6 +157,9 @@ export default function Dashboard() {
           )}
         </div>
       </main>
+      <Suspense fallback={null}>
+        <OnboardingTour />
+      </Suspense>
     </>
   );
 }

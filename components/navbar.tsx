@@ -52,6 +52,10 @@ const mainLinks: NavLink[] = [
   { href: '/category', icon: Boxes, label: 'Categories' },
 ];
 
+/** Nome del punto di aggancio del tour guidato (R5) per un link, uguale su desktop e mobile. */
+const tourId = (href: string) =>
+  ({ "/dashboard": "nav-dashboard", "/movements": "nav-movements", "/annual-plan": "nav-annual-plan", "/settings/yourbank": "nav-your-bank" })[href];
+
 const yourBankLink: NavLink = { href: '/settings/yourbank', icon: Banknote, label: 'Your Bank' };
 
 /**
@@ -95,6 +99,7 @@ export default function Navbar() {
       key={href}
       href={href}
       prefetch={false}
+      data-tour={tourId(href)}
       className={`flex min-w-0 flex-col items-center justify-center rounded-xl px-1 py-2.5 gap-1 text-[10px] font-medium transition-colors duration-200 ${
         isActive(href)
           ? 'text-primary bg-primary/10'
@@ -187,6 +192,7 @@ export default function Navbar() {
               <Link
                 key={href}
                 href={href}
+                data-tour={tourId(href)}
                 className={desktopNavClass(isActive(href))}
                 prefetch={false}
                 aria-current={isActive(href) ? "page" : undefined}
@@ -210,6 +216,7 @@ export default function Navbar() {
             ))}
             <Link
               href="/settings/yourbank"
+              data-tour="nav-your-bank"
               className={desktopNavClass(isActive("/settings/yourbank"))}
               prefetch={false}
               aria-current={isActive("/settings/yourbank") ? "page" : undefined}
@@ -236,6 +243,7 @@ export default function Navbar() {
             trigger={
               <button
                 type="button"
+                data-tour="new"
                 className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2.5 text-[10px] font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
                 aria-label="New transaction"
               >

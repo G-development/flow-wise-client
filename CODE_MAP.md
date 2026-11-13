@@ -5,7 +5,7 @@
 Indice file-per-file generato dal codice, non dalla documentazione. Serve a sapere **dove** sta una
 cosa senza leggere il repo: architettura e regole locali stanno altrove (vedi `AGENTS.md`).
 
-Forma `next`, radice sorgente `.`, commit `3c6140a`.
+Forma `next`, radice sorgente `.`, commit `2221c15`.
 
 ```bash
 node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/flow-wise-client \
@@ -69,6 +69,7 @@ Layout: `app/layout.tsx`
 - `components/nav-user.tsx` — exports: fn `NavUser`
 - `components/navbar.tsx` — exports: default `Navbar`
 - `components/new-transaction.tsx` — exports: default `NewTransaction`
+- `components/onboarding-tour.tsx` — exports: fn `OnboardingTour`
 - `components/register-form.tsx` — exports: fn `RegisterForm`
 - `components/truncated-notice.tsx` — exports: fn `TruncatedNotice`
 

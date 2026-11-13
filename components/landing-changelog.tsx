@@ -17,6 +17,8 @@ const CHANGELOG: Array<{ period: string; title: string; items: string[] }> = [
       "Settings → Delete account: delete your account and all its data yourself, confirming with your email.",
       "Annual plan without a savings pot? It now helps you create one and add the first expense.",
       "Bank import: one tap brings a changed category back to the suggested one.",
+      "A short guided tour for new accounts, and Replay the tour in Settings.",
+      "Annual plan items can be renamed.",
     ],
   },
   {

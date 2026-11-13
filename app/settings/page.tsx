@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Send, HandCoins, BellRing, Sparkle } from "lucide-react";
 import Navbar from "@/components/navbar";
+import Link from "next/link";
 import { YourDataCard } from "@/components/settings/your-data-card";
 import { DeleteAccountCard } from "@/components/settings/delete-account-card";
 
@@ -229,6 +230,11 @@ export default function Settings() {
               className="hidden"
               onChange={handleAvatarChange}
             />
+
+            {/* R5: rivedere il tour guidato della dashboard */}
+            <Button asChild variant="outline" size="sm" className="w-full">
+              <Link href="/dashboard?tour=1">Replay the tour</Link>
+            </Button>
 
             <div className="text-xs text-muted-foreground space-y-1">
               <p>

@@ -67,6 +67,13 @@ conferma generico che lascia la mutation al chiamante.
 stanno nel server, `utils/exportService.js`. Fase 6 C, 13/11/2026; i backup notturni cifrati (fase 6 A)
 stanno nel repo privato `flow-wise-backups`.
 
+### Tour guidato (`components/onboarding-tour.tsx`)
+
+R5, 13/11/2026: 7 passaggi sulla dashboard (benvenuto, controlli della dashboard, + New, Movements, Annual plan,
+Your Bank, fine). Parte da solo per gli account creati dal 13/11 in poi, una volta per dispositivo
+(`localStorage` `fw-tour-done-v1`); si rivede da Settings → "Replay the tour" (`/dashboard?tour=1`). I punti
+evidenziati sono gli elementi con `data-tour`, presenti sia nella barra desktop sia in quella mobile.
+
 ### Elimina account (`/settings`)
 
 `components/settings/delete-account-card.tsx` (R4, 13/11/2026): pulsante "Delete my account", finestra che invita a
