@@ -6,13 +6,28 @@ import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Send, HandCoins, BellRing, Sparkle } from "lucide-react";
+import {
+  AtSign,
+  Banknote,
+  Boxes,
+  Camera,
+  Coins,
+  Compass,
+  FileText,
+  LayoutGrid,
+  LifeBuoy,
+  Mail,
+  ShieldCheck,
+  SlidersHorizontal,
+  Sparkles,
+  Upload,
+  User,
+} from "lucide-react";
 import Navbar from "@/components/navbar";
-import Link from "next/link";
 import { YourDataCard } from "@/components/settings/your-data-card";
 import { DeleteAccountCard } from "@/components/settings/delete-account-card";
+import { SettingsLinkRow, SettingsRows, SettingsSection } from "@/components/settings/settings-section";
 
 interface Profile {
   id: string;
@@ -35,7 +50,6 @@ export default function Settings() {
   const [currency, setCurrency] = useState("");
   const [notifications, setNotifications] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
 
   const initials = (name || "FW")
     .split(" ")
@@ -64,7 +78,7 @@ export default function Settings() {
 
       if (error) {
         console.error("Error fetching profile:", error);
-        setMessage("Failed to load profile.");
+        toast.error("Failed to load profile");
       } else if (data) {
         setProfile(data);
         setName(data.name);
@@ -97,10 +111,10 @@ export default function Settings() {
 
     if (error) {
       console.error("Error updating profile:", error);
-      setMessage("Failed to update profile.");
+      toast.error("Failed to update profile");
     } else if (data) {
       setProfile(data);
-      setMessage("Profile updated successfully!");
+      toast.success("Profile updated");
     }
     setLoading(false);
   };
@@ -155,12 +169,10 @@ export default function Settings() {
       
       setProfile((prev) => prev ? { ...prev, avatar_url: data.avatar_url } : prev);
       toast.success('Avatar updated successfully!', { id: loadingToast });
-      setMessage('Avatar updated successfully!');
     } catch (err) {
       console.error('Error uploading avatar:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to upload avatar';
       toast.error(errorMessage, { id: loadingToast });
-      setMessage(`Failed to upload avatar: ${errorMessage}`);
     } finally {
       setLoading(false);
       // Reset file input
@@ -176,152 +188,154 @@ export default function Settings() {
     setUsername(profile.username);
     setCurrency(profile.currency);
     setNotifications(profile.settings?.notifications || false);
-    setMessage("");
   };
 
-  if (loading && !profile) return <div>Loading...</div>;
-  if (!profile) return <div>Error loading profile.</div>;
+  if (loading && !profile) {
+    return (
+      <>
+        <Navbar />
+        <main className="app-page">
+          <div className="mx-auto max-w-3xl space-y-4">
+            <div className="h-24 animate-pulse rounded-2xl bg-muted" />
+            <div className="h-48 animate-pulse rounded-2xl bg-muted" />
+          </div>
+        </main>
+      </>
+    );
+  }
+  if (!profile) {
+    return (
+      <>
+        <Navbar />
+        <main className="app-page">
+          <p className="mx-auto max-w-3xl rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+            Could not load your profile. Reload the page or sign in again.
+          </p>
+        </main>
+      </>
+    );
+  }
+
+  const dirty = name !== profile.name || username !== profile.username;
+  const memberSince = profile.created_at
+    ? new Date(profile.created_at).toLocaleDateString("en-GB", { month: "long", year: "numeric" })
+    : null;
 
   return (
     <>
       <Navbar />
       <main className="app-page">
-        <div className="app-page-header">
-          <div>
-            <h1 className="page-title">Account Settings</h1>
-            <p className="page-description">Manage your profile, notifications and preferences</p>
-          </div>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-[320px,1fr]">
-          {/* Card avatar / info */}
-          <div className="surface-card p-4 md:p-6 space-y-4">
-            <div className="flex items-start gap-4">
-              <div className="relative inline-block">
-                <Avatar className="h-20 w-20 rounded-lg">
-                  {profile.avatar_url ? (
-                    <AvatarImage src={profile.avatar_url} alt={profile.name} />
-                  ) : (
-                    <AvatarFallback className="rounded-lg text-lg font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="absolute inset-0 rounded-lg bg-black/60 text-white text-xs font-medium opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center"
-                >
-                  Change photo
-                </button>
-              </div>
-
-              <div className="space-y-1">
-                <h2 className="text-lg font-semibold">{profile.name}</h2>
-                <p className="text-sm text-muted-foreground">{profile.email ?? ""}</p>
-                <p className="text-xs text-muted-foreground">@{username || profile.username}</p>
-              </div>
-            </div>
-
-            <Input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              className="hidden"
-              onChange={handleAvatarChange}
-            />
-
-            {/* R5: rivedere il tour guidato della dashboard */}
-            <Button asChild variant="outline" size="sm" className="w-full">
-              <Link href="/dashboard?tour=1">Replay the tour</Link>
-            </Button>
-
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p>
-                Member since: {profile.created_at && new Date(profile.created_at).toLocaleDateString()}
-              </p>
-              <p>
-                Last updated: {profile.updated_at && new Date(profile.updated_at).toLocaleString()}
-              </p>
+        <div className="mx-auto max-w-3xl space-y-6">
+          <div className="app-page-header">
+            <div>
+              <h1 className="page-title">Settings</h1>
+              <p className="page-description">Your profile, preferences and data</p>
             </div>
           </div>
 
-          {/* Card form */}
-          <div className="surface-card p-4 md:p-6 space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-foreground flex items-center gap-2">
-                  <User width={18} /> Name
-                </Label>
-                <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name"
-                />
-              </div>
+          {/* Testata del profilo: foto (il pulsante e' sempre visibile, anche al tocco), nome, email */}
+          <section className="flex items-center gap-4 rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-6">
+            <div className="relative shrink-0">
+              <Avatar className="h-16 w-16 rounded-2xl sm:h-20 sm:w-20">
+                {profile.avatar_url ? (
+                  <AvatarImage src={profile.avatar_url} alt={profile.name} className="object-cover" />
+                ) : (
+                  <AvatarFallback className="rounded-2xl bg-primary/10 text-lg font-semibold text-primary">
+                    {initials}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={loading}
+                className="absolute -bottom-1 -right-1 rounded-full border border-border bg-card p-1.5 shadow-sm transition-colors hover:bg-secondary disabled:opacity-50"
+                aria-label="Change photo"
+              >
+                <Camera className="h-3.5 w-3.5" />
+              </button>
+              <Input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleAvatarChange} />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-lg font-semibold">{profile.name}</p>
+              <p className="truncate text-sm text-muted-foreground">{profile.email ?? ""}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                @{profile.username}
+                {memberSince && ` · member since ${memberSince}`}
+              </p>
+            </div>
+          </section>
 
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-foreground flex items-center gap-2">
-                  <Sparkle width={18} /> Username
-                </Label>
-                <Input
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Your username"
-                />
+          <SettingsSection id="profile" icon={User} title="Profile" description="How you appear in Flow Wise.">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="settings-name">Name</Label>
+                <Input id="settings-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
               </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label className="text-sm font-medium text-foreground flex items-center gap-2">
-                  <Send width={18} /> E-mail
-                </Label>
-                <Input value={profile.email ?? ""} disabled />
-              </div>
-
-              <div className="flex items-center gap-3 md:col-span-2">
-                <div className="flex items-center gap-2">
-                  <BellRing width={18} />
-                  <Label className="text-sm font-medium text-foreground">Notifications</Label>
+              <div className="grid gap-2">
+                <Label htmlFor="settings-username">Username</Label>
+                <div className="relative">
+                  <AtSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="settings-username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="username"
+                    className="pl-9"
+                  />
                 </div>
-                <Checkbox
-                  id="notifications"
-                  checked={notifications}
-                  onCheckedChange={(val) => setNotifications(!!val)}
-                />
-                <span className="text-xs text-muted-foreground">Email alerts and reminders</span>
               </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label className="text-sm font-medium text-foreground flex items-center gap-2">
-                  <HandCoins width={18} /> Currency
-                </Label>
-                <Input
-                  disabled
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  placeholder="Your currency"
-                />
+              <div className="grid gap-2 sm:col-span-2">
+                <Label htmlFor="settings-email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input id="settings-email" value={profile.email ?? ""} disabled className="pl-9" />
+                </div>
+                <p className="text-xs text-muted-foreground">The email is the one you sign in with and can&apos;t be changed here.</p>
               </div>
             </div>
-
-            {message && (
-              <p className="rounded-md border border-success/20 bg-success/10 px-3 py-2 text-sm text-success">
-                {message}
-              </p>
-            )}
-
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={resetForm} disabled={loading}>
-                Cancel
-              </Button>
-              <Button onClick={handleSubmit} disabled={loading}>
-                Update profile
+            <div className="mt-4 flex items-center justify-end gap-2">
+              {dirty && (
+                <Button variant="ghost" onClick={resetForm} disabled={loading}>
+                  Cancel
+                </Button>
+              )}
+              <Button onClick={handleSubmit} disabled={loading || !dirty}>
+                Save changes
               </Button>
             </div>
-          </div>
-        </div>
+          </SettingsSection>
 
-        <div className="mt-6 space-y-6">
+          <SettingsSection id="preferences" icon={SlidersHorizontal} title="Preferences">
+            <SettingsRows>
+              <div className="flex items-center gap-3 px-2 py-2.5">
+                <Coins className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-medium">Currency</span>
+                  <span className="block text-xs text-muted-foreground">More currencies may come later</span>
+                </span>
+                <span className="rounded-lg bg-secondary px-2.5 py-1 text-sm font-medium tabular-nums">{currency || "EUR"}</span>
+              </div>
+            </SettingsRows>
+          </SettingsSection>
+
+          <SettingsSection id="shortcuts" icon={LayoutGrid} title="Shortcuts">
+            <SettingsRows>
+              <SettingsLinkRow href="/settings/yourbank" icon={Banknote} label="Your Bank" hint="Linked banks, sync and daily import" />
+              <SettingsLinkRow href="/settings/import" icon={Upload} label="Import CSV" hint="Add movements from a file" />
+              <SettingsLinkRow href="/category" icon={Boxes} label="Categories" hint="Income, expense and transfer categories" />
+            </SettingsRows>
+          </SettingsSection>
+
+          <SettingsSection id="help" icon={LifeBuoy} title="Help">
+            <SettingsRows>
+              <SettingsLinkRow href="/dashboard?tour=1" icon={Compass} label="Replay the tour" hint="A quick look at the main pages" />
+              <SettingsLinkRow href="/#changelog" icon={Sparkles} label="What's new" hint="The latest changes to Flow Wise" />
+              <SettingsLinkRow href="/privacy" icon={ShieldCheck} label="Privacy Policy" />
+              <SettingsLinkRow href="/terms" icon={FileText} label="Terms of Service" />
+            </SettingsRows>
+          </SettingsSection>
+
           <YourDataCard />
           <DeleteAccountCard email={profile.email ?? ""} />
         </div>

@@ -19,6 +19,7 @@ import {
 import { apiFetch } from "@/lib/api";
 import { errorFromResponse } from "@/lib/httpError";
 import { supabase } from "@/lib/supabaseClient";
+import { SettingsSection } from "@/components/settings/settings-section";
 
 /**
  * Elimina account (R4, 13/11/2026). Deciso con Gio: subito, senza ripensamento, confermando con la
@@ -50,16 +51,13 @@ export function DeleteAccountCard({ email }: { email: string }) {
   };
 
   return (
-    <section className="surface-card space-y-4 border border-destructive/30 p-4 md:p-6" aria-labelledby="delete-account-title">
-      <div className="space-y-1">
-        <h2 id="delete-account-title" className="flex items-center gap-2 text-lg font-semibold text-destructive">
-          <Trash2 width={18} /> Delete account
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Permanently delete your account and all your data: movements, wallets and pots, categories, rules, the
-          annual plan and the bank link. This cannot be undone.
-        </p>
-      </div>
+    <SettingsSection
+      id="danger-zone"
+      icon={Trash2}
+      title="Danger zone"
+      tone="danger"
+      description="Delete your account and all its data: movements, wallets and pots, categories, rules, the annual plan and the bank link. This cannot be undone."
+    >
       <Button variant="destructive" onClick={() => { setTyped(""); setOpen(true); }}>
         Delete my account
       </Button>
@@ -75,7 +73,7 @@ export function DeleteAccountCard({ email }: { email: string }) {
           <div className="space-y-4">
             <p className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-              Want to keep a copy? Close this window and use Your data → Download everything first.
+              Want to keep a copy? Close this window and download it from Your data → Everything (JSON) first.
             </p>
             <div className="grid gap-2">
               <Label htmlFor="confirm-email">Type your email to confirm</Label>
@@ -100,6 +98,6 @@ export function DeleteAccountCard({ email }: { email: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </section>
+    </SettingsSection>
   );
 }

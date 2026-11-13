@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Download, FileJson, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { errorFromResponse } from "@/lib/httpError";
 
 /**
@@ -66,27 +67,28 @@ export function YourDataCard() {
   };
 
   return (
-    <section className="surface-card p-4 md:p-6 space-y-4" aria-labelledby="your-data-title">
-      <div className="space-y-1">
-        <h2 id="your-data-title" className="text-lg font-semibold flex items-center gap-2">
-          <Download width={18} /> Your data
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Download a copy of everything you have in Flow Wise. The JSON file holds all your data
-          (accounts, pots, categories, rules, annual plan, movements and bank movements); bank
-          access tokens are never included. The CSV file lists your movements and opens in Excel.
-        </p>
-      </div>
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <Button variant="outline" onClick={() => download("json")} disabled={busy !== null}>
-          <FileJson width={16} />
-          {busy === "json" ? "Preparing…" : EXPORTS.json.label}
+    <SettingsSection
+      id="your-data"
+      icon={Download}
+      title="Your data"
+      description="A copy of everything you have in Flow Wise. Bank access tokens are never included."
+    >
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Button variant="outline" className="h-auto justify-start gap-3 py-3 text-left" onClick={() => download("json")} disabled={busy !== null}>
+          <FileJson className="h-5 w-5 shrink-0 text-primary" />
+          <span className="min-w-0">
+            <span className="block font-medium">{busy === "json" ? "Preparing…" : "Everything (JSON)"}</span>
+            <span className="block whitespace-normal text-xs font-normal text-muted-foreground">Accounts, pots, categories, rules, plan, movements</span>
+          </span>
         </Button>
-        <Button variant="outline" onClick={() => download("csv")} disabled={busy !== null}>
-          <FileSpreadsheet width={16} />
-          {busy === "csv" ? "Preparing…" : EXPORTS.csv.label}
+        <Button variant="outline" className="h-auto justify-start gap-3 py-3 text-left" onClick={() => download("csv")} disabled={busy !== null}>
+          <FileSpreadsheet className="h-5 w-5 shrink-0 text-primary" />
+          <span className="min-w-0">
+            <span className="block font-medium">{busy === "csv" ? "Preparing…" : "Movements (CSV)"}</span>
+            <span className="block whitespace-normal text-xs font-normal text-muted-foreground">Opens in Excel</span>
+          </span>
         </Button>
       </div>
-    </section>
+    </SettingsSection>
   );
 }
