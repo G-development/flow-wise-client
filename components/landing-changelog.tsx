@@ -14,6 +14,9 @@ const CHANGELOG: Array<{ period: string; title: string; items: string[] }> = [
       "Forgot your password? The reset email now really arrives, from a Flow Wise address and in the app's style.",
       "The password recovery pages look like the login page, in light and dark mode.",
       "Annual plan: each month shows what is due and how much to put aside that month, higher while a pot is behind and then down to the yearly average.",
+      "Settings → Delete account: delete your account and all its data yourself, confirming with your email.",
+      "Annual plan without a savings pot? It now helps you create one and add the first expense.",
+      "Bank import: one tap brings a changed category back to the suggested one.",
     ],
   },
   {

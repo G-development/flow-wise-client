@@ -159,7 +159,8 @@ export default function TermsPage() {
           <li>We do not sell your data and do not use it for advertising or profiling.</li>
           <li>
             You can download a full copy of your data at any time from Settings → Your data: a JSON file
-            with everything and a CSV file with your movements. To have your data deleted, write to {mail}.
+            with everything and a CSV file with your movements. To delete your data, delete your account
+            (section 11).
           </li>
           <li>
             You are responsible for the accuracy of the data you enter and for having the right to enter
@@ -212,8 +213,10 @@ export default function TermsPage() {
       <LegalSection id="chiusura" title="11. Closing the account">
         <LegalList>
           <li>
-            You can stop using the Service at any time. To close the account and delete your data, write to
-            {" "}{mail} from the address linked to the account: we will do it within 30 days.
+            You can stop using the Service at any time. To close the account and delete your data, use
+            Settings → Delete account and confirm with your email: everything is deleted right away and cannot
+            be recovered (encrypted backups disappear within 30 days). If you cannot sign in, write to {mail}
+            from the address linked to the account.
           </li>
           <li>
             We may suspend or close an account that breaks these Terms or puts the security of the Service

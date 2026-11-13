@@ -67,6 +67,12 @@ conferma generico che lascia la mutation al chiamante.
 stanno nel server, `utils/exportService.js`. Fase 6 C, 13/11/2026; i backup notturni cifrati (fase 6 A)
 stanno nel repo privato `flow-wise-backups`.
 
+### Elimina account (`/settings`)
+
+`components/settings/delete-account-card.tsx` (R4, 13/11/2026): pulsante "Delete my account", finestra che invita a
+scaricare prima l'export e chiede di scrivere la propria email; `DELETE /users/me` sul server cancella tutti i dati
+e il login, poi il client esce (`supabase.auth.signOut`) e torna alla landing. Nessun periodo di ripensamento.
+
 ### Integrazione Bancaria (`/settings/yourbank`)
 
 La pagina `/settings/yourbank` include:

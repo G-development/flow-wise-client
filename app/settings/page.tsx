@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Send, HandCoins, BellRing, Sparkle } from "lucide-react";
 import Navbar from "@/components/navbar";
 import { YourDataCard } from "@/components/settings/your-data-card";
+import { DeleteAccountCard } from "@/components/settings/delete-account-card";
 
 interface Profile {
   id: string;
@@ -314,8 +315,9 @@ export default function Settings() {
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 space-y-6">
           <YourDataCard />
+          <DeleteAccountCard email={profile.email ?? ""} />
         </div>
       </main>
     </>

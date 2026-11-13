@@ -178,9 +178,9 @@ export default function PrivacyPage() {
       <LegalSection id="conservazione" title="7. How long we keep the data">
         <LegalList>
           <li>
-            <strong>Account, profile and financial data:</strong> as long as the account is active. If you
-            ask for deletion, we delete them within 30 days; any backup copies held by providers are
-            overwritten according to their cycles.
+            <strong>Account, profile and financial data:</strong> as long as the account is active. When you
+            delete the account (Settings → Delete account) they are deleted right away; the encrypted nightly
+            backups that still contain them are overwritten within 30 days.
           </li>
           <li>
             <strong>Bank access tokens:</strong> until you disconnect the bank or the authorization
@@ -225,7 +225,7 @@ export default function PrivacyPage() {
             Your data;
           </li>
           <li>correct it (Art. 16) — you can change much of it directly in the app;</li>
-          <li>delete it (Art. 17), also by closing the account;</li>
+          <li>delete it (Art. 17) — you can delete your account and all its data yourself from Settings → Delete account;</li>
           <li>restrict its processing (Art. 18);</li>
           <li>
             receive it in a structured, machine-readable format, to move it elsewhere (Art. 20) — the JSON
