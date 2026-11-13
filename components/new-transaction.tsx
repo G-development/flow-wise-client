@@ -98,6 +98,10 @@ const formFromTransaction = (transaction: Transaction): FormData => ({
   is_refund: transaction.is_refund === true,
 });
 
+/** Un salvadanaio (migrazione 012 del server): `kind: "pot"`, con il conto padre. */
+const isPot = (wallet: { kind?: unknown } | undefined) => wallet?.kind === "pot";
+
+
 export default function NewTransaction({
   onSuccess,
   trigger,
@@ -114,6 +118,12 @@ export default function NewTransaction({
   };
   const isEdit = transaction != null;
   const { data: wallets = [] } = useWallets();
+  // Nei menu un salvadanaio mostra anche il suo conto: "Savings · ISP".
+  const walletLabel = (wallet: { name: unknown; kind?: unknown; parent_wallet_id?: unknown }) => {
+    if (!isPot(wallet) || wallet.parent_wallet_id == null) return String(wallet.name);
+    const parent = wallets.find((w) => String(w.id) === String(wallet.parent_wallet_id));
+    return `${String(wallet.name)} · ${parent ? String(parent.name) : "pot"}`;
+  };
   const {
     data: categoryList = EMPTY_LIST_RESPONSE,
     isLoading: categoriesLoading,
@@ -283,7 +293,17 @@ export default function NewTransaction({
                       className="min-w-0 justify-center px-2"
                       onClick={() =>
                         // Cambiando tipo la categoria scelta non vale piu': e' filtrata per tipo.
-                        setFormData({ ...formData, type: value, category_id: null, is_refund: false })
+                        setFormData({
+                          ...formData,
+                          type: value,
+                          category_id: null,
+                          is_refund: false,
+                          // passando a entrata o spesa, un salvadanaio scelto come origine torna al conto di default
+                          wallet_id:
+                            value !== "T" && isPot(wallets.find((w) => Number(w.id) === formData.wallet_id))
+                              ? (defaultWallet ? Number(defaultWallet.id) : null)
+                              : formData.wallet_id,
+                        })
                       }
                     >
                       {/* Sotto i 640px l'icona toglie lo spazio alla parola: resta solo il testo. */}
@@ -355,9 +375,11 @@ export default function NewTransaction({
                   <SelectValue placeholder="Select wallet" />
                 </SelectTrigger>
                 <SelectContent>
-                  {wallets.map((w) => (
+                  {/* Entrate e spese: solo i conti. Un salvadanaio si muove solo con un trasferimento
+                      dal o verso il suo conto (Gio, 13/11/2026; il server rifiuta il resto). */}
+                  {(isTransferForm ? wallets : wallets.filter((w) => !isPot(w))).map((w) => (
                     <SelectItem key={w.id} value={w.id.toString()}>
-                      {w.name}
+                      {walletLabel(w)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -386,7 +408,7 @@ export default function NewTransaction({
                       })
                       .map((w) => (
                         <SelectItem key={w.id} value={w.id.toString()}>
-                          {w.name}
+                          {walletLabel(w)}
                         </SelectItem>
                       ))}
                   </SelectContent>
