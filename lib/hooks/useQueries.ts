@@ -62,6 +62,8 @@ export interface Transaction extends Record<string, unknown> {
   category_id: number;
   created_at?: string;
   updated_at?: string;
+  /** Nome leggibile per i movimenti arrivati dalla banca (`GET /transaction/all`, 14/11/2026). */
+  merchant?: string | null;
 }
 
 /**

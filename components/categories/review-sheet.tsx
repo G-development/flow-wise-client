@@ -117,7 +117,17 @@ export function ReviewSheet({
             {pending.slice(0, shown).map((t) => (
               <div key={t.id} className="rounded-xl border border-border/70 bg-card p-3">
                 <div className="flex items-start justify-between gap-3">
-                  <p className="min-w-0 text-sm font-medium [overflow-wrap:anywhere]">{t.description || "No description"}</p>
+                  <div className="min-w-0">
+                    {/* Per i movimenti della banca il server manda un nome leggibile (`merchant`, 14/11) */}
+                    <p className="text-sm font-medium [overflow-wrap:anywhere]">
+                      {String(t.merchant || t.description || "No description")}
+                    </p>
+                    {t.merchant && t.description && (
+                      <p className="line-clamp-1 text-xs text-muted-foreground" title={String(t.description)}>
+                        {String(t.description)}
+                      </p>
+                    )}
+                  </div>
                   <span className={`shrink-0 text-sm font-semibold tabular-nums ${t.type === "I" ? "text-success" : ""}`}>
                     {t.type === "I" ? "+" : "−"}
                     {Math.abs(Number(t.amount)).toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
