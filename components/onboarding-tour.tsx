@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useUserSettings } from "@/lib/hooks/useQueries";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabaseClient";
@@ -27,7 +28,7 @@ const STEPS: Step[] = [
   {
     target: "widgets",
     title: "Your dashboard",
-    body: "Balances and charts for the period you pick. Tap Edit to choose and arrange the widgets.",
+    body: "Your balance, the month so far, what to fix and what is coming up. The period here is the same as in Movements.",
   },
   {
     target: "new",
@@ -91,6 +92,10 @@ export function OnboardingTour() {
   const [rect, setRect] = useState<Rect | null>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
 
+  // Il tour parte solo dopo la scelta dell'inizio del mese (finestra del primo accesso, 16/11).
+  const { data: settings } = useUserSettings();
+  const monthStartChosen = settings?.monthStartDay != null;
+
   // Avvio: ?tour=1 (da Settings) oppure account nuovo che non l'ha ancora visto.
   useEffect(() => {
     if (searchParams.get("tour") === "1") {
@@ -98,7 +103,7 @@ export function OnboardingTour() {
       router.replace(pathname, { scroll: false });
       return;
     }
-    if (readDone()) return;
+    if (readDone() || !monthStartChosen) return;
     let cancelled = false;
     void supabase.auth.getSession().then(({ data }) => {
       const createdAt = data.session?.user?.created_at;
@@ -107,7 +112,7 @@ export function OnboardingTour() {
     return () => {
       cancelled = true;
     };
-  }, [pathname, router, searchParams]);
+  }, [pathname, router, searchParams, monthStartChosen]);
 
   const step = index != null ? STEPS[index] : null;
 

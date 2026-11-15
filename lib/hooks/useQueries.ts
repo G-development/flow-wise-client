@@ -8,7 +8,6 @@ import { apiFetch, buildQuery } from "@/lib/api";
 import { parseListResponse } from "@/lib/listResponse";
 import { errorFromResponse } from "@/lib/httpError";
 import { toast } from "sonner";
-import { DashboardLayout, Widget } from "@/lib/types/dashboard";
 
 // Query Keys
 export const queryKeys = {
@@ -34,9 +33,7 @@ export const queryKeys = {
     byDateRange: (start?: string, end?: string) => 
       ["expenses", { start, end }] as const,
   },
-  dashboardLayout: {
-    current: ["dashboard-layout"] as const,
-  },
+  userSettings: ["user-settings"] as const,
   bank: {
     connections: ["bank", "connections"] as const,
     institutions: ["bank", "institutions"] as const,
@@ -457,9 +454,10 @@ export function useDeleteCategory() {
  * le date): la pagina Movements filtra e somma lato client (`lib/movements.ts`). La chiave
  * sta sotto `transactions`, quindi ogni scrittura su una transazione la invalida.
  */
-export function useMovements(startDate?: string, endDate?: string) {
+export function useMovements(startDate?: string, endDate?: string, enabled = true) {
   return useQuery({
     queryKey: queryKeys.transactions.byDateRange(startDate, endDate),
+    enabled,
     queryFn: async () => {
       const query = buildQuery({ startDate, endDate });
       const res = await apiFetch(`/transaction/all${query}`);
@@ -523,37 +521,37 @@ export function useExpenses(startDate?: string, endDate?: string) {
   });
 }
 
-// ============= Dashboard Layout Hooks =============
+// ============= User settings (16/11/2026) =============
 
-export function useDashboardLayout() {
+/** Impostazioni dell'utente dal server (`GET /users/settings`): `monthStartDay` null = non ancora scelto. */
+export type UserSettings = { monthStartDay: number | null };
+
+export function useUserSettings(enabled = true) {
   return useQuery({
-    queryKey: queryKeys.dashboardLayout.current,
+    queryKey: queryKeys.userSettings,
+    enabled,
+    staleTime: 5 * 60_000,
     queryFn: async () => {
-      const res = await apiFetch("/dashboard-layout");
-      if (!res.ok) throw new Error("Failed to fetch dashboard layout");
-      return res.json() as Promise<DashboardLayout>;
+      const res = await apiFetch("/users/settings");
+      if (!res.ok) throw await errorFromResponse(res, "Failed to load your settings");
+      return (await res.json()) as UserSettings;
     },
   });
 }
 
-export function useSaveDashboardLayout() {
+export function useSaveUserSettings() {
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: async (widgets: Widget[]) => {
-      const res = await apiFetch("/dashboard-layout", {
-        method: "PUT",
-        body: JSON.stringify({ widgets }),
-      });
-      if (!res.ok) throw new Error("Failed to save dashboard layout");
-      return res.json();
+    mutationFn: async (settings: { monthStartDay: number }) => {
+      const res = await apiFetch("/users/settings", { method: "PUT", body: JSON.stringify(settings) });
+      if (!res.ok) throw await errorFromResponse(res, "Failed to save your settings");
+      return (await res.json()) as UserSettings;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardLayout.current });
-      toast.success("Layout saved");
+    onSuccess: (data) => {
+      queryClient.setQueryData(queryKeys.userSettings, data);
     },
-    onError: () => {
-      toast.error("Error saving layout");
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 }

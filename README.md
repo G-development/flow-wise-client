@@ -10,9 +10,10 @@ Interfaccia **solo in inglese** (dall'11/11/2026); i commenti del codice restano
 - **Autenticazione**: registrazione, login, recupero e reset password via email (pagine con lo stesso stile del login,
   `components/auth-shell.tsx`; la mail parte dalla casella di sistema del server). Un account nuovo vede un **tour
   guidato** sulla dashboard (`components/onboarding-tour.tsx`), che si rivede da Settings.
-- **Dashboard personalizzabile**: griglia di widget (Total Balance con conti e salvadanai affiancati e il saldo della
-  banca per i conti collegati, entrate, spese, entrate contro spese, spese per categoria con i colori delle categorie),
-  drag & drop, resize e layout salvato per utente.
+- **Dashboard fissa** (16/11/2026): saldo (conti e salvadanai, saldo della banca per i conti collegati), cose da
+  sistemare nel periodo, il mese con il confronto sul mese prima, versamenti e rate in arrivo del piano annuale, spese
+  per categoria e ritmo delle spese. Il periodo è condiviso con Movements e parte dal **giorno di inizio del mese**
+  scelto al primo accesso (modificabile in Settings).
 - **Movements (`/movements`)**: wallet, entrate, spese e trasferimenti in una pagina, con filtri per tipo, wallet e
   periodo, trasferimenti da assegnare in cima ed etichetta colorata della categoria su ogni movimento. Il saldo di ogni
   wallet e' calcolato dalle transazioni a partire da un saldo di apertura; i salvadanai stanno sotto il loro conto, con
@@ -38,7 +39,7 @@ Interfaccia **solo in inglese** (dall'11/11/2026); i commenti del codice restano
 
 ```text
 app/                  Route Next.js e pagine
-  dashboard/          Dashboard e griglia widget
+  dashboard/          Dashboard fissa a sezioni
   movements/          Wallet, entrate, spese e trasferimenti
   category/           Categorie, regole, unione, "To review"
   annual-plan/        Piano delle spese annuali
@@ -104,4 +105,4 @@ dopo il suo ok esplicito.
 
 - [API Structure](./API_STRUCTURE.md): chiamate client, route backend, caching e payload.
 - [Architettura](./APP_ARCHITECTURE.md): struttura del frontend e del backend, layout e flussi di dati.
-- [Dashboard](./DASHBOARD_STRUCTURE.md): widget, griglia e persistenza layout.
+- [Dashboard](./DASHBOARD_STRUCTURE.md): sezioni della dashboard e inizio del mese.

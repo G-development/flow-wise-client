@@ -40,7 +40,7 @@ Supabase o `fetch`, a seconda del flusso.
 
 - `/login`, `/register`, `/forgot-password`, `/reset-password`: accesso,
   registrazione e recupero credenziali.
-- `/dashboard`: griglia widget configurabile e intervallo date condiviso.
+- `/dashboard`: pagina fissa a sezioni (saldo, da sistemare, il periodo con il confronto, in arrivo, categorie, ritmo), dal 16/11/2026; vedi `DASHBOARD_STRUCTURE.md`.
 - `/movements`: wallet, entrate, spese e trasferimenti in una pagina (dal 10/11/2026 sostituisce `/incomes`, `/expenses`, `/transfers` e `/wallets`, che rimandano qui con il filtro giusto: `next.config.ts`). Ridisegnata il 15/11/2026, prima per il telefono. Dall'alto: titolo e periodo (menu compatto: This month, Last month, Last 3 months, All time, Custom… col calendario); i totali (entrate, spese, netto; con un solo wallet anche i trasferimenti in entrata e in uscita); i trasferimenti da assegnare, solo se ce ne sono; filtri compatti (tipo a schede All / Income / Expenses / Transfers e wallet in un menu, salvati nell'indirizzo `?types=I,E&wallets=1`, piu' la ricerca per testo su negozio, descrizione, nota e categoria); poi l'elenco per giorno (`components/movements/movement-list.tsx`: intestazione del giorno con il netto, righe con l'icona della categoria, il nome leggibile, categoria e wallet, importo). Un tocco apre il dettaglio (`movement-sheet.tsx`) con Edit e Delete. In fondo i wallet come fila scorrevole (`WalletCards layout="row"`: logo della banca, saldo, entrate e spese del periodo, menu, "Add wallet"). Filtri, totali, ricerca (`searchMovements`) e raggruppamento (`groupMovementsByDay`) in `lib/movements.ts`, con test; dati da `GET /transaction/all` con le date (`useMovements`). Creazione e modifica con lo stesso pannello (`components/new-transaction.tsx`, prop `transaction`).
 - `/annual-plan` (fase 3, migrazione 013 del server): piano delle spese annuali di un salvadanaio (`?wallet=`). Riepilogo (saldo, versamento di questo mese, tetto, rate dei prossimi 12 mesi), avvisi di scoperto adesso e di conflitto col tetto, tabella mese per mese con Due (rate da pagare), Deposit (versamento consigliato del mese: alto finché il salvadanaio è indietro, poi scende verso la media annua; dal 13/11) e saldo a fine mese, voci con le loro rate (aggiungi, modifica, elimina, copia sull'anno dopo, collega il pagamento a un movimento, oppure segna "Paid" da Edit anche senza movimento: `is_paid`, migrazione 015). Il calcolo è tutto del server (`GET /annual-plan`); hook in `lib/hooks/useAnnualPlan.ts`. Le card dei salvadanai in `/movements` mostrano saldo / tetto e il versamento di questo mese, con "Set cap" (nessuno, fisso, dal piano) e il link al piano; l'avviso di tetto superato (`components/movements/cap-warning.tsx`, logica in `lib/potCap.ts`) compare assegnando un trasferimento o creandone uno, e non blocca.
 - `/category`: gestione categorie.
@@ -114,8 +114,11 @@ La pagina `/settings/yourbank` include:
 TanStack Query gestisce le query e le mutation in `lib/hooks/useQueries.ts`.
 La configurazione corrente usa cache fresh per 60 secondi, garbage collection
 dopo 5 minuti, un retry sulle query e nessun retry predefinito sulle mutation.
-`DateRangeProvider` condivide tra dashboard, entrate e spese un intervallo
-iniziale dal primo giorno del mese corrente a oggi.
+`DateRangeProvider` condivide tra dashboard e Movements il periodo scelto: tiene la
+scorciatoia (This month, Last month, Last 3 months, All time) o le date a mano, e
+calcola le date con `lib/period.ts` a partire dal giorno di inizio del mese dell'utente
+(`GET /users/settings`, scelto al primo accesso in `MonthStartGate` e modificabile in
+Settings; 1 finché non sceglie).
 
 Il client usa la chiave Supabase pubblicabile. Le chiamate API includono il
 token bearer della sessione; non inserire chiavi service-role o AI nel bundle
@@ -140,7 +143,7 @@ la service-role key.
 - `/auth`: richiesta/verifica reset password e cambio password.
 - `/transaction`, `/income`, `/expense`: CRUD transazioni e liste per tipo.
 - `/category`, `/wallet`: gestione delle risorse utente.
-- `/dashboard-layout`: lettura e salvataggio layout widget.
+- `/users/settings`: giorno di inizio del mese dell'utente (`monthStartDay`).
 - `/import`: importazione CSV.
 - `/bank`: configurazione provider, autorizzazione OAuth, callback, sincronizzazione conti, filtri data e importazione massiva nei wallet.
 - `/agents/analytics`: analisi delle spese con provider AI compatibile OpenAI.
@@ -158,7 +161,7 @@ significa "uscita" ma "dato non normalizzato" (per esempio un CSV importato con
 La regola vive in due punti speculari, uno per repo, perché i repo sono separati:
 `lib/amount.ts` nel client (`absoluteAmount`, `signedAmount`, `totalForType`) e
 `utils/amount.js` nel server (`amountToCents`, `signedAmountCents`), che
-`sumBalancesInCents` usa per il saldo. I widget di dashboard sommano con
+`sumBalancesInCents` usa per il saldo. I totali di dashboard e Movements sommano con
 `totalForType` le stesse righe che il server somma per il saldo, quindi una riga
 col segno nel numero non fa più divergere i totali di periodo dal saldo: entrambi
 la contano come magnitudine e le danno il segno di `type`.

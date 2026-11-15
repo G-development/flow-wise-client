@@ -7,6 +7,15 @@
 const CHANGELOG: Array<{ period: string; title: string; items: string[] }> = [
   {
     period: "November 2026",
+    title: "A dashboard that answers questions",
+    items: [
+      "The dashboard is now a single page: your balance, what to fix, the month so far compared with last month, what is coming up from your savings pots and annual plan, where the money goes and your spending pace.",
+      "Choose the day your month starts, the 1st or your payday: This month and Last month follow it in the dashboard and in Movements. You pick it the first time you open the app and can change it in Settings.",
+      "The dashboard and Movements share the same period.",
+    ],
+  },
+  {
+    period: "November 2026",
     title: "Your data, backed up and yours to download",
     items: [
       "Settings → Your data: download everything you have in Flow Wise as a JSON file, or your movements as a CSV file that opens in Excel.",

@@ -1,34 +1,59 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { DateRange } from "react-day-picker";
+import { normalizeStartDay, presetRange, type PeriodPreset } from "@/lib/period";
 
 type DateRangeContextValue = {
+  /** Date del periodo scelto; `undefined` = "All time". */
   dateRange: DateRange | undefined;
+  /** Imposta date a mano (calendario): il periodo diventa "custom". */
   setDateRange: (range: DateRange | undefined) => void;
+  /** Scorciatoia attuale ("this-month", …, "custom"). */
+  preset: PeriodPreset;
+  setPreset: (preset: PeriodPreset) => void;
+  /** Giorno in cui parte il mese dell'utente (1–31; 1 finche' non e' caricato o scelto). */
+  monthStartDay: number;
+  setMonthStartDay: (day: number) => void;
 };
 
-const DateRangeContext = createContext<DateRangeContextValue | undefined>(
-  undefined
-);
+const DateRangeContext = createContext<DateRangeContextValue | undefined>(undefined);
 
-export function DateRangeProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const now = new Date();
-  const [dateRange, setDateRangeState] = useState<DateRange | undefined>({
-    from: new Date(now.getFullYear(), now.getMonth(), 1),
-    to: now,
-  });
+/**
+ * Periodo condiviso da dashboard e Movements (16/11/2026). Si tiene la scorciatoia, non le date:
+ * cosi' quando arriva il giorno di inizio del mese dell'utente (`MonthStartGate`) "This month" si
+ * ricalcola da solo. Le date a mano restano tali e quali ("custom").
+ */
+export function DateRangeProvider({ children }: { children: React.ReactNode }) {
+  const [preset, setPresetState] = useState<PeriodPreset>("this-month");
+  const [custom, setCustom] = useState<DateRange | undefined>(undefined);
+  const [monthStartDay, setMonthStartDayState] = useState(1);
 
-  const setDateRange = (range: DateRange | undefined) => {
-    setDateRangeState(range);
-  };
+  const setPreset = useCallback(
+    (next: PeriodPreset) => {
+      if (next === "custom") {
+        // si parte dalle date attuali, poi il calendario le cambia
+        setCustom((prev) => prev ?? presetRange(preset, monthStartDay) ?? presetRange("this-month", monthStartDay));
+      }
+      setPresetState(next);
+    },
+    [preset, monthStartDay]
+  );
+  const setDateRange = useCallback((range: DateRange | undefined) => {
+    setCustom(range);
+    setPresetState("custom");
+  }, []);
+  const setMonthStartDay = useCallback((day: number) => setMonthStartDayState(normalizeStartDay(day)), []);
+
+  const dateRange = useMemo(
+    () => (preset === "custom" ? custom : presetRange(preset, monthStartDay)),
+    [preset, custom, monthStartDay]
+  );
 
   return (
-    <DateRangeContext.Provider value={{ dateRange, setDateRange }}>
+    <DateRangeContext.Provider
+      value={{ dateRange, setDateRange, preset, setPreset, monthStartDay, setMonthStartDay }}
+    >
       {children}
     </DateRangeContext.Provider>
   );

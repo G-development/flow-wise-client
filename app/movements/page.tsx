@@ -5,14 +5,13 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/navbar";
 import NewTransaction from "@/components/new-transaction";
 import DeleteDialog from "@/components/delete-dialog";
-import DatePickerWithRange from "@/components/date-picker";
+import { PeriodPicker } from "@/components/period-picker";
 import { TruncatedNotice } from "@/components/truncated-notice";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MovementDayList, formatEuro } from "@/components/movements/movement-list";
 import { MovementSheet } from "@/components/movements/movement-sheet";
-import type { DateRange } from "react-day-picker";
 import { PendingTransfers } from "@/components/movements/pending-transfers";
 import { WalletCards, type WalletCardInfo } from "@/components/movements/wallet-cards";
 import {
@@ -39,35 +38,12 @@ import {
   type MovementFilters,
   type MovementType,
 } from "@/lib/movements";
-import { endOfMonth, format, startOfMonth, subMonths } from "date-fns";
+import { format } from "date-fns";
 import { Search } from "lucide-react";
 
 // Giorno locale, non UTC: `toISOString()` sposta la mezzanotte italiana al giorno prima
 // (1 novembre 00:00 CET = 31 ottobre 23:00 UTC) e allargava il periodo di un giorno.
 const toIsoDay = (date?: Date) => (date ? format(date, "yyyy-MM-dd") : undefined);
-
-/** Periodi del menu. "All time" toglie le date: il server restituisce tutto. */
-const PERIODS = [
-  { value: "this-month", label: "This month", range: () => ({ from: startOfMonth(new Date()), to: new Date() }) },
-  {
-    value: "last-month",
-    label: "Last month",
-    range: () => ({ from: startOfMonth(subMonths(new Date(), 1)), to: endOfMonth(subMonths(new Date(), 1)) }),
-  },
-  { value: "last-3", label: "Last 3 months", range: () => ({ from: startOfMonth(subMonths(new Date(), 2)), to: new Date() }) },
-  { value: "all", label: "All time", range: () => undefined },
-] as const;
-
-/** Quale scorciatoia corrisponde al periodo attuale ("custom" se nessuna). */
-function presetOf(range: DateRange | undefined): string {
-  if (!range?.from) return "all";
-  const day = (d?: Date) => (d ? format(d, "yyyy-MM-dd") : "");
-  for (const period of PERIODS) {
-    const r = period.range();
-    if (r && day(r.from) === day(range.from) && day(r.to) === day(range.to)) return period.value;
-  }
-  return "custom";
-}
 
 /**
  * Movements: wallet, entrate, spese e trasferimenti in una pagina sola (sostituisce
@@ -100,7 +76,7 @@ function Movements() {
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   };
 
-  const { dateRange, setDateRange } = useDateRange();
+  const { dateRange } = useDateRange();
   const { data: list = EMPTY_LIST_RESPONSE, isLoading, isError } = useMovements(
     toIsoDay(dateRange?.from),
     toIsoDay(dateRange?.to)
@@ -176,7 +152,7 @@ function Movements() {
             <p className="page-description">Everything that comes in, goes out or moves between your wallets</p>
           </div>
           <div className="flex w-full items-center gap-2 sm:w-auto">
-            <PeriodPicker dateRange={dateRange} setDateRange={setDateRange} />
+            <PeriodPicker />
             {/* Su mobile c'e' gia' il + della barra in basso (navbar): qui solo da desktop. */}
             <div className="hidden lg:block">
               <NewTransaction />
@@ -317,52 +293,6 @@ function Total({ label, value, className = "" }: { label: string; value: number;
     <div className="rounded-2xl border border-border/70 bg-card px-3 py-2.5 shadow-sm">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className={`truncate text-base font-semibold tabular-nums sm:text-lg ${className}`}>{formatEuro(value)}</p>
-    </div>
-  );
-}
-
-/**
- * Periodo in un menu compatto: le scorciatoie piu' "Custom…", che mostra il calendario.
- * Il periodo resta condiviso con la dashboard (DateRangeProvider).
- */
-function PeriodPicker({
-  dateRange,
-  setDateRange,
-}: {
-  dateRange: DateRange | undefined;
-  setDateRange: (range: DateRange | undefined) => void;
-}) {
-  const [custom, setCustom] = useState(false);
-  const current = custom ? "custom" : presetOf(dateRange);
-  return (
-    // su telefono il calendario va a capo sotto il menu, senza uscire dallo schermo (15/11)
-    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:flex-none">
-      <Select
-        value={current}
-        onValueChange={(value) => {
-          if (value === "custom") {
-            setCustom(true);
-            return;
-          }
-          setCustom(false);
-          setDateRange(PERIODS.find((p) => p.value === value)?.range());
-        }}
-      >
-        <SelectTrigger className="w-40" aria-label="Period">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {PERIODS.map((period) => (
-            <SelectItem key={period.value} value={period.value}>
-              {period.label}
-            </SelectItem>
-          ))}
-          <SelectItem value="custom">Custom…</SelectItem>
-        </SelectContent>
-      </Select>
-      {current === "custom" && (
-        <DatePickerWithRange className="w-full sm:w-auto" date={dateRange} dateChange={setDateRange} />
-      )}
     </div>
   );
 }

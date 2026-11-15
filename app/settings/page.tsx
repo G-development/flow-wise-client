@@ -28,6 +28,7 @@ import Navbar from "@/components/navbar";
 import { YourDataCard } from "@/components/settings/your-data-card";
 import { DeleteAccountCard } from "@/components/settings/delete-account-card";
 import { SettingsLinkRow, SettingsRows, SettingsSection } from "@/components/settings/settings-section";
+import { MonthStartSetting } from "@/components/settings/month-start-setting";
 
 interface Profile {
   id: string;
@@ -37,7 +38,7 @@ interface Profile {
   email: string | null;
   currency: string;
   bio?: string;
-  settings?: { notifications?: boolean };
+  settings?: Record<string, unknown>;
   created_at?: string;
   updated_at?: string;
 }
@@ -48,7 +49,6 @@ export default function Settings() {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [currency, setCurrency] = useState("");
-  const [notifications, setNotifications] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const initials = (name || "FW")
@@ -84,7 +84,6 @@ export default function Settings() {
         setName(data.name);
         setUsername(data.username);
         setCurrency(data.currency);
-        setNotifications(data.settings?.notifications || false);
       }
       setLoading(false);
     };
@@ -102,7 +101,6 @@ export default function Settings() {
         name,
         username,
         currency,
-        settings: { notifications },
         updated_at: new Date().toISOString(),
       })
       .eq("id", profile.id)
@@ -187,7 +185,6 @@ export default function Settings() {
     setName(profile.name);
     setUsername(profile.username);
     setCurrency(profile.currency);
-    setNotifications(profile.settings?.notifications || false);
   };
 
   if (loading && !profile) {
@@ -307,6 +304,7 @@ export default function Settings() {
           </SettingsSection>
 
           <SettingsSection id="preferences" icon={SlidersHorizontal} title="Preferences">
+            <MonthStartSetting />
             <SettingsRows>
               <div className="flex items-center gap-3 px-2 py-2.5">
                 <Coins className="h-4 w-4 shrink-0 text-muted-foreground" />

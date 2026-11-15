@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
+import { MonthStartGate } from "@/components/month-start/month-start-gate";
 import { supabase } from "@/lib/supabaseClient";
 
 import Image from "next/image";
@@ -118,6 +119,7 @@ export default function Navbar() {
 
   return (
     <>
+      <MonthStartGate />
       <header className="sticky top-0 z-50 w-full border-b border-border/70 bg-background/90 shadow-sm backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
         <div className="mx-auto flex h-16 w-full max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-5 lg:px-8">
           {/* Mobile Menu Button */}

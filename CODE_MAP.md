@@ -5,7 +5,7 @@
 Indice file-per-file generato dal codice, non dalla documentazione. Serve a sapere **dove** sta una
 cosa senza leggere il repo: architettura e regole locali stanno altrove (vedi `AGENTS.md`).
 
-Forma `next`, radice sorgente `.`, commit `aeb3886`.
+Forma `next`, radice sorgente `.`, commit `dea1628`.
 
 ```bash
 node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/flow-wise-client \
@@ -70,6 +70,7 @@ Layout: `app/layout.tsx`
 - `components/navbar.tsx` — exports: default `Navbar`
 - `components/new-transaction.tsx` — exports: default `NewTransaction`
 - `components/onboarding-tour.tsx` — exports: fn `OnboardingTour`
+- `components/period-picker.tsx` — exports: fn `PeriodPicker`
 - `components/register-form.tsx` — exports: fn `RegisterForm`
 - `components/truncated-notice.tsx` — exports: fn `TruncatedNotice`
 
@@ -82,22 +83,25 @@ Layout: `app/layout.tsx`
 ## components/dashboard/
 
 *components/dashboard/*
-- `components/dashboard/add-widget-dialog.tsx` — exports: fn `AddWidgetDialog`
-- `components/dashboard/dashboard-grid.tsx` — exports: fn `DashboardGrid`
-- `components/dashboard/draggable-widget.tsx` — exports: fn `DraggableWidget`
-- `components/dashboard/widget-renderer.tsx` — exports: fn `WidgetRenderer`
-*components/dashboard/widgets/*
-- `components/dashboard/widgets/expense-breakdown-widget.tsx` — exports: fn `ExpenseBreakdownWidget`
-- `components/dashboard/widgets/income-vs-expenses-widget.tsx` — exports: fn `IncomeVsExpensesWidget`
-- `components/dashboard/widgets/period-expenses-widget.tsx` — exports: fn `PeriodExpensesWidget`
-- `components/dashboard/widgets/period-incomes-widget.tsx` — exports: fn `PeriodIncomesWidget`
-- `components/dashboard/widgets/total-balance-widget.tsx` — exports: fn `TotalBalanceWidget`
+- `components/dashboard/category-spending.tsx` — exports: fn `CategorySpending`
+- `components/dashboard/coming-up.tsx` — exports: fn `ComingUp`
+- `components/dashboard/period-summary.tsx` — exports: fn `PeriodSummary`
+- `components/dashboard/section.tsx` — exports: fn `ChangeLabel`, `DashboardSection`; const `formatEuro`
+- `components/dashboard/spending-pace.tsx` — exports: fn `SpendingPace`
+- `components/dashboard/to-fix.tsx` — exports: fn `ToFix`
+- `components/dashboard/total-balance.tsx` — exports: fn `TotalBalanceWidget`
+
+## components/month-start/
+
+*components/month-start/*
+- `components/month-start/month-start-choice.tsx` — exports: fn `MonthStartChoice`, `monthStartSummary`
+- `components/month-start/month-start-gate.tsx` — exports: fn `MonthStartGate`
 
 ## components/movements/
 
 *components/movements/*
 - `components/movements/cap-warning.tsx` — exports: fn `CapWarning`
-- `components/movements/movement-list.tsx` — exports: const `formatEuro`, `movementTitle`; fn `dayLabel`, `MovementDayList`
+- `components/movements/movement-list.tsx` — exports: fn `dayLabel`, `MovementDayList`; const `formatEuro`, `movementTitle`
 - `components/movements/movement-sheet.tsx` — exports: fn `MovementSheet`
 - `components/movements/pending-transfers.tsx` — exports: fn `PendingTransfers`
 - `components/movements/wallet-cards.tsx` — exports: fn `parseAmountToCents`, `WalletCards`; type `WalletCardInfo`
@@ -106,6 +110,7 @@ Layout: `app/layout.tsx`
 
 *components/settings/*
 - `components/settings/delete-account-card.tsx` — exports: fn `DeleteAccountCard`
+- `components/settings/month-start-setting.tsx` — exports: fn `MonthStartSetting`
 - `components/settings/settings-section.tsx` — exports: fn `SettingsLinkRow`, `SettingsRows`, `SettingsSection`
 - `components/settings/your-data-card.tsx` — exports: fn `YourDataCard`
 
@@ -153,12 +158,16 @@ Layout: `app/layout.tsx`
 - `lib/bankCategorySuggestion.ts` — exports: type `BankTransactionForSuggestion`, `BankTransactionType`, `CategorySuggestion`; fn `getBankTransactionType`, `getMissingOtherTypes`, `suggestBankTransactionCategory`
 - `lib/categoryStyle.tsx` — exports: const `CATEGORY_COLORS`, `CATEGORY_ICONS`; fn `CategoryAvatar`, `CategoryBadge`, `categoryHex`, `categoryIcon`; type `CategoryColor`
 - `lib/constants.ts` — exports: const `API_URL`
+- `lib/dashboard.test.ts`
+- `lib/dashboard.ts` — exports: type `CategorySpend`, `UpcomingDue`; fn `categorySpending`, `cumulativeSpending`, `expenseAmount`, `inRange`, `pendingTransfersIn`, `percentChange`, `upcomingDues`
 - `lib/httpError.ts` — exports: fn `errorFromResponse`
 - `lib/legal.ts` — exports: const `LEGAL`
 - `lib/listResponse.test.ts`
 - `lib/listResponse.ts` — exports: const `EMPTY_LIST_RESPONSE`; type `ListResponse`; fn `parseListResponse`
 - `lib/movements.test.ts`
-- `lib/movements.ts` — exports: const `DEFAULT_FILTERS`, `MOVEMENT_TYPES`; fn `filterMovements`, `groupMovementsByDay`, `movementDirection`, `movementFilterType`, `movementTotals`, `parseMovementFilters`, `searchMovements`, `serializeMovementFilters`, `touchesWallet`, `walletPeriodTotals`; type `DayGroup`, `MovementFilters`, `MovementTotals`, `MovementType`
+- `lib/movements.ts` — exports: type `DayGroup`, `MovementFilters`, `MovementTotals`, `MovementType`; const `DEFAULT_FILTERS`, `MOVEMENT_TYPES`; fn `filterMovements`, `groupMovementsByDay`, `movementDirection`, `movementFilterType`, `movementTotals`, `parseMovementFilters`, `searchMovements`, `serializeMovementFilters`, `touchesWallet`, `walletPeriodTotals`
+- `lib/period.test.ts`
+- `lib/period.ts` — exports: fn `comparisonRange`, `daysBetween`, `monthStartIn`, `normalizeStartDay`, `periodStart`, `presetRange`, `rangeLabel`; const `PERIOD_OPTIONS`; type `PeriodPreset`, `Range`
 - `lib/potCap.test.ts`
 - `lib/potCap.ts` — exports: fn `effectiveCapCents`, `overCapCents`
 - `lib/supabaseClient.ts` — exports: const `supabase`
@@ -171,7 +180,7 @@ Layout: `app/layout.tsx`
 *lib/hooks/*
 - `lib/hooks/useAnnualPlan.ts` — exports: type `AnnualInstallment`, `AnnualItem`, `AnnualPlan`, `AnnualPlanResponse`; fn `useAddInstallment`, `useAnnualPlan`, `useAnnualPlans`, `useCopyNextYear`, `useCreateAnnualItem`, `useDeleteAnnualItem`, `useDeleteInstallment`, `usePotCaps`, `useSetInstallmentPayment`, `useUpdateAnnualItem`, `useUpdateInstallment`
 - `lib/hooks/useCategoryManagement.ts` — exports: type `CategoryRule`, `CategoryStat`; fn `useCategoryRules`, `useCategoryStats`, `useCreateRule`, `useDeleteRule`, `useMergeCategory`
-- `lib/hooks/useQueries.ts` — exports: type `BankConnectionSummary`, `Category`, `Transaction`, `Wallet`, `WalletCreateInput`, `WalletUpdateInput`; const `queryKeys`; fn `useActiveCategories`, `useBankConnections`, `useBankInstitutions`, `useCategories`, `useCreateCategory`, `useCreateTransaction`, `useCreateWallet`, `useDashboardLayout`, `useDeleteCategory`, `useDeleteTransaction`, `useDeleteWallet`, `useExpenses`, `useImportCsv`, `useIncomes`, `useMovements`, `useSaveDashboardLayout`, `useTransfers`, `useUpdateCategory`, `useUpdateTransaction`, `useUpdateWallet`, `useWallets`
+- `lib/hooks/useQueries.ts` — exports: type `BankConnectionSummary`, `Category`, `Transaction`, `UserSettings`, `Wallet`, `WalletCreateInput`, `WalletUpdateInput`; const `queryKeys`; fn `useActiveCategories`, `useBankConnections`, `useBankInstitutions`, `useCategories`, `useCreateCategory`, `useCreateTransaction`, `useCreateWallet`, `useDeleteCategory`, `useDeleteTransaction`, `useDeleteWallet`, `useExpenses`, `useImportCsv`, `useIncomes`, `useMovements`, `useSaveUserSettings`, `useTransfers`, `useUpdateCategory`, `useUpdateTransaction`, `useUpdateWallet`, `useUserSettings`, `useWallets`
 
 ## lib/providers/
 
@@ -179,11 +188,6 @@ Layout: `app/layout.tsx`
 - `lib/providers/AuthProvider.tsx` — exports: fn `AuthProvider`, `useAuth`
 - `lib/providers/DateRangeProvider.tsx` — exports: fn `DateRangeProvider`, `useDateRange`
 - `lib/providers/QueryProvider.tsx` — exports: fn `QueryProvider`
-
-## lib/types/
-
-*lib/types/*
-- `lib/types/dashboard.ts` — exports: type `DashboardLayout`, `Widget`, `WidgetConfig`, `WidgetPosition`, `WidgetType`; const `DEFAULT_LAYOUT`, `GRID_COLS`, `GRID_ROWS`; fn `isValidPosition`
 
 ## public/
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRightLeft, ChevronDown, ChevronRight, Inbox, Plus, Tags } from "lucide-react";
 import Navbar from "@/components/navbar";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,12 @@ export default function Categories() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showInactive, setShowInactive] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+
+  // /category?review=1 (dalla dashboard, "To fix") apre subito "To review"; letto al montaggio,
+  // senza useSearchParams che chiederebbe un Suspense per la build statica.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("review") === "1") setReviewOpen(true);
+  }, []);
 
   const categories = list.rows as Category[];
   const stats = statsData?.stats ?? {};
