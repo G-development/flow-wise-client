@@ -112,7 +112,7 @@ export function WalletCards({
       <div
         className={
           row
-            ? "-mx-4 mb-3 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0"
+            ? "mb-3 flex snap-x gap-3 overflow-x-auto p-1 pb-2"
             : "mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
         }
       >
@@ -210,7 +210,7 @@ export function WalletCards({
             <div
               className={
                 row
-                  ? "-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0"
+                  ? "flex snap-x gap-2 overflow-x-auto p-1 pb-2"
                   : "grid gap-2 sm:grid-cols-3 xl:grid-cols-4"
               }
             >

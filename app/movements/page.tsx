@@ -175,7 +175,7 @@ function Movements() {
             <h1 className="page-title">Movements</h1>
             <p className="page-description">Everything that comes in, goes out or moves between your wallets</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full items-center gap-2 sm:w-auto">
             <PeriodPicker dateRange={dateRange} setDateRange={setDateRange} />
             {/* Su mobile c'e' gia' il + della barra in basso (navbar): qui solo da desktop. */}
             <div className="hidden lg:block">
@@ -335,7 +335,8 @@ function PeriodPicker({
   const [custom, setCustom] = useState(false);
   const current = custom ? "custom" : presetOf(dateRange);
   return (
-    <div className="flex items-center gap-2">
+    // su telefono il calendario va a capo sotto il menu, senza uscire dallo schermo (15/11)
+    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:flex-none">
       <Select
         value={current}
         onValueChange={(value) => {
@@ -359,7 +360,9 @@ function PeriodPicker({
           <SelectItem value="custom">Custom…</SelectItem>
         </SelectContent>
       </Select>
-      {current === "custom" && <DatePickerWithRange date={dateRange} dateChange={setDateRange} />}
+      {current === "custom" && (
+        <DatePickerWithRange className="w-full sm:w-auto" date={dateRange} dateChange={setDateRange} />
+      )}
     </div>
   );
 }
