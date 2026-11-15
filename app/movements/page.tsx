@@ -1,5 +1,6 @@
 "use client";
 
+import { CategoryBadge } from "@/lib/categoryStyle";
 import { Suspense, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/navbar";
@@ -143,7 +144,7 @@ function Movements() {
 
   const rows = useMemo(() => {
     const walletName = new Map(wallets.map((w) => [String(w.id), w.name]));
-    const categoryName = new Map(categoryList.rows.map((c) => [String(c.id), c.name]));
+    const categoryById = new Map(categoryList.rows.map((c) => [String(c.id), c]));
     const name = (id: number | null | undefined) => (id == null ? "?" : walletName.get(String(id)) ?? `#${id}`);
     return visible.map((movement) => {
       const direction = movementDirection(movement, singleWalletId);
@@ -158,14 +159,15 @@ function Movements() {
             {movement.description || "-"}
           </span>
         ),
-        // Un rimborso (fase 5) mostra la categoria di spesa che riduce.
+        // Etichetta con colore e icona della categoria (come nella pagina Categorie, 15/11/2026).
+        // Un rimborso (fase 5) mostra la categoria di spesa che riduce, con il badge Refund dopo.
         Category: movement.is_refund ? (
           <span className="inline-flex items-center gap-1.5">
-            {categoryName.get(String(movement.category_id)) ?? "-"}
+            <CategoryBadge category={categoryById.get(String(movement.category_id))} />
             <span className="rounded-full bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">Refund</span>
           </span>
         ) : (
-          categoryName.get(String(movement.category_id)) ?? "-"
+          <CategoryBadge category={categoryById.get(String(movement.category_id))} />
         ),
         Wallet:
           movement.type === "T" ? (

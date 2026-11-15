@@ -136,3 +136,30 @@ export function CategoryAvatar({
     </span>
   );
 }
+
+/**
+ * Etichetta della categoria: icona e nome su un fondo tinto del suo colore (14/11/2026, pagina Movements).
+ * Stessi colore e icona della pagina Categorie; senza categoria mostra un trattino.
+ */
+export function CategoryBadge({
+  category,
+  fallback = "-",
+  className,
+}: {
+  category: (Styled & { name?: unknown }) | undefined | null;
+  fallback?: string;
+  className?: string;
+}) {
+  if (!category) return <span className="text-muted-foreground">{fallback}</span>;
+  const Icon = categoryIcon(category);
+  const hex = categoryHex(category);
+  return (
+    <span
+      className={cn("inline-flex max-w-full items-center gap-1.5 rounded-full py-0.5 pl-1.5 pr-2.5 text-xs font-medium", className)}
+      style={{ backgroundColor: `${hex}1a`, color: hex }}
+    >
+      <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+      <span className="truncate">{String(category.name)}</span>
+    </span>
+  );
+}
