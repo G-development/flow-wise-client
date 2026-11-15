@@ -5,37 +5,49 @@ TypeScript, Tailwind CSS, TanStack Query e autenticazione Supabase.
 
 ## Funzionalità
 
-- **Autenticazione**: Registrazione, login, recupero e reset password via email con token temporaneo.
-- **Dashboard Personalizzabile**: Griglia widget interattiva (saldo totale, entrate, spese, confronto entrate/uscite, grafico a torta per categoria) con supporto drag & drop, resize e salvataggio persistente del layout per utente.
-- **Gestione Finanziaria**: una pagina `/movements` con wallet, entrate, spese e trasferimenti (filtri per tipo, wallet e periodo; trasferimenti da assegnare in cima), e `/category` per le categorie. Il saldo di ogni wallet è calcolato dalle transazioni a partire da un saldo di apertura modificabile; i salvadanai stanno sotto il loro conto, con un tetto facoltativo.
+Interfaccia **solo in inglese** (dall'11/11/2026); i commenti del codice restano in italiano.
+
+- **Autenticazione**: registrazione, login, recupero e reset password via email (pagine con lo stesso stile del login,
+  `components/auth-shell.tsx`; la mail parte dalla casella di sistema del server). Un account nuovo vede un **tour
+  guidato** sulla dashboard (`components/onboarding-tour.tsx`), che si rivede da Settings.
+- **Dashboard personalizzabile**: griglia di widget (Total Balance con conti e salvadanai affiancati e il saldo della
+  banca per i conti collegati, entrate, spese, entrate contro spese, spese per categoria con i colori delle categorie),
+  drag & drop, resize e layout salvato per utente.
+- **Movements (`/movements`)**: wallet, entrate, spese e trasferimenti in una pagina, con filtri per tipo, wallet e
+  periodo, trasferimenti da assegnare in cima ed etichetta colorata della categoria su ogni movimento. Il saldo di ogni
+  wallet e' calcolato dalle transazioni a partire da un saldo di apertura; i salvadanai stanno sotto il loro conto, con
+  un tetto facoltativo, e si muovono **solo con trasferimenti dal o verso il loro conto**.
 - **Rimborsi**: un'entrata segnata "Refund" riduce la spesa della sua categoria invece di contare come entrata.
-- **Total Balance**: per i conti collegati mostra il saldo letto dalla banca, diviso tra conti e salvadanai.
-- **Piano annuale (`/annual-plan`)**: spese annuali con rate esplicite pagate da un salvadanaio, quota mensile consigliata, tetto e proiezione a 12 mesi.
-- **Importazione CSV**: Caricamento massivo e parsing automatico di file CSV di transazioni.
-- **Integrazione Bancaria Completa (`/settings/yourbank`)**:
-  - Connessione a conti bancari reali tramite **Open Banking PSD2 (GoCardless)** o in modalità **Sandbox Mock interattiva**.
-  - Visualizzazione e sincronizzazione automatica dei movimenti.
-  - **Filtro del periodo transazioni** (con default dal 1° del mese corrente a oggi e preset rapidi).
-  - **Selezione massiva e importazione** guidata delle transazioni bancarie nei propri Wallet e Categorie, con una categoria suggerita per ogni movimento.
-  - **Import automatico giornaliero** (per banca: wallet di destinazione e data di partenza): ogni mattina il server importa i movimenti contabilizzati, senza doppioni, con categorie scelte da regole locali che imparano dalle correzioni. Dettagli in `flow-wise-server/BANK_INTEGRATION.md`.
-- **AI Beta (`/ai-beta`)**: Interfaccia di chat per interrogare l'agente intelligente di analisi delle spese, con un riquadro che spiega quali dati vengono inviati al provider AI (Groq).
-- **Pagine legali**: Termini di servizio (`/terms`) e Informativa privacy (`/privacy`), in italiano, conformi a GDPR e Codice del Consumo.
-- **Landing page** (`/`) con il changelog del progetto dal febbraio 2025.
-- **Design & UX**: Interfaccia moderna responsive, supporto dark/light theme, notifiche toast con Sonner.
+- **Categorie (`/category`)**: schede Expenses / Income, quanto e' usata ogni categoria, regole che categorizzano i
+  movimenti della banca (visibili e modificabili), unione di due categorie, riquadro "To review" per i movimenti ancora
+  in "Altro"/"Other", colore e icona.
+- **Piano annuale (`/annual-plan`)**: spese annuali con rate pagate da un salvadanaio; mese per mese quanto si paga
+  (Due), quanto versare (Deposit, alto finche' il salvadanaio e' indietro, poi verso la media annua) e il saldo; senza
+  salvadanai la pagina aiuta a crearne uno.
+- **Importazione CSV** (`/settings/import`).
+- **Your Bank (`/settings/yourbank`)**: collegamento PSD2 tramite GoCardless (o sandbox mock), sincronizzazione,
+  import guidato con la categoria suggerita (e "Back to suggestion"), **import automatico giornaliero** con regole
+  locali che imparano dalle correzioni. Dettagli in `flow-wise-server/BANK_INTEGRATION.md`.
+- **Settings (`/settings`)**: profilo e foto, preferenze, scorciatoie, aiuto (tour, novita', pagine legali), **Your
+  data** (export JSON o CSV) e **Delete account**.
+- **AI Beta (`/ai-beta`)**: chat con l'agente di analisi delle spese, con il riquadro dei dati inviati a Groq.
+- **Pagine legali**: Termini (`/terms`) e Privacy (`/privacy`), in inglese, aggiornate al 13/11/2026.
+- **Landing page** (`/`) con il changelog dal febbraio 2025.
 
 ## Struttura
 
 ```text
 app/                  Route Next.js e pagine
-  ai-beta/            Chat di prova per l'agente delle spese
   dashboard/          Dashboard e griglia widget
-  incomes/            Gestione entrate
-  expenses/           Gestione spese
-  wallets/            Gestione wallet e conti
-  category/           Gestione categorie
-  settings/           Profilo, import CSV e integrazione bancaria
-components/           Componenti condivisi, navbar e primitive UI
-lib/                  Client Supabase, API wrapper, hook e provider
+  movements/          Wallet, entrate, spese e trasferimenti
+  category/           Categorie, regole, unione, "To review"
+  annual-plan/        Piano delle spese annuali
+  settings/           Profilo e dati (page), import CSV, Your Bank
+  ai-beta/            Chat di prova per l'agente delle spese
+  login/ register/ forgot-password/ reset-password/  Accesso
+  privacy/ terms/     Pagine legali
+components/           Componenti condivisi (navbar, dialog, categories/, settings/, movements/, dashboard/, ui/)
+lib/                  Client Supabase, API wrapper, hook (hooks/), stile categorie (categoryStyle.tsx), logica pura con test
 public/               Asset statici
 ```
 

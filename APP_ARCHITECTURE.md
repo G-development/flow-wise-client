@@ -79,6 +79,10 @@ categorie di ripiego ("Altro"/"Other" e quelle "… da classificare"), da assegn
 Colore e icona (migrazione 017 del server): scelti nel dialogo della categoria (`components/category-dialog.tsx`),
 elenco e disegno in `lib/categoryStyle.tsx` (`CategoryAvatar`, `categoryHex`). Senza scelta il colore e' stabile
 dall'id, e "Altro"/"Other" resta grigia. Il grafico delle spese della dashboard usa gli stessi colori.
+In `/movements` ogni movimento mostra la categoria con `CategoryBadge` (icona e nome sul colore della categoria). Il
+riquadro "To review" usa `merchant`, il nome leggibile che il server calcola per i movimenti della banca.
+Nella finestra di un movimento (`components/new-transaction.tsx`) entrate e spese elencano solo i conti; nei
+trasferimenti i salvadanai compaiono come "Nome · Conto" e solo con il loro conto (regola anche del server, 13/11).
 
 ### Tour guidato (`components/onboarding-tour.tsx`)
 

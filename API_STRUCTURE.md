@@ -21,13 +21,16 @@ Le chiamate bancarie e quelle dell'agente AI passano attraverso `apiFetch`.
 | Funzionalità | Chiamate |
 | --- | --- |
 | Registrazione | `POST /users/register` |
-| Profilo | `GET /users/profile`; aggiornamento avatar `POST /users/profile/photo` |
+| Profilo | `GET /users/profile`; aggiornamento avatar `POST /users/profile/photo`; elimina account `DELETE /users/me` (`{ confirmEmail }`) |
 | Password | `POST /auth/forgot-password`, `/auth/verify-reset-token`, `/auth/reset-password` |
-| Transazioni | `POST /transaction`, `PUT /transaction/:id`, `DELETE /transaction/:id` |
+| Transazioni | `GET /transaction/all?startDate=&endDate=` (i movimenti della banca hanno anche `merchant`), `POST /transaction`, `PUT /transaction/:id`, `DELETE /transaction/:id` |
 | Entrate | `GET /income/all?startDate=&endDate=` |
 | Spese | `GET /expense/all?startDate=&endDate=` |
 | Wallet | `GET /wallet`, `POST /wallet`, `PUT /wallet/:id`, `DELETE /wallet/:id` |
-| Categorie | `GET /category`, `/category/active`; CRUD su `/category` e `/category/:id` |
+| Categorie | `GET /category`, `/category/active`, `/category/stats`; CRUD su `/category` e `/category/:id` (con `color`, `icon`); `POST /category/:id/merge` (`{ into_id }`) |
+| Regole di categoria | `GET /category-rules`, `POST /category-rules` (`{ keyword, category_id }`), `DELETE /category-rules/:id` |
+| Piano annuale | `GET /annual-plan?walletId=`, `/annual-items` (CRUD, rinomina con `PUT`), rate e pagamenti |
+| Export | `GET /export` (JSON), `GET /export/transactions.csv` |
 | Import | `POST /import/csv` |
 | Layout dashboard | `GET /dashboard-layout`, `PUT /dashboard-layout` |
 | Banca - Configurazione | `GET /bank/config`, `GET /bank/institutions`, `GET /bank/status?bank=`, `GET /bank/connections` (entrambe con `balance` del conto o `null`) |
@@ -65,7 +68,7 @@ categoria di spesa; il client manda `is_refund` solo quando serve.
 
 Un trasferimento si crea con `POST /transaction` (`type: "T"`, `wallet_id` origine,
 `to_wallet_id` destinazione, `category_id` della categoria di sistema
-"Trasferimento") e si completa, quando un lato è "da assegnare", con
+"Transfer") e si completa, quando un lato è "da assegnare", con
 `PUT /transaction/:id` e la transazione intera (`assignTransferSide` in `lib/transfer.ts`).
 
 Il piano annuale (pagina `/annual-plan`, `lib/hooks/useAnnualPlan.ts`) usa `GET /annual-plan?walletId=`
