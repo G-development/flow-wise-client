@@ -70,11 +70,15 @@ export function WalletCards({
   cards,
   selectedWalletIds,
   onToggleWallet,
+  layout = "grid",
 }: {
   cards: WalletCardInfo[];
   selectedWalletIds: ReadonlySet<string> | null;
   onToggleWallet: (walletId: string) => void;
+  /** "row" (Movements dal 15/11/2026): schede piu' piccole in una fila che scorre di lato. */
+  layout?: "grid" | "row";
 }) {
+  const row = layout === "row";
   const [editing, setEditing] = useState<Wallet | null>(null);
   const [creating, setCreating] = useState(false);
   const [creatingPotFor, setCreatingPotFor] = useState<Wallet | null>(null);
@@ -105,7 +109,13 @@ export function WalletCards({
 
   return (
     <>
-      <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div
+        className={
+          row
+            ? "-mx-4 mb-3 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0"
+            : "mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+        }
+      >
         {accounts.map(({ wallet, bank, income, expense }) => {
           const id = String(wallet.id);
           const selected = onlySelected(id);
@@ -117,9 +127,9 @@ export function WalletCards({
               aria-pressed={selected}
               onClick={() => onToggleWallet(id)}
               onKeyDown={cardKeyHandler(id)}
-              className={`flex cursor-pointer flex-col gap-3 rounded-xl border bg-card p-4 shadow-sm transition-colors hover:border-primary/50 ${
-                selected ? "border-primary ring-2 ring-primary/30" : "border-border/70"
-              }`}
+              className={`flex cursor-pointer flex-col rounded-xl border bg-card shadow-sm transition-colors hover:border-primary/50 ${
+                row ? "w-64 shrink-0 snap-start gap-2 p-3" : "gap-3 p-4"
+              } ${selected ? "border-primary ring-2 ring-primary/30" : "border-border/70"}`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-3">
@@ -166,7 +176,7 @@ export function WalletCards({
                   </DropdownMenu>
                 </div>
               </div>
-              <p className="text-2xl font-semibold tabular-nums">{formatEuro(wallet.balance, wallet.currency || "EUR")}</p>
+              <p className={`${row ? "text-xl" : "text-2xl"} font-semibold tabular-nums`}>{formatEuro(wallet.balance, wallet.currency || "EUR")}</p>
               <div className="flex gap-4 text-xs text-muted-foreground tabular-nums">
                 <span className="text-success">+ {formatEuro(income)}</span>
                 <span className="text-destructive">− {formatEuro(expense)}</span>
@@ -181,7 +191,9 @@ export function WalletCards({
           onClick={() => setCreating(true)}
           disabled={accounts.length >= MAX_WALLETS}
           title={accounts.length >= MAX_WALLETS ? `You can create up to ${MAX_WALLETS} wallets` : undefined}
-          className="flex min-h-[132px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/70 p-4 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          className={`flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/70 p-4 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50 ${
+            row ? "w-40 shrink-0 snap-start" : "min-h-[132px]"
+          }`}
         >
           <Plus className="h-5 w-5" />
           {accounts.length >= MAX_WALLETS ? `Limit of ${MAX_WALLETS} wallets reached` : "Add wallet"}
@@ -193,9 +205,15 @@ export function WalletCards({
         const pots = potsByAccount.get(String(account.id)) ?? [];
         if (pots.length === 0) return null;
         return (
-          <section key={`pots-${account.id}`} className="mb-6">
+          <section key={`pots-${account.id}`} className={row ? "mb-3" : "mb-6"}>
             <h2 className="mb-2 text-sm font-medium text-muted-foreground">Savings pots · {account.name}</h2>
-            <div className="grid gap-2 sm:grid-cols-3 xl:grid-cols-4">
+            <div
+              className={
+                row
+                  ? "-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0"
+                  : "grid gap-2 sm:grid-cols-3 xl:grid-cols-4"
+              }
+            >
               {pots.map((pot) => {
                 const id = String(pot.id);
                 const selected = onlySelected(id);
@@ -208,8 +226,8 @@ export function WalletCards({
                     onClick={() => onToggleWallet(id)}
                     onKeyDown={cardKeyHandler(id)}
                     className={`flex cursor-pointer items-center justify-between gap-2 rounded-lg border bg-card px-3 py-2 shadow-sm transition-colors hover:border-primary/50 ${
-                      selected ? "border-primary ring-2 ring-primary/30" : "border-border/70"
-                    }`}
+                      row ? "w-56 shrink-0 snap-start" : ""
+                    } ${selected ? "border-primary ring-2 ring-primary/30" : "border-border/70"}`}
                   >
                     <div className="flex min-w-0 items-center gap-2">
                       <PiggyBank className="h-4 w-4 shrink-0 text-muted-foreground" />

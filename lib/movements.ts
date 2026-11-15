@@ -141,3 +141,63 @@ export function movementDirection(movement: MovementLike, singleWalletId: string
   }
   return "neutral";
 }
+
+// --- Ridisegno del 15/11/2026: ricerca e elenco per giorno ---------------------------------------
+
+type SearchableMovement = MovementLike & {
+  description?: unknown;
+  note?: unknown;
+  merchant?: unknown;
+};
+
+const normalizeText = (text: unknown) =>
+  String(text ?? "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+
+/**
+ * Ricerca per testo: ogni parola della ricerca deve comparire nel nome leggibile (`merchant`), nella
+ * descrizione, nella nota o nei testi in piu' passati dal chiamante (es. il nome della categoria).
+ * Senza distinguere maiuscole e accenti; una ricerca vuota tiene tutto.
+ */
+export function searchMovements<M extends SearchableMovement>(
+  movements: readonly M[],
+  query: string,
+  extraText: (movement: M) => string = () => ""
+): M[] {
+  const words = normalizeText(query).split(/\s+/).filter(Boolean);
+  if (words.length === 0) return [...movements];
+  return movements.filter((movement) => {
+    const haystack = normalizeText(
+      [movement.merchant, movement.description, movement.note, extraText(movement)].filter(Boolean).join(" ")
+    );
+    return words.every((word) => haystack.includes(word));
+  });
+}
+
+export type DayGroup<M> = { day: string; items: M[]; net: number };
+
+/**
+ * Movimenti raggruppati per giorno (`YYYY-MM-DD`), dal piu' recente. `net` e' il saldo del giorno
+ * con lo stesso verso degli importi mostrati (`movementDirection`): entrate +, spese −, un rimborso
+ * e' un'entrata; un trasferimento conta solo quando la pagina guarda un solo wallet.
+ */
+export function groupMovementsByDay<M extends MovementLike & { date?: unknown; id?: unknown }>(
+  movements: readonly M[],
+  singleWalletId: string | null = null
+): DayGroup<M>[] {
+  const groups = new Map<string, DayGroup<M>>();
+  for (const movement of movements) {
+    const day = String(movement.date ?? "").slice(0, 10) || "unknown";
+    const group = groups.get(day) ?? { day, items: [], net: 0 };
+    const direction = movementDirection(movement, singleWalletId);
+    const amount = absoluteAmount(movement.amount);
+    group.net += direction === "in" ? amount : direction === "out" ? -amount : 0;
+    group.items.push(movement);
+    groups.set(day, group);
+  }
+  return [...groups.values()]
+    .map((group) => ({ ...group, net: round2(group.net) }))
+    .sort((a, b) => b.day.localeCompare(a.day));
+}

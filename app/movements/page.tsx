@@ -1,17 +1,18 @@
 "use client";
 
-import { CategoryBadge } from "@/lib/categoryStyle";
 import { Suspense, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/navbar";
 import NewTransaction from "@/components/new-transaction";
 import DeleteDialog from "@/components/delete-dialog";
 import DatePickerWithRange from "@/components/date-picker";
-import { DynamicTable } from "@/components/dynamic-table";
 import { TruncatedNotice } from "@/components/truncated-notice";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MovementDayList, formatEuro } from "@/components/movements/movement-list";
+import { MovementSheet } from "@/components/movements/movement-sheet";
+import type { DateRange } from "react-day-picker";
 import { PendingTransfers } from "@/components/movements/pending-transfers";
 import { WalletCards, type WalletCardInfo } from "@/components/movements/wallet-cards";
 import {
@@ -26,39 +27,56 @@ import {
 } from "@/lib/hooks/useQueries";
 import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
 import { useDateRange } from "@/lib/providers/DateRangeProvider";
-import { absoluteAmount } from "@/lib/amount";
 import {
   MOVEMENT_TYPES,
   filterMovements,
-  movementDirection,
+  groupMovementsByDay,
   movementTotals,
+  searchMovements,
   parseMovementFilters,
   serializeMovementFilters,
   walletPeriodTotals,
   type MovementFilters,
   type MovementType,
 } from "@/lib/movements";
-import { format, startOfMonth, subMonths } from "date-fns";
-import { ArrowRight, Pencil, Trash } from "lucide-react";
+import { endOfMonth, format, startOfMonth, subMonths } from "date-fns";
+import { Search } from "lucide-react";
 
-const TYPE_LABELS: Record<MovementType, string> = { I: "Income", E: "Expense", T: "Transfer" };
-const formatEuro = (value: number) =>
-  new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(value);
 // Giorno locale, non UTC: `toISOString()` sposta la mezzanotte italiana al giorno prima
 // (1 novembre 00:00 CET = 31 ottobre 23:00 UTC) e allargava il periodo di un giorno.
 const toIsoDay = (date?: Date) => (date ? format(date, "yyyy-MM-dd") : undefined);
 
-/** Scorciatoie per il periodo. "All" toglie le date: il server restituisce tutto. */
-const PERIOD_PRESETS = [
-  { label: "This month", range: () => ({ from: startOfMonth(new Date()), to: new Date() }) },
-  { label: "Last 3 months", range: () => ({ from: startOfMonth(subMonths(new Date(), 2)), to: new Date() }) },
-  { label: "All", range: () => undefined },
+/** Periodi del menu. "All time" toglie le date: il server restituisce tutto. */
+const PERIODS = [
+  { value: "this-month", label: "This month", range: () => ({ from: startOfMonth(new Date()), to: new Date() }) },
+  {
+    value: "last-month",
+    label: "Last month",
+    range: () => ({ from: startOfMonth(subMonths(new Date(), 1)), to: endOfMonth(subMonths(new Date(), 1)) }),
+  },
+  { value: "last-3", label: "Last 3 months", range: () => ({ from: startOfMonth(subMonths(new Date(), 2)), to: new Date() }) },
+  { value: "all", label: "All time", range: () => undefined },
 ] as const;
+
+/** Quale scorciatoia corrisponde al periodo attuale ("custom" se nessuna). */
+function presetOf(range: DateRange | undefined): string {
+  if (!range?.from) return "all";
+  const day = (d?: Date) => (d ? format(d, "yyyy-MM-dd") : "");
+  for (const period of PERIODS) {
+    const r = period.range();
+    if (r && day(r.from) === day(range.from) && day(r.to) === day(range.to)) return period.value;
+  }
+  return "custom";
+}
 
 /**
  * Movements: wallet, entrate, spese e trasferimenti in una pagina sola (sostituisce
  * Incomes, Expenses, Transfers e Wallets). I filtri stanno nell'indirizzo
  * (`?types=I,E&wallets=1`), così i vecchi indirizzi portano qui con il filtro giusto.
+ *
+ * Ridisegnata il 15/11/2026 con Gio, pensando prima al telefono: periodo e totali, poi i
+ * trasferimenti da sistemare, filtri compatti con ricerca, elenco per giorno con il dettaglio
+ * a un tocco, e i wallet in fondo come schede scorrevoli.
  */
 export default function MovementsPage() {
   // `useSearchParams` richiede un confine di Suspense per la build statica di Next.
@@ -119,178 +137,155 @@ function Movements() {
     }));
   }, [wallets, bankConnections, institutions, movements]);
 
-  const toggleType = (type: MovementType, checked: boolean) => {
-    const types = new Set(filters.types);
-    if (checked) types.add(type);
-    else types.delete(type);
-    setFilters({ ...filters, types });
+  // Tipo a segmenti: "All" = tutti i tipi, altrimenti uno solo (un rimborso sta con le spese).
+  const typeValue: "all" | MovementType = filters.types.size === 1 ? [...filters.types][0] : "all";
+  const setType = (value: string) =>
+    setFilters({ ...filters, types: value === "all" ? new Set(MOVEMENT_TYPES) : new Set([value as MovementType]) });
+
+  // Wallet: tutti o uno solo (anche un salvadanaio).
+  const walletValue = singleWalletId ?? "all";
+  const setWallet = (value: string) => setFilters({ ...filters, wallets: value === "all" ? null : new Set([value]) });
+
+  // Clic su una scheda wallet: solo quel wallet; di nuovo sulla stessa: tutti.
+  const focusWallet = (walletId: string) => setWallet(singleWalletId === walletId ? "all" : walletId);
+
+  const [query, setQuery] = useState("");
+  const [opened, setOpened] = useState<Transaction | null>(null);
+
+  const categoryById = useMemo(() => new Map(categoryList.rows.map((c) => [String(c.id), c])), [categoryList.rows]);
+  const walletById = useMemo(() => new Map(wallets.map((w) => [String(w.id), w])), [wallets]);
+  const walletLabel = (wallet: (typeof wallets)[number]) => {
+    if (wallet.kind !== "pot" || wallet.parent_wallet_id == null) return wallet.name;
+    return `${wallet.name} · ${walletById.get(String(wallet.parent_wallet_id))?.name ?? "pot"}`;
   };
 
-  const toggleWallet = (walletId: string, checked: boolean) => {
-    const current = filters.wallets ?? new Set(wallets.map((w) => String(w.id)));
-    const next = new Set(current);
-    if (checked) next.add(walletId);
-    else next.delete(walletId);
-    // Tutti selezionati = nessun filtro: un wallet creato dopo compare da solo.
-    const all = wallets.every((w) => next.has(String(w.id)));
-    setFilters({ ...filters, wallets: all ? null : next });
-  };
-
-  // Clic su una card: solo quel wallet; di nuovo sulla stessa: tutti.
-  const focusWallet = (walletId: string) => {
-    const already = singleWalletId === walletId;
-    setFilters({ ...filters, wallets: already ? null : new Set([walletId]) });
-  };
-
-  const rows = useMemo(() => {
-    const walletName = new Map(wallets.map((w) => [String(w.id), w.name]));
-    const categoryById = new Map(categoryList.rows.map((c) => [String(c.id), c]));
-    const name = (id: number | null | undefined) => (id == null ? "?" : walletName.get(String(id)) ?? `#${id}`);
-    return visible.map((movement) => {
-      const direction = movementDirection(movement, singleWalletId);
-      const sign = direction === "in" ? "+ " : direction === "out" ? "− " : "";
-      const color = direction === "in" ? "text-success" : direction === "out" ? "text-destructive" : "text-foreground";
-      return {
-        Id: movement.id,
-        Date: movement.date ? new Date(movement.date).toLocaleDateString("it-IT") : "-",
-        // Le descrizioni della banca sono lunghe (codici, IBAN): due righe, il resto nel tooltip.
-        Description: (
-          <span className="line-clamp-2 max-w-[28rem] break-words" title={movement.description || undefined}>
-            {movement.description || "-"}
-          </span>
-        ),
-        // Etichetta con colore e icona della categoria (come nella pagina Categorie, 15/11/2026).
-        // Un rimborso (fase 5) mostra la categoria di spesa che riduce, con il badge Refund dopo.
-        Category: movement.is_refund ? (
-          <span className="inline-flex items-center gap-1.5">
-            <CategoryBadge category={categoryById.get(String(movement.category_id))} />
-            <span className="rounded-full bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">Refund</span>
-          </span>
-        ) : (
-          <CategoryBadge category={categoryById.get(String(movement.category_id))} />
-        ),
-        Wallet:
-          movement.type === "T" ? (
-            <span className="inline-flex items-center gap-1">
-              {name(movement.wallet_id)} <ArrowRight className="h-3 w-3" /> {name(movement.to_wallet_id)}
-            </span>
-          ) : (
-            name(movement.wallet_id)
-          ),
-        Amount: (
-          <span className={`whitespace-nowrap font-medium tabular-nums ${color}`}>
-            {sign}
-            {formatEuro(absoluteAmount(movement.amount))}
-          </span>
-        ),
-      } as Record<string, unknown>;
-    });
-  }, [visible, wallets, categoryList.rows, singleWalletId]);
+  const found = useMemo(
+    () => searchMovements(visible, query, (m) => String(categoryById.get(String(m.category_id))?.name ?? "")),
+    [visible, query, categoryById]
+  );
+  const groups = useMemo(() => groupMovementsByDay(found, singleWalletId), [found, singleWalletId]);
+  const shownTotals = query.trim() ? movementTotals(found, singleWalletId) : totals;
 
   return (
     <main className="app-page">
-      <div className="app-page-header">
-        <div>
-          <h1 className="page-title">Movements</h1>
-          <p className="page-description">Wallets, income, expenses and transfers in one place</p>
+      <div className="mx-auto max-w-3xl space-y-5">
+        {/* 1. Titolo e periodo */}
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="page-title">Movements</h1>
+            <p className="page-description">Everything that comes in, goes out or moves between your wallets</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <PeriodPicker dateRange={dateRange} setDateRange={setDateRange} />
+            {/* Su mobile c'e' gia' il + della barra in basso (navbar): qui solo da desktop. */}
+            <div className="hidden lg:block">
+              <NewTransaction />
+            </div>
+          </div>
         </div>
-        {/* Su mobile c'e' gia' il + della barra in basso (navbar): qui solo da desktop. */}
-        <div className="hidden lg:block">
-          <NewTransaction />
-        </div>
-      </div>
 
-      <WalletCards cards={cards} selectedWalletIds={filters.wallets} onToggleWallet={focusWallet} />
+        {/* 2. Totali del periodo (e della ricerca, se c'e') */}
+        <section className="grid grid-cols-3 gap-2 sm:gap-3">
+          <Total label="Income" value={shownTotals.income} className="text-success" />
+          <Total label="Expenses" value={shownTotals.expense} />
+          <Total label="Net" value={shownTotals.net} className={shownTotals.net < 0 ? "text-destructive" : "text-success"} />
+          {shownTotals.transfersIn !== null && <Total label="Transfers in" value={shownTotals.transfersIn} />}
+          {shownTotals.transfersOut !== null && <Total label="Transfers out" value={shownTotals.transfersOut} />}
+        </section>
 
-      <PendingTransfers transfers={transferList.rows as Transaction[]} wallets={wallets} />
+        {/* 3. Da sistemare: trasferimenti arrivati dalla banca senza l'altro lato (solo se ci sono) */}
+        <PendingTransfers transfers={transferList.rows as Transaction[]} wallets={wallets} />
 
-      {/* Filtri */}
-      <section className="mb-4 flex flex-col gap-4 rounded-xl border border-border/70 bg-card p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap gap-x-6 gap-y-3">
-          <fieldset className="flex flex-wrap items-center gap-4">
-            <legend className="sr-only">Type</legend>
-            {MOVEMENT_TYPES.map((type) => (
-              <Label key={type} className="flex cursor-pointer items-center gap-2 font-normal">
-                <Checkbox checked={filters.types.has(type)} onCheckedChange={(checked) => toggleType(type, checked === true)} />
-                {TYPE_LABELS[type]}
-              </Label>
-            ))}
-          </fieldset>
-          <fieldset className="flex flex-wrap items-center gap-4">
-            <legend className="sr-only">Wallets</legend>
-            {wallets.map((wallet) => {
-              const id = String(wallet.id);
-              return (
-                <Label key={id} className="flex cursor-pointer items-center gap-2 font-normal">
-                  <Checkbox
-                    checked={filters.wallets === null || filters.wallets.has(id)}
-                    onCheckedChange={(checked) => toggleWallet(id, checked === true)}
-                  />
-                  {wallet.name}
-                </Label>
-              );
-            })}
-          </fieldset>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="flex gap-1">
-            {PERIOD_PRESETS.map((preset) => (
-              <Button key={preset.label} variant="outline" size="sm" onClick={() => setDateRange(preset.range())}>
-                {preset.label}
-              </Button>
+        {/* 4. Filtri compatti e ricerca */}
+        <section className="space-y-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Tabs value={typeValue} onValueChange={setType} className="sm:flex-1">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="I">Income</TabsTrigger>
+                <TabsTrigger value="E">Expenses</TabsTrigger>
+                <TabsTrigger value="T">Transfers</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <Select value={walletValue} onValueChange={setWallet}>
+              <SelectTrigger className="sm:w-56" aria-label="Wallet">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All wallets</SelectItem>
+                {wallets.map((wallet) => (
+                  <SelectItem key={wallet.id} value={String(wallet.id)}>
+                    {walletLabel(wallet)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search shop, description, note or category"
+              className="pl-9"
+              aria-label="Search movements"
+            />
+          </div>
+        </section>
+
+        {list.truncated && <TruncatedNotice shown={list.count} total={list.total} />}
+
+        {/* 5. Elenco per giorno */}
+        {isError ? (
+          <p className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+            Error loading movements
+          </p>
+        ) : isLoading ? (
+          <div className="space-y-2">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="h-14 animate-pulse rounded-2xl bg-muted" />
             ))}
           </div>
-          <DatePickerWithRange date={dateRange} dateChange={setDateRange} />
-        </div>
-      </section>
+        ) : groups.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+            {query.trim() ? "No movement matches your search." : "No movements in this period."}
+          </div>
+        ) : (
+          <>
+            <p className="px-1 text-xs text-muted-foreground">
+              {found.length} {found.length === 1 ? "movement" : "movements"}
+            </p>
+            <MovementDayList
+              groups={groups}
+              categories={categoryById}
+              wallets={walletById}
+              singleWalletId={singleWalletId}
+              onOpen={setOpened}
+            />
+          </>
+        )}
 
-      {/* Totali della selezione */}
-      <section className="mb-4 grid grid-cols-3 gap-3 text-sm sm:max-w-xl">
-        <Total label="Income" value={totals.income} className="text-success" />
-        <Total label="Expense" value={totals.expense} className="text-destructive" />
-        <Total label="Net" value={totals.net} />
-        {totals.transfersIn !== null && <Total label="Transfers in" value={totals.transfersIn} />}
-        {totals.transfersOut !== null && <Total label="Transfers out" value={totals.transfersOut} />}
-      </section>
+        {/* 6. Wallet in fondo: schede scorrevoli; un tocco filtra l'elenco su quel wallet */}
+        <section className="space-y-2 pt-2">
+          <h2 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Wallets</h2>
+          <WalletCards cards={cards} selectedWalletIds={filters.wallets} onToggleWallet={focusWallet} layout="row" />
+        </section>
+      </div>
 
-      {list.truncated && <TruncatedNotice shown={list.count} total={list.total} className="mb-4" />}
-
-      {isError ? (
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
-          <p className="font-medium text-destructive">Error loading movements</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto rounded-xl border border-border/70 bg-card shadow-sm">
-          <DynamicTable
-            data={rows}
-            isLoading={isLoading}
-            hiddenColumns={["Id"]}
-            caption={`${rows.length} movement${rows.length === 1 ? "" : "s"} in the selection.`}
-            renderActions={(row) => (
-              <div className="flex justify-end gap-1">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8"
-                  onClick={() => setEditing(visible.find((m) => String(m.id) === String(row.Id)) ?? null)}
-                >
-                  <Pencil className="h-4 w-4" />
-                  <span className="sr-only">Edit</span>
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  onClick={() => setDeleteId(String(row.Id))}
-                >
-                  <Trash className="h-4 w-4" />
-                  <span className="sr-only">Delete</span>
-                </Button>
-              </div>
-            )}
-          />
-        </div>
-      )}
+      <MovementSheet
+        movement={opened}
+        categories={categoryById}
+        wallets={walletById}
+        onClose={() => setOpened(null)}
+        onEdit={(movement) => {
+          setOpened(null);
+          setEditing(movement);
+        }}
+        onDelete={(movement) => {
+          setOpened(null);
+          setDeleteId(String(movement.id));
+        }}
+      />
 
       <NewTransaction
         transaction={editing}
@@ -319,9 +314,52 @@ function Movements() {
 
 function Total({ label, value, className = "" }: { label: string; value: number; className?: string }) {
   return (
-    <div className="rounded-lg border border-border/70 bg-card px-3 py-2">
+    <div className="rounded-2xl border border-border/70 bg-card px-3 py-2.5 shadow-sm">
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={`font-semibold tabular-nums ${className}`}>{formatEuro(value)}</p>
+      <p className={`truncate text-base font-semibold tabular-nums sm:text-lg ${className}`}>{formatEuro(value)}</p>
+    </div>
+  );
+}
+
+/**
+ * Periodo in un menu compatto: le scorciatoie piu' "Custom…", che mostra il calendario.
+ * Il periodo resta condiviso con la dashboard (DateRangeProvider).
+ */
+function PeriodPicker({
+  dateRange,
+  setDateRange,
+}: {
+  dateRange: DateRange | undefined;
+  setDateRange: (range: DateRange | undefined) => void;
+}) {
+  const [custom, setCustom] = useState(false);
+  const current = custom ? "custom" : presetOf(dateRange);
+  return (
+    <div className="flex items-center gap-2">
+      <Select
+        value={current}
+        onValueChange={(value) => {
+          if (value === "custom") {
+            setCustom(true);
+            return;
+          }
+          setCustom(false);
+          setDateRange(PERIODS.find((p) => p.value === value)?.range());
+        }}
+      >
+        <SelectTrigger className="w-40" aria-label="Period">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {PERIODS.map((period) => (
+            <SelectItem key={period.value} value={period.value}>
+              {period.label}
+            </SelectItem>
+          ))}
+          <SelectItem value="custom">Custom…</SelectItem>
+        </SelectContent>
+      </Select>
+      {current === "custom" && <DatePickerWithRange date={dateRange} dateChange={setDateRange} />}
     </div>
   );
 }

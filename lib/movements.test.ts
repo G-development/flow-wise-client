@@ -107,3 +107,33 @@ test("rimborso: con le spese nei filtri e nei totali, in entrata sul wallet", ()
   assert.deepEqual(movementTotals([refund, cena, stipendio]), { income: 1800, expense: 24, net: 1776, transfersIn: null, transfersOut: null });
   assert.equal(movementDirection(refund), "in");
 });
+
+test("searchMovements: parole in nome, descrizione, nota o testo in piu', senza maiuscole e accenti", async () => {
+  const { searchMovements } = await import("./movements.ts");
+  const rows = [
+    { id: 1, type: "E", amount: 10, merchant: "Conad", description: "PAGAM. POS CONAD SUPERMERCATO", note: null },
+    { id: 2, type: "E", amount: 5, merchant: null, description: "Caffè al bar", note: "con Marco" },
+    { id: 3, type: "I", amount: 50, merchant: "To Michele", description: "Bonifico", note: null },
+  ];
+  assert.deepEqual(searchMovements(rows, "conad").map((r) => r.id), [1]);
+  assert.deepEqual(searchMovements(rows, "CAFFE marco").map((r) => r.id), [2]);
+  assert.deepEqual(searchMovements(rows, "spesa", (r) => (r.id === 1 ? "Spesa" : "")).map((r) => r.id), [1]);
+  assert.equal(searchMovements(rows, "   ").length, 3);
+  assert.equal(searchMovements(rows, "conad marco").length, 0, "tutte le parole devono esserci");
+});
+
+test("groupMovementsByDay: dal giorno piu' recente, con il saldo del giorno nel verso mostrato", async () => {
+  const { groupMovementsByDay } = await import("./movements.ts");
+  const rows = [
+    { id: 1, date: "2026-11-14", type: "E", amount: 10, wallet_id: 1 },
+    { id: 2, date: "2026-11-15", type: "I", amount: 100, wallet_id: 1 },
+    { id: 3, date: "2026-11-14", type: "I", amount: 4, is_refund: true, wallet_id: 1 },
+    { id: 4, date: "2026-11-14T10:00:00", type: "T", amount: 50, wallet_id: 1, to_wallet_id: 2 },
+  ];
+  const groups = groupMovementsByDay(rows);
+  assert.deepEqual(groups.map((g) => g.day), ["2026-11-15", "2026-11-14"]);
+  assert.equal(groups[1].items.length, 3);
+  assert.equal(groups[1].net, -6, "−10 + 4 di rimborso; il trasferimento non conta senza un wallet scelto");
+  const onWallet1 = groupMovementsByDay(rows, "1");
+  assert.equal(onWallet1[1].net, -56, "guardando il wallet 1 il trasferimento in uscita conta");
+});

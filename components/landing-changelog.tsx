@@ -22,6 +22,7 @@ const CHANGELOG: Array<{ period: string; title: string; items: string[] }> = [
       "New Categories page: expenses and income apart, how much each one is used, the rules that sort your bank movements (now visible and editable), merging two categories, and a To review list for what is still uncategorised.",
       "New accounts start with English categories, including Other, and the transfer category is called Transfer.",
       "Each category can have its own colour and icon, used in the spending chart and on every movement in Movements.",
+      "Movements redesigned for the phone: period, totals and filters on top, search as you type, movements grouped by day with a tap for the details, wallets in a scrolling row at the bottom.",
     ],
   },
   {

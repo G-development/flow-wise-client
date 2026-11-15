@@ -97,6 +97,8 @@ Layout: `app/layout.tsx`
 
 *components/movements/*
 - `components/movements/cap-warning.tsx` — exports: fn `CapWarning`
+- `components/movements/movement-list.tsx` — exports: const `formatEuro`, `movementTitle`; fn `dayLabel`, `MovementDayList`
+- `components/movements/movement-sheet.tsx` — exports: fn `MovementSheet`
 - `components/movements/pending-transfers.tsx` — exports: fn `PendingTransfers`
 - `components/movements/wallet-cards.tsx` — exports: fn `parseAmountToCents`, `WalletCards`; type `WalletCardInfo`
 
@@ -156,7 +158,7 @@ Layout: `app/layout.tsx`
 - `lib/listResponse.test.ts`
 - `lib/listResponse.ts` — exports: const `EMPTY_LIST_RESPONSE`; type `ListResponse`; fn `parseListResponse`
 - `lib/movements.test.ts`
-- `lib/movements.ts` — exports: const `DEFAULT_FILTERS`, `MOVEMENT_TYPES`; fn `filterMovements`, `movementDirection`, `movementFilterType`, `movementTotals`, `parseMovementFilters`, `serializeMovementFilters`, `touchesWallet`, `walletPeriodTotals`; type `MovementFilters`, `MovementTotals`, `MovementType`
+- `lib/movements.ts` — exports: const `DEFAULT_FILTERS`, `MOVEMENT_TYPES`; fn `filterMovements`, `groupMovementsByDay`, `movementDirection`, `movementFilterType`, `movementTotals`, `parseMovementFilters`, `searchMovements`, `serializeMovementFilters`, `touchesWallet`, `walletPeriodTotals`; type `DayGroup`, `MovementFilters`, `MovementTotals`, `MovementType`
 - `lib/potCap.test.ts`
 - `lib/potCap.ts` — exports: fn `effectiveCapCents`, `overCapCents`
 - `lib/supabaseClient.ts` — exports: const `supabase`
