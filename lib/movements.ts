@@ -201,3 +201,12 @@ export function groupMovementsByDay<M extends MovementLike & { date?: unknown; i
     .map((group) => ({ ...group, net: round2(group.net) }))
     .sort((a, b) => b.day.localeCompare(a.day));
 }
+
+// Nota automatica che l'import bancario scriveva fino al 16/11/2026 ("Importato da banca (<id>)").
+const AUTO_IMPORT_NOTE = /^Importato da banca \([^)]*\)$/;
+
+/** La nota scritta dall'utente; null se manca o se e' quella automatica dei vecchi import. */
+export function userNote(note: unknown): string | null {
+  const text = typeof note === "string" ? note.trim() : "";
+  return text && !AUTO_IMPORT_NOTE.test(text) ? text : null;
+}

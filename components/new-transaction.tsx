@@ -34,6 +34,7 @@ import {
 import { EMPTY_LIST_RESPONSE } from "@/lib/listResponse";
 import { checkAmountInput } from "@/lib/amountInput";
 import { canTransferBetween, findTransferCategory } from "@/lib/transfer";
+import { userNote } from "@/lib/movements";
 import { X, TrendingUp, TrendingDown, ArrowLeftRight, Calendar, Wallet as WalletIcon, Tag } from "lucide-react";
 
 type FormData = {
@@ -88,7 +89,7 @@ const emptyForm = (type: FormData["type"]): FormData => ({
 /** Valori del modulo per una transazione esistente (date ISO -> yyyy-MM-dd). */
 const formFromTransaction = (transaction: Transaction): FormData => ({
   description: transaction.description ?? "",
-  note: transaction.note ?? "",
+  note: userNote(transaction.note) ?? "",
   amount: Number(transaction.amount),
   type: transaction.type,
   wallet_id: transaction.wallet_id == null ? null : Number(transaction.wallet_id),

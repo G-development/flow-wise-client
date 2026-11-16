@@ -137,3 +137,13 @@ test("groupMovementsByDay: dal giorno piu' recente, con il saldo del giorno nel 
   const onWallet1 = groupMovementsByDay(rows, "1");
   assert.equal(onWallet1[1].net, -56, "guardando il wallet 1 il trasferimento in uscita conta");
 });
+
+test("userNote: nasconde la nota automatica dei vecchi import, tiene quelle dell'utente", async () => {
+  const { userNote } = await import("./movements.ts");
+  assert.equal(userNote("Importato da banca (intesa)"), null);
+  assert.equal(userNote("Importato da banca (REVOLUT_REVOGB21)"), null);
+  assert.equal(userNote(null), null);
+  assert.equal(userNote("  "), null);
+  assert.equal(userNote("cena con Marco"), "cena con Marco");
+  assert.equal(userNote("Importato da banca (x) — rivedere"), "Importato da banca (x) — rivedere");
+});

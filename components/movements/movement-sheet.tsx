@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { CategoryAvatar, CategoryBadge } from "@/lib/categoryStyle";
 import { absoluteAmount } from "@/lib/amount";
+import { userNote } from "@/lib/movements";
 import type { Category, Transaction, Wallet } from "@/lib/hooks/useQueries";
 import { formatEuro, movementTitle } from "./movement-list";
 
@@ -93,7 +94,7 @@ export function MovementSheet({
                   <Row label="Wallet">{walletName(movement.wallet_id)}</Row>
                 </>
               )}
-              {movement.note ? <Row label="Note">{String(movement.note)}</Row> : null}
+              {userNote(movement.note) ? <Row label="Note">{userNote(movement.note)}</Row> : null}
             </dl>
 
             {movement.description && movement.merchant && (
