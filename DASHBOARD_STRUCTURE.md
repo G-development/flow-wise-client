@@ -56,7 +56,7 @@ Le sezioni leggono `GET /transaction/all` con le date (`useMovements`, per il pe
 confronto), i trasferimenti (`useTransfers`), le categorie, i wallet e i piani annuali. Ogni scrittura
 su una transazione invalida la chiave `transactions`, quindi la dashboard si aggiorna senza ricaricare.
 
-## Lato server non più usato
+## Layout salvato: tolto
 
-`GET`/`PUT /dashboard-layout` e la tabella `dashboard_layouts` non sono più letti dal client. Restano
-per ora: toglierli è un'operazione distruttiva da fare con la lista e la conferma di Gio.
+`GET`/`PUT /dashboard-layout` e la tabella `dashboard_layouts` della vecchia griglia sono stati tolti il
+22/11/2026 (migrazione 019 del server).

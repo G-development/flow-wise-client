@@ -32,7 +32,6 @@ Le chiamate bancarie e quelle dell'agente AI passano attraverso `apiFetch`.
 | Piano annuale | `GET /annual-plan?walletId=`, `/annual-items` (CRUD, rinomina con `PUT`), rate e pagamenti |
 | Export | `GET /export` (JSON), `GET /export/transactions.csv` |
 | Import | `POST /import/csv` |
-| Layout dashboard | `GET /dashboard-layout`, `PUT /dashboard-layout` |
 | Banca - Configurazione | `GET /bank/config`, `GET /bank/institutions`, `GET /bank/status?bank=`, `GET /bank/connections` (entrambe con `balance` del conto o `null`) |
 | Banca - Connessione | `GET /bank/authorize?bank=`, `POST /bank/disconnect?bank=` |
 | Banca - Import automatico | `PUT /bank/connections/:bank/auto-import` (`{ walletId \| null, fromDate? }`); stato in `autoImport` di `/bank/status` e `/bank/connections` |
