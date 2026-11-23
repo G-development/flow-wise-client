@@ -5,7 +5,7 @@
 Indice file-per-file generato dal codice, non dalla documentazione. Serve a sapere **dove** sta una
 cosa senza leggere il repo: architettura e regole locali stanno altrove (vedi `AGENTS.md`).
 
-Forma `next`, radice sorgente `.`, commit `dea1628`.
+Forma `next`, radice sorgente `.`, commit `b1c7812`.
 
 ```bash
 node <skill repo-context-and-maps>/scripts/repo-map.mjs /Users/giocuo/Projects/flow-wise-client \
@@ -165,7 +165,7 @@ Layout: `app/layout.tsx`
 - `lib/listResponse.test.ts`
 - `lib/listResponse.ts` — exports: const `EMPTY_LIST_RESPONSE`; type `ListResponse`; fn `parseListResponse`
 - `lib/movements.test.ts`
-- `lib/movements.ts` — exports: type `DayGroup`, `MovementFilters`, `MovementTotals`, `MovementType`; const `DEFAULT_FILTERS`, `MOVEMENT_TYPES`; fn `filterMovements`, `groupMovementsByDay`, `movementDirection`, `movementFilterType`, `movementTotals`, `parseMovementFilters`, `searchMovements`, `serializeMovementFilters`, `touchesWallet`, `walletPeriodTotals`
+- `lib/movements.ts` — exports: type `DayGroup`, `MovementFilters`, `MovementTotals`, `MovementType`; const `DEFAULT_FILTERS`, `MOVEMENT_TYPES`; fn `filterMovements`, `groupMovementsByDay`, `movementDirection`, `movementFilterType`, `movementTotals`, `parseMovementFilters`, `searchMovements`, `serializeMovementFilters`, `touchesWallet`, `userNote`, `walletPeriodTotals`
 - `lib/period.test.ts`
 - `lib/period.ts` — exports: fn `comparisonRange`, `daysBetween`, `monthStartIn`, `normalizeStartDay`, `periodStart`, `presetRange`, `rangeLabel`; const `PERIOD_OPTIONS`; type `PeriodPreset`, `Range`
 - `lib/potCap.test.ts`

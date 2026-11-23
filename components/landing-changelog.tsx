@@ -7,6 +7,14 @@
 const CHANGELOG: Array<{ period: string; title: string; items: string[] }> = [
   {
     period: "November 2026",
+    title: "Cleaner bank import",
+    items: [
+      "Movements imported from your bank no longer carry an automatic note: the note field is yours again.",
+      "A refund arriving from the bank no longer stops the other movements of the same day from being imported.",
+    ],
+  },
+  {
+    period: "November 2026",
     title: "A dashboard that answers questions",
     items: [
       "The dashboard is now a single page: your balance, what to fix, the month so far compared with last month, what is coming up from your savings pots and annual plan, where the money goes and your spending pace.",
